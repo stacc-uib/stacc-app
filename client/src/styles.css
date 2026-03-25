@@ -1,4 +1,13 @@
 :root {
+  /* ...existing code... */
+}
+
+html, body {
+  height: 100vh;
+  margin: 0;
+  padding: 0;
+}
+:root {
   color: #1f2933;
   background:
     radial-gradient(circle at top, rgba(16, 185, 129, 0.12), transparent 35%),
