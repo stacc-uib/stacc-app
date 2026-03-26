@@ -38,6 +38,53 @@ function ChevronRightIcon() {
   );
 }
 
+function DashboardIcon() {
+  return (
+    <svg viewBox="0 0 24 24" aria-hidden="true" className="app-icon">
+      <rect
+        x="4.5"
+        y="4.5"
+        width="6.5"
+        height="6.5"
+        rx="1.4"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.8"
+      />
+      <rect
+        x="13"
+        y="4.5"
+        width="6.5"
+        height="10"
+        rx="1.4"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.8"
+      />
+      <rect
+        x="4.5"
+        y="13"
+        width="6.5"
+        height="6.5"
+        rx="1.4"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.8"
+      />
+      <rect
+        x="13"
+        y="16.5"
+        width="6.5"
+        height="3"
+        rx="1.4"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.8"
+      />
+    </svg>
+  );
+}
+
 function IncomeIcon() {
   return (
     <svg viewBox="0 0 24 24" aria-hidden="true" className="app-icon">
@@ -209,6 +256,12 @@ function DividendIcon() {
 }
 
 const navItems: NavItem[] = [
+  {
+    id: 'dashboard',
+    label: 'Dashboard',
+    description: 'Startside med oversikt over de viktigste tallene og siste aktivitet.',
+    icon: <DashboardIcon />,
+  },
   {
     id: 'inntekt',
     label: 'Inntekt',
