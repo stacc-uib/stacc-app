@@ -143,19 +143,21 @@ button {
   transition:
     background-color 0.2s ease,
     color 0.2s ease,
-    transform 0.2s ease;
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
 }
 
 .sidebar-item:hover {
-  background: rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.05);
   color: #fff;
-  transform: translateX(2px);
+  transform: translateX(1px);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.06);
 }
 
 .sidebar-item--active {
   background: linear-gradient(135deg, #da1e24, #8b0b14);
   color: #fff;
-  box-shadow: 0 14px 24px rgba(139, 11, 20, 0.32);
+  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.18);
 }
 
 .sidebar--collapsed .sidebar-item {
