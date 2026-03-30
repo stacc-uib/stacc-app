@@ -1,14 +1,21 @@
+import ComplianceActivityPanel from '../components/ComplianceActivityPanel';
+import ComplianceStatGrid from '../components/ComplianceStatGrid';
+import { getComplianceOverviewStats } from '../lib/getComplianceOverviewStats';
+import { complianceOverviewMock } from '../mocks/complianceOverview';
+
 function CompliancePage() {
+  const stats = getComplianceOverviewStats(complianceOverviewMock);
+
   return (
     <div className="content-card">
-      <p className="content-card__eyebrow">Reports &amp; Compliance</p>
+      <p className="content-card__eyebrow">Rapporter og compliance</p>
       <h1>Compliance</h1>
-      <p className="content-card__description">
-        Området for rapportering, investor-klassifisering og compliance-oppfølging.
-      </p>
-      <div className="content-card__placeholder">
-        Placeholder compliance.
-      </div>
+      <ComplianceStatGrid stats={stats} />
+      <ComplianceActivityPanel
+        alerts={complianceOverviewMock.alerts}
+        reportingRuns={complianceOverviewMock.reportingRuns}
+        tasks={complianceOverviewMock.tasks}
+      />
     </div>
   );
 }

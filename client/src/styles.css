@@ -230,6 +230,126 @@ button {
   font-weight: 500;
 }
 
+.feature-section {
+  margin-top: 2rem;
+}
+
+.feature-section__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.feature-section__eyebrow {
+  margin: 0 0 0.35rem;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: #da1e24;
+}
+
+.feature-section__title {
+  margin: 0;
+  font-size: 1.2rem;
+  color: #111827;
+}
+
+.summary-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+.summary-card {
+  padding: 1.25rem;
+  border: 1px solid rgba(17, 24, 39, 0.08);
+  border-radius: 1.2rem;
+  background: #fff;
+  box-shadow: 0 12px 24px rgba(15, 23, 42, 0.05);
+}
+
+.summary-card--warning {
+  border-color: rgba(217, 119, 6, 0.28);
+  background: linear-gradient(180deg, #fff, #fff7ed);
+}
+
+.summary-card--critical {
+  border-color: rgba(185, 28, 28, 0.28);
+  background: linear-gradient(180deg, #fff, #fef2f2);
+}
+
+.summary-card__label {
+  margin: 0;
+  color: #6b7280;
+  font-size: 0.9rem;
+}
+
+.summary-card__value {
+  margin: 0.45rem 0 0;
+  font-size: 2rem;
+  font-weight: 700;
+  color: #111827;
+}
+
+.feature-panel-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+.stack-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+}
+
+.stack-card {
+  padding: 1rem;
+  border: 1px solid rgba(17, 24, 39, 0.08);
+  border-radius: 1rem;
+  background: rgba(255, 255, 255, 0.92);
+}
+
+.stack-card--warning {
+  border-color: rgba(217, 119, 6, 0.28);
+}
+
+.stack-card--critical {
+  border-color: rgba(185, 28, 28, 0.28);
+}
+
+.stack-card--ok {
+  border-color: rgba(22, 163, 74, 0.2);
+}
+
+.stack-card__row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.stack-card__title {
+  margin: 0;
+  font-size: 1rem;
+  color: #111827;
+}
+
+.stack-card__meta {
+  color: #6b7280;
+  font-size: 0.85rem;
+  white-space: nowrap;
+}
+
+.stack-card__body {
+  margin: 0.6rem 0 0;
+  color: #4b5563;
+  line-height: 1.5;
+}
+
 @media (max-width: 900px) {
   .workspace {
     grid-template-columns: 1fr;
@@ -258,6 +378,11 @@ button {
   .sidebar-footer {
     margin-top: 0.85rem;
     padding-top: 0;
+  }
+
+  .summary-grid,
+  .feature-panel-grid {
+    grid-template-columns: 1fr;
   }
 }
 
