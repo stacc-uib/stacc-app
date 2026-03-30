@@ -1,42 +1,16 @@
-import { useState } from 'react';
-import Navbar from './Navbar';
+import type { ComponentType } from 'react';
+import CompliancePage from '../../features/compliance/pages/CompliancePage';
+import CustomersPage from '../../features/customers/pages/CustomersPage';
+import DashboardPage from '../../features/dashboard/pages/DashboardPage';
+import FundOverviewPage from '../../features/funds/pages/FundOverviewPage';
+import IncomePage from '../../features/income/pages/IncomePage';
+import TradesPage from '../../features/trades/pages/TradesPage';
+import TransactionsPage from '../../features/transactions/pages/TransactionsPage';
+import type { NavItem } from '../../shared/types/navigation';
 
-type NavItem = {
-  id: string;
-  label: string;
-  description: string;
-  icon: JSX.Element;
+export type AppNavItem = NavItem & {
+  page: ComponentType;
 };
-
-function ChevronLeftIcon() {
-  return (
-    <svg viewBox="0 0 24 24" aria-hidden="true" className="app-icon">
-      <path
-        d="M14.5 6 8.5 12l6 6"
-        fill="none"
-        stroke="currentColor"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        strokeWidth="1.8"
-      />
-    </svg>
-  );
-}
-
-function ChevronRightIcon() {
-  return (
-    <svg viewBox="0 0 24 24" aria-hidden="true" className="app-icon">
-      <path
-        d="m9.5 6 6 6-6 6"
-        fill="none"
-        stroke="currentColor"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        strokeWidth="1.8"
-      />
-    </svg>
-  );
-}
 
 function DashboardIcon() {
   return (
@@ -255,119 +229,61 @@ function DividendIcon() {
   );
 }
 
-const navItems: NavItem[] = [
+export const navItems: AppNavItem[] = [
   {
     id: 'dashboard',
     label: 'Dashboard',
     description: 'Startside med oversikt over de viktigste tallene og siste aktivitet.',
     icon: <DashboardIcon />,
+    page: DashboardPage,
   },
   {
     id: 'inntekt',
     label: 'Inntekt',
-    description: 'Oversikt over inntektsutvikling og nøkkeltall.',
+    description: 'Oversikt over inntektsutvikling og n?kkeltall.',
     icon: <IncomeIcon />,
+    page: IncomePage,
   },
   {
     id: 'fondsoversikt',
     label: 'Fondsoversikt',
     description: 'Se beholdning, fondsinformasjon og status samlet.',
     icon: <FundIcon />,
+    page: FundOverviewPage,
   },
   {
     id: 'kundeoversikt',
     label: 'Kundeoversikt',
-    description: 'Finn kunder, segmenter og tilhørende nøkkelinformasjon.',
+    description: 'Finn kunder, segmenter og tilh?rende n?kkelinformasjon.',
     icon: <CustomerIcon />,
+    page: CustomersPage,
   },
   {
     id: 'transaksjoner',
     label: 'Transaksjoner',
-    description: 'Gjennomgå registrerte transaksjoner og siste bevegelser.',
+    description: 'Gjennomg? registrerte transaksjoner og siste bevegelser.',
     icon: <TransactionIcon />,
+    page: TransactionsPage,
   },
   {
     id: 'rapporter',
     label: 'Rapporter',
-    description: 'Generer og eksporter rapporter for oppfølging og kontroll.',
+    description: 'Generer og eksporter rapporter for oppf?lging og kontroll.',
     icon: <ReportIcon />,
+    page: CompliancePage,
   },
   {
     id: 'registrer-ny-handel',
     label: 'Registrer ny handel',
-    description: 'Start registrering av en ny handel med nødvendige felt.',
+    description: 'Start registrering av en ny handel med n?dvendige felt.',
     icon: <TradeIcon />,
+    page: TradesPage,
   },
   {
     id: 'registrer-utbytte',
     label: 'Registrer utbytte',
-    description: 'Før inn utbytte og koble det til riktig kunde eller fond.',
+    description: 'F?r inn utbytte og koble det til riktig kunde eller fond.',
     icon: <DividendIcon />,
+    page: DashboardPage,
   },
 ];
-
-function AppLayout() {
-  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
-  const [activeItemId, setActiveItemId] = useState(navItems[0].id);
-
-  const activeItem = navItems.find((item) => item.id === activeItemId) ?? navItems[0];
-
-  return (
-    <div className="app-layout">
-      <Navbar
-        logoSrc="/escali-insight-logo.png"
-      />
-
-      <div className="workspace">
-        <aside className={`sidebar ${isSidebarOpen ? 'sidebar--open' : 'sidebar--collapsed'}`}>
-          <nav className="sidebar-nav" aria-label="Hovedmeny">
-            {navItems.map((item) => {
-              const isActive = item.id === activeItem.id;
-
-              return (
-                <button
-                  key={item.id}
-                  type="button"
-                  className={`sidebar-item ${isActive ? 'sidebar-item--active' : ''}`}
-                  onClick={() => setActiveItemId(item.id)}
-                  title={isSidebarOpen ? undefined : item.label}
-                >
-                  <span className="sidebar-item__icon">{item.icon}</span>
-                  {isSidebarOpen ? (
-                    <span className="sidebar-item__label">{item.label}</span>
-                  ) : null}
-                </button>
-              );
-            })}
-          </nav>
-
-          <div className="sidebar-footer">
-            <button
-              type="button"
-              className="sidebar-toggle sidebar-toggle--bottom"
-              onClick={() => setIsSidebarOpen((current) => !current)}
-              aria-label={isSidebarOpen ? 'Skjul menyen' : 'Vis menyen'}
-              aria-expanded={isSidebarOpen}
-              title={isSidebarOpen ? 'Skjul menyen' : 'Vis menyen'}
-            >
-              {isSidebarOpen ? <ChevronLeftIcon /> : <ChevronRightIcon />}
-              {isSidebarOpen ? <span>Skjul meny</span> : null}
-            </button>
-          </div>
-        </aside>
-
-        <main className="content-panel">
-          <div className="content-card">
-            <h1>{activeItem.label}</h1>
-            <p className="content-card__description">{activeItem.description}</p>
-            <div className="content-card__placeholder">
-              Placeholder {activeItem.label.toLowerCase()}.
-            </div>
-          </div>
-        </main>
-      </div>
-    </div>
-  );
-}
-
-export default AppLayout;
