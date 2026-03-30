@@ -10,7 +10,7 @@ type InvestorClassificationSectionProps = {
 
 const statusLabelByType: Record<InvestorClassificationStatus, string> = {
   ok: 'Klar',
-  'mangler-naering': 'Mangler naering',
+  'mangler-naering': 'Mangler næring',
   'pep-forfaller-snart': 'PEP forfaller snart',
   'pep-forfalt': 'PEP forfalt',
   'ikke-profesjonell': 'Ikke-profesjonell',
@@ -55,44 +55,63 @@ function InvestorClassificationSection({
     .slice(0, 8);
 
   return (
-    <section className="feature-section">
-      <div className="feature-section__header">
-        <div>
-          <p className="feature-section__eyebrow">Investorklassifisering</p>
-          <h2 className="feature-section__title">Status for kunderegisteret</h2>
-        </div>
-      </div>
-
-
-      <div className="data-table-card">
-        <div className="data-table-card__header">
+    <section className="feature-section feature-section--classification">
+      <div className="feature-section__surface">
+        <div className="feature-section__header">
           <div>
-            <h3 className="data-table-card__title">Investorer som trenger oppfølging</h3>
-            <p className="data-table-card__description">
-              Tabellen viser de viktigste klassifiseringssakene som CCO bør se pa først.
+            <p className="feature-section__eyebrow">Investorklassifisering</p>
+            <h2 className="feature-section__title">Status for kunderegisteret</h2>
+            <p className="feature-section__description">
+              Denne delen viser hvilke investorer som mangler klassifiseringsdata eller har forhold som må vurderes før videre oppfølging.
             </p>
           </div>
         </div>
 
-        <div className="table-scroll">
-          <table className="data-table">
-            <thead>
-              <tr>
-                <th>Investor</th>
-                <th>Type</th>
-                <th>Kategori</th>
-                <th>Næringsgruppe</th>
-                <th>PEP</th>
-                <th>Neste kontroll</th>
-                <th>Status</th>
-              </tr>
-            </thead>
-            <tbody>
-              {prioritizedRows.map((row) => (
-                <InvestorClassificationTableRow key={row.customerId} row={row} />
-              ))}
-            </tbody>
-          </table>
+        <div className="summary-grid summary-grid--three-up">
+          <article className="summary-card">
+            <p className="summary-card__label">Ikke-profesjonelle investorer</p>
+            <p className="summary-card__value">{overview.nonProfessionalInvestors}</p>
+          </article>
+          <article className="summary-card summary-card--warning">
+            <p className="summary-card__label">Manglende næringsgrupper</p>
+            <p className="summary-card__value">{overview.missingIndustryGroup}</p>
+          </article>
+          <article className="summary-card summary-card--critical">
+            <p className="summary-card__label">PEP-kontroller som er forfalt</p>
+            <p className="summary-card__value">{overview.pepReviewOverdue}</p>
+          </article>
+        </div>
+
+        <div className="data-table-card">
+          <div className="data-table-card__header">
+            <div>
+              <h3 className="data-table-card__title">Investorer som trenger oppfølging</h3>
+              <p className="data-table-card__description">
+                Tabellen viser de viktigste klassifiseringssakene som CCO bør se på først.
+              </p>
+            </div>
+          </div>
+
+          <div className="table-scroll">
+            <table className="data-table">
+              <thead>
+                <tr>
+                  <th>Investor</th>
+                  <th>Type</th>
+                  <th>Kategori</th>
+                  <th>Næringsgruppe</th>
+                  <th>PEP</th>
+                  <th>Neste kontroll</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                {prioritizedRows.map((row) => (
+                  <InvestorClassificationTableRow key={row.customerId} row={row} />
+                ))}
+              </tbody>
+            </table>
+          </div>
         </div>
       </div>
     </section>
