@@ -32,3 +32,30 @@ export type ComplianceOverviewData = {
   reportingRuns: ReportingRun[];
   tasks: ComplianceTask[];
 };
+
+export type InvestorClassificationStatus =
+  | 'ok'
+  | 'mangler-naering'
+  | 'pep-forfaller-snart'
+  | 'pep-forfalt'
+  | 'ikke-profesjonell';
+
+export type InvestorClassificationRow = {
+  customerId: string;
+  investorName: string;
+  investorType: string;
+  investorCategory: string;
+  industryGroup: string;
+  pepStatus: 'Ja' | 'Nei';
+  pepNextReviewLabel: string;
+  classificationStatus: InvestorClassificationStatus;
+};
+
+export type InvestorClassificationOverview = {
+  totalInvestors: number;
+  professionalInvestors: number;
+  nonProfessionalInvestors: number;
+  missingIndustryGroup: number;
+  pepReviewOverdue: number;
+  rows: InvestorClassificationRow[];
+};

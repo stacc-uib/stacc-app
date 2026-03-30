@@ -263,6 +263,10 @@ button {
   gap: 1rem;
 }
 
+.summary-grid--three-up {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
 .summary-card {
   padding: 1.25rem;
   border: 1px solid rgba(17, 24, 39, 0.08);
@@ -348,6 +352,85 @@ button {
   margin: 0.6rem 0 0;
   color: #4b5563;
   line-height: 1.5;
+}
+
+.data-table-card {
+  margin-top: 1.25rem;
+  padding: 1.25rem;
+  border: 1px solid rgba(17, 24, 39, 0.08);
+  border-radius: 1.2rem;
+  background: rgba(255, 255, 255, 0.95);
+}
+
+.data-table-card__header {
+  margin-bottom: 1rem;
+}
+
+.data-table-card__title {
+  margin: 0;
+  font-size: 1.05rem;
+  color: #111827;
+}
+
+.data-table-card__description {
+  margin: 0.45rem 0 0;
+  color: #4b5563;
+  line-height: 1.5;
+}
+
+.table-scroll {
+  overflow-x: auto;
+}
+
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 760px;
+}
+
+.data-table th,
+.data-table td {
+  padding: 0.9rem 0.85rem;
+  border-bottom: 1px solid rgba(17, 24, 39, 0.08);
+  text-align: left;
+  vertical-align: top;
+}
+
+.data-table th {
+  color: #6b7280;
+  font-size: 0.83rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.data-table td {
+  color: #111827;
+  font-size: 0.95rem;
+}
+
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.28rem 0.6rem;
+  border-radius: 999px;
+  font-size: 0.8rem;
+  font-weight: 700;
+}
+
+.status-badge--ok {
+  background: #ecfdf5;
+  color: #166534;
+}
+
+.status-badge--warning {
+  background: #fff7ed;
+  color: #b45309;
+}
+
+.status-badge--critical {
+  background: #fef2f2;
+  color: #b91c1c;
 }
 
 @media (max-width: 900px) {

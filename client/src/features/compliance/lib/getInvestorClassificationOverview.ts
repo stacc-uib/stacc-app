@@ -1,0 +1,88 @@
+import investors from '../../../mocks/investors.json';
+import { investorComplianceDetails } from '../mocks/investorComplianceDetails';
+import type {
+  InvestorClassificationOverview,
+  InvestorClassificationRow,
+  InvestorClassificationStatus,
+} from '../types/compliance';
+
+type InvestorRecord = {
+  customerId: string;
+  name: string;
+  customerType: string;
+  category: 'Professional' | 'Retail';
+};
+
+function formatDateLabel(dateString: string) {
+  const [year, month, day] = dateString.split('-');
+  return `${day}.${month}.${year}`;
+}
+
+function getClassificationStatus(
+  investorCategory: InvestorRecord['category'],
+  industryGroup: string | null,
+  pepNextReviewDate: string,
+): InvestorClassificationStatus {
+  const today = new Date('2026-03-30');
+  const reviewDate = new Date(pepNextReviewDate);
+  const diffInDays = Math.ceil((reviewDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+
+  if (investorCategory !== 'Professional') {
+    return 'ikke-profesjonell';
+  }
+
+  if (!industryGroup) {
+    return 'mangler-naering';
+  }
+
+  if (diffInDays < 0) {
+    return 'pep-forfalt';
+  }
+
+  if (diffInDays <= 14) {
+    return 'pep-forfaller-snart';
+  }
+
+  return 'ok';
+}
+
+function toInvestorCategoryLabel(category: InvestorRecord['category']) {
+  return category === 'Professional' ? 'Profesjonell' : 'Ikke-profesjonell';
+}
+
+export function getInvestorClassificationOverview(): InvestorClassificationOverview {
+  const detailByCustomerId = new Map(
+    investorComplianceDetails.map((detail) => [detail.customerId, detail]),
+  );
+
+  const rows = (investors as InvestorRecord[]).map((investor) => {
+    const detail = detailByCustomerId.get(investor.customerId);
+
+    const industryGroup = detail?.industryGroup ?? null;
+    const pepNextReviewDate = detail?.pepNextReviewDate ?? '2026-12-31';
+
+    return {
+      customerId: investor.customerId,
+      investorName: investor.name,
+      investorType: investor.customerType,
+      investorCategory: toInvestorCategoryLabel(investor.category),
+      industryGroup: industryGroup ?? 'Mangler',
+      pepStatus: detail?.pepStatus ? 'Ja' : 'Nei',
+      pepNextReviewLabel: formatDateLabel(pepNextReviewDate),
+      classificationStatus: getClassificationStatus(
+        investor.category,
+        industryGroup,
+        pepNextReviewDate,
+      ),
+    } satisfies InvestorClassificationRow;
+  });
+
+  return {
+    totalInvestors: rows.length,
+    professionalInvestors: rows.filter((row) => row.investorCategory === 'Profesjonell').length,
+    nonProfessionalInvestors: rows.filter((row) => row.investorCategory === 'Ikke-profesjonell').length,
+    missingIndustryGroup: rows.filter((row) => row.industryGroup === 'Mangler').length,
+    pepReviewOverdue: rows.filter((row) => row.classificationStatus === 'pep-forfalt').length,
+    rows: rows.sort((left, right) => left.investorName.localeCompare(right.investorName, 'nb')),
+  };
+}
