@@ -298,6 +298,7 @@ button {
 }
 
 
+
 .feature-section__header {
   display: flex;
   align-items: center;
@@ -472,6 +473,10 @@ button {
   background: rgba(255, 255, 255, 0.95);
 }
 
+.data-table-card--tight {
+  margin-top: 0;
+}
+
 .data-table-card__header {
   margin-bottom: 1rem;
 }
@@ -498,6 +503,11 @@ button {
   min-width: 760px;
 }
 
+.data-table--wide-first-column th:first-child,
+.data-table--wide-first-column td:first-child {
+  min-width: 320px;
+}
+
 .data-table th,
 .data-table td {
   padding: 0.9rem 0.85rem;
@@ -517,6 +527,23 @@ button {
 .data-table td {
   color: #111827;
   font-size: 0.95rem;
+}
+
+.table-primary-cell {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.table-primary-cell strong {
+  font-size: 0.96rem;
+  font-weight: 700;
+  color: #111827;
+}
+
+.table-primary-cell span {
+  color: #4b5563;
+  line-height: 1.45;
 }
 
 .status-badge {

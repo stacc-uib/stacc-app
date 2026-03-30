@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react';
 import ComplianceAmlPepView from '../components/ComplianceAmlPepView';
 import ComplianceClassificationView from '../components/ComplianceClassificationView';
+import ComplianceIncidentsPageView from '../components/ComplianceIncidentsPageView';
 import ComplianceOverviewView from '../components/ComplianceOverviewView';
-import CompliancePlaceholderSection from '../components/CompliancePlaceholderSection';
 import ComplianceReportingView from '../components/ComplianceReportingView';
 import ComplianceSubnav from '../components/ComplianceSubnav';
 import { getCompliancePageData } from '../lib/getCompliancePageData';
@@ -31,7 +31,7 @@ const complianceSubnavItems = [
   {
     id: 'brudd-og-avvik',
     label: 'Brudd og avvik',
-    description: 'Eget arbeidsområde for registrering, eierskap og lukking av avvikssaker.',
+    description: 'Arbeidsområde for registrering, eierskap og lukking av avvikssaker.',
   },
 ] as const;
 
@@ -45,7 +45,9 @@ function getComplianceSubpageIdFromHash() {
 }
 
 function CompliancePage() {
-  const [activeSubpageId, setActiveSubpageId] = useState(getComplianceSubpageIdFromHash);
+  const [activeSubpageId, setActiveSubpageId] = useState(
+    getComplianceSubpageIdFromHash,
+  );
   const pageData = getCompliancePageData();
 
   useEffect(() => {
@@ -95,11 +97,7 @@ function CompliancePage() {
       ) : null}
 
       {activeSubpageId === 'brudd-og-avvik' ? (
-        <CompliancePlaceholderSection
-          eyebrow="Brudd og avvik"
-          title="Arbeidsområde for avvik"
-          description="Her kommer en egen avviksside med registrering, prioritering og lukking av saker."
-        />
+        <ComplianceIncidentsPageView pageData={pageData} />
       ) : null}
     </div>
   );

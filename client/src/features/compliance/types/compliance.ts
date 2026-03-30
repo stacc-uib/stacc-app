@@ -108,9 +108,34 @@ export type ReportingWorkspaceOverview = {
   validationChecks: ReportingValidationCheck[];
 };
 
+export type IncidentSeverity = 'Lav' | 'Medium' | 'Høy' | 'Kritisk';
+export type IncidentStatus = 'Ny' | 'Under vurdering' | 'Tiltak pågår' | 'Lukket';
+
+export type ComplianceIncident = {
+  id: string;
+  title: string;
+  category: string;
+  severity: IncidentSeverity;
+  status: IncidentStatus;
+  owner: string;
+  relatedEntity: string;
+  detectedDateLabel: string;
+  dueDateLabel: string;
+  summary: string;
+};
+
+export type IncidentOverview = {
+  openIncidents: number;
+  criticalIncidents: number;
+  dueThisWeek: number;
+  closedThisMonth: number;
+  incidents: ComplianceIncident[];
+};
+
 export type CompliancePageData = {
   overview: ComplianceOverviewData;
   investorClassification: InvestorClassificationOverview;
   amlPep: AmlPepOverview;
   reportingWorkspace: ReportingWorkspaceOverview;
+  incidents: IncidentOverview;
 };
