@@ -78,3 +78,29 @@ export type AmlPepOverview = {
   missingDocumentation: number;
   rows: AmlPepFollowUpRow[];
 };
+
+export type ReportingValidationCheck = {
+  id: string;
+  label: string;
+  status: 'ok' | 'warning' | 'critical';
+  detail: string;
+};
+
+export type ReportingWorkspaceRun = {
+  id: string;
+  name: string;
+  periodLabel: string;
+  owner: string;
+  statusLabel: string;
+  statusTone: 'ok' | 'warning' | 'critical' | 'neutral';
+  nextAction: string;
+};
+
+export type ReportingWorkspaceOverview = {
+  readyForSubmission: number;
+  blockedReports: number;
+  openValidationFindings: number;
+  submittedThisQuarter: number;
+  runs: ReportingWorkspaceRun[];
+  validationChecks: ReportingValidationCheck[];
+};

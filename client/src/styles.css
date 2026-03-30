@@ -289,6 +289,11 @@ button {
   background: linear-gradient(180deg, #fff, #fef2f2);
 }
 
+.summary-card--ok {
+  border-color: rgba(22, 163, 74, 0.2);
+  background: linear-gradient(180deg, #fff, #ecfdf5);
+}
+
 .summary-card__label {
   margin: 0;
   color: #6b7280;
@@ -306,6 +311,10 @@ button {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 1rem;
+}
+
+.feature-panel-grid--two-up {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 
 .stack-list {
@@ -435,6 +444,11 @@ button {
 .status-badge--critical {
   background: #fef2f2;
   color: #b91c1c;
+}
+
+.status-badge--neutral {
+  background: #f3f4f6;
+  color: #374151;
 }
 
 @media (max-width: 900px) {

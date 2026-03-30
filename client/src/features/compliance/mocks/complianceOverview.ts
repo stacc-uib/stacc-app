@@ -38,7 +38,7 @@ export const complianceOverviewMock: ComplianceOverviewData = {
     {
       id: 'report-2',
       name: 'Skatterapportering',
-      periodLabel: 'Regnskapsar 2025',
+      periodLabel: 'Regnskapsår 2025',
       status: 'ready-for-review',
     },
     {

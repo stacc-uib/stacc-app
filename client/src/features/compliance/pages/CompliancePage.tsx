@@ -2,10 +2,12 @@ import AmlPepMonitoringSection from '../components/AmlPepMonitoringSection';
 import ComplianceActivityPanel from '../components/ComplianceActivityPanel';
 import ComplianceStatGrid from '../components/ComplianceStatGrid';
 import InvestorClassificationSection from '../components/InvestorClassificationSection';
+import ReportingWorkspaceSection from '../components/ReportingWorkspaceSection';
 import { getAmlPepOverview } from '../lib/getAmlPepOverview';
 import { getComplianceOverviewStats } from '../lib/getComplianceOverviewStats';
 import { getInvestorClassificationOverview } from '../lib/getInvestorClassificationOverview';
 import { complianceOverviewMock } from '../mocks/complianceOverview';
+import { reportingWorkspaceMock } from '../mocks/reportingWorkspace';
 
 function CompliancePage() {
   const stats = getComplianceOverviewStats(complianceOverviewMock);
@@ -22,6 +24,7 @@ function CompliancePage() {
         reportingRuns={complianceOverviewMock.reportingRuns}
         tasks={complianceOverviewMock.tasks}
       />
+      <ReportingWorkspaceSection overview={reportingWorkspaceMock} />
       <AmlPepMonitoringSection overview={amlPepOverview} />
       <InvestorClassificationSection overview={investorClassificationOverview} />
     </div>
