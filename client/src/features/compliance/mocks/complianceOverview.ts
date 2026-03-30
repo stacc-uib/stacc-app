@@ -1,33 +1,6 @@
-import type { ComplianceOverviewData } from '../types/compliance';
+import type { ComplianceOverviewContent } from '../types/compliance';
 
-export const complianceOverviewMock: ComplianceOverviewData = {
-  totalInvestors: 50,
-  professionalInvestors: 43,
-  pepReviewOverdue: 4,
-  missingIndustryClassification: 3,
-  alerts: [
-    {
-      id: 'alert-1',
-      title: 'Forfalte PEP-kontroller',
-      description: '4 investorer trenger ny PEP-kontroll for neste rapporteringssyklus.',
-      status: 'critical',
-      dueLabel: 'Krever handling nå',
-    },
-    {
-      id: 'alert-2',
-      title: 'Mangler bransjeklassifisering',
-      description: '3 investorer mangler fortsatt påkrevd næringsgruppering.',
-      status: 'warning',
-      dueLabel: 'Rapportering til Finanstilsynet',
-    },
-    {
-      id: 'alert-3',
-      title: 'Avstemming av skattedata',
-      description: 'Markedsverdier ved årsslutt er avstemt for alle tre fond.',
-      status: 'ok',
-      dueLabel: 'Fullført denne måneden',
-    },
-  ],
+export const complianceOverviewMock: ComplianceOverviewContent = {
   reportingRuns: [
     {
       id: 'report-1',

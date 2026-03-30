@@ -23,14 +23,17 @@ export type ComplianceTask = {
   status: 'todo' | 'in-progress' | 'done';
 };
 
-export type ComplianceOverviewData = {
+export type ComplianceOverviewContent = {
+  reportingRuns: ReportingRun[];
+  tasks: ComplianceTask[];
+};
+
+export type ComplianceOverviewData = ComplianceOverviewContent & {
   totalInvestors: number;
   professionalInvestors: number;
   pepReviewOverdue: number;
   missingIndustryClassification: number;
   alerts: ComplianceAlert[];
-  reportingRuns: ReportingRun[];
-  tasks: ComplianceTask[];
 };
 
 export type InvestorClassificationStatus =
