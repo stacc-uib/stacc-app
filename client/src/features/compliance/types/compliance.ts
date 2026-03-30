@@ -59,3 +59,22 @@ export type InvestorClassificationOverview = {
   pepReviewOverdue: number;
   rows: InvestorClassificationRow[];
 };
+
+export type AmlPepFollowUpRow = {
+  customerId: string;
+  investorName: string;
+  pepStatus: 'Ja' | 'Nei';
+  amlRiskLevel: 'Lav' | 'Medium' | 'Høy';
+  documentationStatus: 'Komplett' | 'Mangler oppdatering' | 'Mangler dokumentasjon';
+  lastReviewLabel: string;
+  nextReviewLabel: string;
+  reviewStatus: 'Forfalt' | 'Forfaller snart' | 'Planlagt';
+};
+
+export type AmlPepOverview = {
+  overdueReviews: number;
+  dueSoonReviews: number;
+  highRiskInvestors: number;
+  missingDocumentation: number;
+  rows: AmlPepFollowUpRow[];
+};
