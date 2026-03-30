@@ -1,0 +1,3586 @@
+[
+  {
+    "fundName": "Escali Global AS",
+    "date": "2011-12-31",
+    "classA": 835.31,
+    "classB": 835.31,
+    "classC": 835.31
+  },
+  {
+    "fundName": "Escali Global AS",
+    "date": "2012-01-01",
+    "classA": 784.19,
+    "classB": 784.17,
+    "classC": 784.17
+  },
+  {
+    "fundName": "Escali Global AS",
+    "date": "2012-12-31",
+    "classA": 941.18,
+    "classB": 934.1,
+    "classC": 931.74
+  },
+  {
+    "fundName": "Escali Global AS",
+    "date": "2013-01-01",
+    "classA": 784.19,
+    "classB": 778.28,
+    "classC": 776.31
+  },
+  {
+    "fundName": "Escali Global AS",
+    "date": "2013-12-31",
+    "classA": 1160.2,
+    "classB": 1142.77,
+    "classC": 1136.96
+  },
+  {
+    "fundName": "Escali Global AS",
+    "date": "2014-01-01",
+    "classA": 1160.2,
+    "classB": 1142.75,
+    "classC": 1136.93
+  },
+  {
+    "fundName": "Escali Global AS",
+    "date": "2014-01-31",
+    "classA": 1132.31,
+    "classB": 1114.58,
+    "classC": 1108.67
+  },
+  {
+    "fundName": "Escali Global AS",
+    "date": "2014-02-28",
+    "classA": 1185.94,
+    "classB": 1166.69,
+    "classC": 1160.27
+  },
+  {
+    "fundName": "Escali Global AS",
+    "date": "2014-03-31",
+    "classA": 1118.29,
+    "classB": 1099.42,
+    "classC": 1093.14
+  },
+  {
+    "fundName": "Escali Global AS",
+    "date": "2014-04-30",
+    "classA": 1026.06,
+    "classB": 1008.12,
+    "classC": 1002.14
+  },
+  {
+    "fundName": "Escali Global AS",
+    "date": "2014-05-31",
+    "classA": 1167.21,
+    "classB": 1146.06,
+    "classC": 1139.01
+  },
+  {
+    "fundName": "Escali Global AS",
+    "date": "2014-06-30",
+    "classA": 1211.49,
+    "classB": 1188.79,
+    "classC": 1181.22
+  },
+  {
+    "fundName": "Escali Global AS",
+    "date": "2014-07-31",
+    "classA": 1227.56,
+    "classB": 1203.77,
+    "classC": 1195.85
+  },
+  {
+    "fundName": "Escali Global AS",
+    "date": "2014-08-31",
+    "classA": 1226.57,
+    "classB": 1202.02,
+    "classC": 1193.84
+  },
+  {
+    "fundName": "Escali Global AS",
+    "date": "2014-09-30",
+    "classA": 1226.57,
+    "classB": 1201.27,
+    "classC": 1192.83
+  },
+  {
+    "fundName": "Escali Global AS",
+    "date": "2014-10-31",
+    "classA": 1226.57,
+    "classB": 1200.48,
+    "classC": 1191.79
+  },
+  {
+    "fundName": "Escali Global AS",
+    "date": "2014-11-30",
+    "classA": 1354.48,
+    "classB": 1324.84,
+    "classC": 1314.96
+  },
+  {
+    "fundName": "Escali Global AS",
+    "date": "2014-12-31",
+    "classA": 1402.66,
+    "classB": 1371.07,
+    "classC": 1360.54
+  },
+  {
+    "fundName": "Escali Global AS",
+    "date": "2015-01-31",
+    "classA": 1437.57,
+    "classB": 1404.28,
+    "classC": 1393.18
+  },
+  {
+    "fundName": "Escali Global AS",
+    "date": "2015-02-28",
+    "classA": 1465.58,
+    "classB": 1430.8,
+    "classC": 1419.2
+  },
+  {
+    "fundName": "Escali Global AS",
+    "date": "2015-03-31",
+    "classA": 1563.93,
+    "classB": 1525.82,
+    "classC": 1513.11
+  },
+  {
+    "fundName": "Escali Global AS",
+    "date": "2015-04-30",
+    "classA": 1493.49,
+    "classB": 1456.17,
+    "classC": 1443.73
+  },
+  {
+    "fundName": "Escali Global AS",
+    "date": "2015-05-31",
+    "classA": 1546.33,
+    "classB": 1506.71,
+    "classC": 1493.5
+  },
+  {
+    "fundName": "Escali Global AS",
+    "date": "2015-06-30",
+    "classA": 1521.02,
+    "classB": 1481.11,
+    "classC": 1467.81
+  },
+  {
+    "fundName": "Escali Global AS",
+    "date": "2015-07-31",
+    "classA": 1579.31,
+    "classB": 1536.86,
+    "classC": 1522.71
+  },
+  {
+    "fundName": "Escali Global AS",
+    "date": "2015-08-31",
+    "classA": 1500.76,
+    "classB": 1459.47,
+    "classC": 1445.7
+  },
+  {
+    "fundName": "Escali Global AS",
+    "date": "2015-09-30",
+    "classA": 1468.87,
+    "classB": 1427.55,
+    "classC": 1413.78
+  },
+  {
+    "fundName": "Escali Global AS",
+    "date": "2015-10-31",
+    "classA": 1557.48,
+    "classB": 1512.68,
+    "classC": 1497.74
+  },
+  {
+    "fundName": "Escali Global AS",
+    "date": "2015-11-30",
+    "classA": 1576.37,
+    "classB": 1530.05,
+    "classC": 1514.61
+  },
+  {
+    "fundName": "Escali Global AS",
+    "date": "2015-12-31",
+    "classA": 1569.44,
+    "classB": 1522.32,
+    "classC": 1506.62
+  },
+  {
+    "fundName": "Escali Global AS",
+    "date": "2016-01-31",
+    "classA": 1432.57,
+    "classB": 1388.65,
+    "classC": 1374.01
+  },
+  {
+    "fundName": "Escali Global AS",
+    "date": "2016-02-29",
+    "classA": 1416.53,
+    "classB": 1372.26,
+    "classC": 1357.5
+  },
+  {
+    "fundName": "Escali Global AS",
+    "date": "2016-03-31",
+    "classA": 1450.41,
+    "classB": 1404.16,
+    "classC": 1388.74
+  },
+  {
+    "fundName": "Escali Global AS",
+    "date": "2016-04-30",
+    "classA": 1426.41,
+    "classB": 1380.04,
+    "classC": 1364.59
+  },
+  {
+    "fundName": "Escali Global AS",
+    "date": "2016-05-31",
+    "classA": 1483.23,
+    "classB": 1434.07,
+    "classC": 1417.68
+  },
+  {
+    "fundName": "Escali Global AS",
+    "date": "2016-06-30",
+    "classA": 1447.29,
+    "classB": 1398.43,
+    "classC": 1382.14
+  },
+  {
+    "fundName": "Escali Global AS",
+    "date": "2016-07-31",
+    "classA": 1511.4,
+    "classB": 1459.41,
+    "classC": 1442.08
+  },
+  {
+    "fundName": "Escali Global AS",
+    "date": "2016-08-31",
+    "classA": 1522.78,
+    "classB": 1469.43,
+    "classC": 1451.65
+  },
+  {
+    "fundName": "Escali Global AS",
+    "date": "2016-09-30",
+    "classA": 1465.48,
+    "classB": 1413.23,
+    "classC": 1395.82
+  },
+  {
+    "fundName": "Escali Global AS",
+    "date": "2016-10-31",
+    "classA": 1476.94,
+    "classB": 1423.35,
+    "classC": 1405.48
+  },
+  {
+    "fundName": "Escali Global AS",
+    "date": "2016-11-30",
+    "classA": 1507.62,
+    "classB": 1451.98,
+    "classC": 1433.44
+  },
+  {
+    "fundName": "Escali Global AS",
+    "date": "2016-12-31",
+    "classA": 1549.08,
+    "classB": 1490.93,
+    "classC": 1471.54
+  },
+  {
+    "fundName": "Escali Global AS",
+    "date": "2017-01-31",
+    "classA": 1521.93,
+    "classB": 1463.83,
+    "classC": 1444.46
+  },
+  {
+    "fundName": "Escali Global AS",
+    "date": "2017-02-28",
+    "classA": 1571.19,
+    "classB": 1510.3,
+    "classC": 1490
+  },
+  {
+    "fundName": "Escali Global AS",
+    "date": "2017-03-31",
+    "classA": 1661.68,
+    "classB": 1596.23,
+    "classC": 1574.41
+  },
+  {
+    "fundName": "Escali Global AS",
+    "date": "2017-04-30",
+    "classA": 1661.98,
+    "classB": 1595.49,
+    "classC": 1573.33
+  },
+  {
+    "fundName": "Escali Global AS",
+    "date": "2017-05-31",
+    "classA": 1669.39,
+    "classB": 1601.54,
+    "classC": 1578.92
+  },
+  {
+    "fundName": "Escali Global AS",
+    "date": "2017-06-30",
+    "classA": 1625.21,
+    "classB": 1558.15,
+    "classC": 1535.8
+  },
+  {
+    "fundName": "Escali Global AS",
+    "date": "2017-07-31",
+    "classA": 1577.86,
+    "classB": 1511.75,
+    "classC": 1489.72
+  },
+  {
+    "fundName": "Escali Global AS",
+    "date": "2017-08-31",
+    "classA": 1550.81,
+    "classB": 1484.85,
+    "classC": 1462.86
+  },
+  {
+    "fundName": "Escali Global AS",
+    "date": "2017-09-30",
+    "classA": 1603.37,
+    "classB": 1534.18,
+    "classC": 1511.12
+  },
+  {
+    "fundName": "Escali Global AS",
+    "date": "2017-10-31",
+    "classA": 1668.29,
+    "classB": 1595.24,
+    "classC": 1570.89
+  },
+  {
+    "fundName": "Escali Global AS",
+    "date": "2017-11-30",
+    "classA": 1700.63,
+    "classB": 1625.12,
+    "classC": 1599.94
+  },
+  {
+    "fundName": "Escali Global AS",
+    "date": "2017-12-31",
+    "classA": 1713.22,
+    "classB": 1636.05,
+    "classC": 1610.33
+  },
+  {
+    "fundName": "Escali Global AS",
+    "date": "2018-01-31",
+    "classA": 1683.38,
+    "classB": 1606.49,
+    "classC": 1580.86
+  },
+  {
+    "fundName": "Escali Global AS",
+    "date": "2018-02-28",
+    "classA": 1639.19,
+    "classB": 1563.37,
+    "classC": 1538.1
+  },
+  {
+    "fundName": "Escali Global AS",
+    "date": "2018-03-31",
+    "classA": 1627.63,
+    "classB": 1551.31,
+    "classC": 1525.87
+  },
+  {
+    "fundName": "Escali Global AS",
+    "date": "2018-04-30",
+    "classA": 1706.35,
+    "classB": 1625.29,
+    "classC": 1598.27
+  },
+  {
+    "fundName": "Escali Global AS",
+    "date": "2018-05-31",
+    "classA": 1715.22,
+    "classB": 1632.64,
+    "classC": 1605.12
+  },
+  {
+    "fundName": "Escali Global AS",
+    "date": "2018-06-30",
+    "classA": 1628.14,
+    "classB": 1548.75,
+    "classC": 1522.29
+  },
+  {
+    "fundName": "Escali Global AS",
+    "date": "2018-07-31",
+    "classA": 1653.81,
+    "classB": 1572.12,
+    "classC": 1544.89
+  },
+  {
+    "fundName": "Escali Global AS",
+    "date": "2018-08-20",
+    "classA": 1683.45,
+    "classB": 1599.6,
+    "classC": 1571.65
+  },
+  {
+    "fundName": "Escali Global AS",
+    "date": "2018-08-21",
+    "classA": 1653.81,
+    "classB": 1571.4,
+    "classC": 1543.93
+  },
+  {
+    "fundName": "Escali Global AS",
+    "date": "2018-08-31",
+    "classA": 1678.53,
+    "classB": 1594.55,
+    "classC": 1566.55
+  },
+  {
+    "fundName": "Escali Global AS",
+    "date": "2018-09-30",
+    "classA": 1668.37,
+    "classB": 1583.87,
+    "classC": 1555.7
+  },
+  {
+    "fundName": "Escali Global AS",
+    "date": "2018-10-31",
+    "classA": 1593.73,
+    "classB": 1511.99,
+    "classC": 1484.75
+  },
+  {
+    "fundName": "Escali Global AS",
+    "date": "2018-11-30",
+    "classA": 1625.43,
+    "classB": 1541.06,
+    "classC": 1512.94
+  },
+  {
+    "fundName": "Escali Global AS",
+    "date": "2018-12-31",
+    "classA": 1523.93,
+    "classB": 1443.86,
+    "classC": 1417.17
+  },
+  {
+    "fundName": "Escali Global AS",
+    "date": "2019-01-31",
+    "classA": 1595.05,
+    "classB": 1510.23,
+    "classC": 1481.95
+  },
+  {
+    "fundName": "Escali Global AS",
+    "date": "2019-02-28",
+    "classA": 1684.59,
+    "classB": 1594.04,
+    "classC": 1563.85
+  },
+  {
+    "fundName": "Escali Global AS",
+    "date": "2019-03-31",
+    "classA": 1712.69,
+    "classB": 1619.54,
+    "classC": 1588.48
+  },
+  {
+    "fundName": "Escali Global AS",
+    "date": "2019-04-30",
+    "classA": 1765.47,
+    "classB": 1668.36,
+    "classC": 1635.99
+  },
+  {
+    "fundName": "Escali Global AS",
+    "date": "2019-05-31",
+    "classA": 1685.61,
+    "classB": 1591.82,
+    "classC": 1560.55
+  },
+  {
+    "fundName": "Escali Global AS",
+    "date": "2019-06-30",
+    "classA": 1672.66,
+    "classB": 1578.56,
+    "classC": 1547.19
+  },
+  {
+    "fundName": "Escali Global AS",
+    "date": "2019-07-31",
+    "classA": 1743.68,
+    "classB": 1644.47,
+    "classC": 1611.4
+  },
+  {
+    "fundName": "Escali Global AS",
+    "date": "2019-08-31",
+    "classA": 1744.38,
+    "classB": 1644.02,
+    "classC": 1610.56
+  },
+  {
+    "fundName": "Escali Global AS",
+    "date": "2019-09-30",
+    "classA": 1793.19,
+    "classB": 1688.91,
+    "classC": 1654.16
+  },
+  {
+    "fundName": "Escali Global AS",
+    "date": "2019-10-31",
+    "classA": 1844.51,
+    "classB": 1736.08,
+    "classC": 1699.93
+  },
+  {
+    "fundName": "Escali Global AS",
+    "date": "2019-11-30",
+    "classA": 1882.28,
+    "classB": 1770.46,
+    "classC": 1733.19
+  },
+  {
+    "fundName": "Escali Global AS",
+    "date": "2019-12-31",
+    "classA": 1851.04,
+    "classB": 1739.9,
+    "classC": 1702.86
+  },
+  {
+    "fundName": "Escali Global AS",
+    "date": "2020-01-31",
+    "classA": 1856.58,
+    "classB": 1743.93,
+    "classC": 1706.38
+  },
+  {
+    "fundName": "Escali Global AS",
+    "date": "2020-02-29",
+    "classA": 1726.6,
+    "classB": 1620.8,
+    "classC": 1585.54
+  },
+  {
+    "fundName": "Escali Global AS",
+    "date": "2020-03-31",
+    "classA": 1674.46,
+    "classB": 1570.79,
+    "classC": 1536.24
+  },
+  {
+    "fundName": "Escali Global AS",
+    "date": "2020-04-30",
+    "classA": 1771.93,
+    "classB": 1661.14,
+    "classC": 1624.2
+  },
+  {
+    "fundName": "Escali Global AS",
+    "date": "2020-05-31",
+    "classA": 1686.87,
+    "classB": 1580.32,
+    "classC": 1544.8
+  },
+  {
+    "fundName": "Escali Global AS",
+    "date": "2020-06-30",
+    "classA": 1727.57,
+    "classB": 1617.38,
+    "classC": 1580.66
+  },
+  {
+    "fundName": "Escali Global AS",
+    "date": "2020-07-31",
+    "classA": 1708.54,
+    "classB": 1598.48,
+    "classC": 1561.79
+  },
+  {
+    "fundName": "Escali Global AS",
+    "date": "2020-08-31",
+    "classA": 1739.26,
+    "classB": 1626.11,
+    "classC": 1588.4
+  },
+  {
+    "fundName": "Escali Global AS",
+    "date": "2020-09-30",
+    "classA": 1816.85,
+    "classB": 1697.54,
+    "classC": 1657.76
+  },
+  {
+    "fundName": "Escali Global AS",
+    "date": "2020-10-31",
+    "classA": 1812.66,
+    "classB": 1692.47,
+    "classC": 1652.4
+  },
+  {
+    "fundName": "Escali Global AS",
+    "date": "2020-11-30",
+    "classA": 1889.08,
+    "classB": 1762.65,
+    "classC": 1720.51
+  },
+  {
+    "fundName": "Escali Global AS",
+    "date": "2020-12-31",
+    "classA": 1919.75,
+    "classB": 1790.05,
+    "classC": 1746.81
+  },
+  {
+    "fundName": "Escali Global AS",
+    "date": "2021-01-31",
+    "classA": 1937.84,
+    "classB": 1805.68,
+    "classC": 1761.63
+  },
+  {
+    "fundName": "Escali Global AS",
+    "date": "2021-02-28",
+    "classA": 1993.9,
+    "classB": 1856.77,
+    "classC": 1811.06
+  },
+  {
+    "fundName": "Escali Global AS",
+    "date": "2021-03-31",
+    "classA": 2007.04,
+    "classB": 1867.73,
+    "classC": 1821.29
+  },
+  {
+    "fundName": "Escali Global AS",
+    "date": "2021-04-30",
+    "classA": 2021.19,
+    "classB": 1879.65,
+    "classC": 1832.47
+  },
+  {
+    "fundName": "Escali Global AS",
+    "date": "2021-05-31",
+    "classA": 2057.88,
+    "classB": 1912.46,
+    "classC": 1863.99
+  },
+  {
+    "fundName": "Escali Global AS",
+    "date": "2021-06-30",
+    "classA": 2067.88,
+    "classB": 1920.48,
+    "classC": 1871.35
+  },
+  {
+    "fundName": "Escali Global AS",
+    "date": "2021-07-31",
+    "classA": 2133.87,
+    "classB": 1980.41,
+    "classC": 1929.25
+  },
+  {
+    "fundName": "Escali Global AS",
+    "date": "2021-08-31",
+    "classA": 2147.38,
+    "classB": 1991.58,
+    "classC": 1939.64
+  },
+  {
+    "fundName": "Escali Global AS",
+    "date": "2021-09-30",
+    "classA": 2073.63,
+    "classB": 1921.9,
+    "classC": 1871.32
+  },
+  {
+    "fundName": "Escali Global AS",
+    "date": "2021-10-31",
+    "classA": 2100.57,
+    "classB": 1945.53,
+    "classC": 1893.85
+  },
+  {
+    "fundName": "Escali Global AS",
+    "date": "2021-11-30",
+    "classA": 2214.84,
+    "classB": 2050,
+    "classC": 1995.06
+  },
+  {
+    "fundName": "Escali Global AS",
+    "date": "2021-12-31",
+    "classA": 2190.62,
+    "classB": 2026.19,
+    "classC": 1971.38
+  },
+  {
+    "fundName": "Escali Global AS",
+    "date": "2022-01-31",
+    "classA": 2082.23,
+    "classB": 1924.61,
+    "classC": 1872.07
+  },
+  {
+    "fundName": "Escali Global AS",
+    "date": "2022-02-28",
+    "classA": 1983.86,
+    "classB": 1832.54,
+    "classC": 1782.1
+  },
+  {
+    "fundName": "Escali Global AS",
+    "date": "2022-03-31",
+    "classA": 2007.88,
+    "classB": 1853.45,
+    "classC": 1801.98
+  },
+  {
+    "fundName": "Escali Global AS",
+    "date": "2022-04-30",
+    "classA": 1976.22,
+    "classB": 1823.01,
+    "classC": 1771.94
+  },
+  {
+    "fundName": "Escali Global AS",
+    "date": "2022-05-31",
+    "classA": 1973.83,
+    "classB": 1819.55,
+    "classC": 1768.12
+  },
+  {
+    "fundName": "Escali Global AS",
+    "date": "2022-06-30",
+    "classA": 1816.32,
+    "classB": 1673.23,
+    "classC": 1625.53
+  },
+  {
+    "fundName": "Escali Global AS",
+    "date": "2022-07-31",
+    "classA": 1910.89,
+    "classB": 1759.13,
+    "classC": 1708.55
+  },
+  {
+    "fundName": "Escali Global AS",
+    "date": "2022-08-31",
+    "classA": 1897.48,
+    "classB": 1745.58,
+    "classC": 1694.94
+  },
+  {
+    "fundName": "Escali Global AS",
+    "date": "2022-09-30",
+    "classA": 1899.56,
+    "classB": 1746.32,
+    "classC": 1695.24
+  },
+  {
+    "fundName": "Escali Global AS",
+    "date": "2022-10-31",
+    "classA": 1898.87,
+    "classB": 1744.48,
+    "classC": 1693.01
+  },
+  {
+    "fundName": "Escali Global AS",
+    "date": "2022-11-30",
+    "classA": 1927.83,
+    "classB": 1769.89,
+    "classC": 1717.25
+  },
+  {
+    "fundName": "Escali Global AS",
+    "date": "2022-12-31",
+    "classA": 1861.99,
+    "classB": 1708.26,
+    "classC": 1657.02
+  },
+  {
+    "fundName": "Escali Global AS",
+    "date": "2023-01-31",
+    "classA": 2019.33,
+    "classB": 1851.32,
+    "classC": 1795.32
+  },
+  {
+    "fundName": "Escali Global AS",
+    "date": "2023-02-28",
+    "classA": 2035.41,
+    "classB": 1864.9,
+    "classC": 1808.06
+  },
+  {
+    "fundName": "Escali Global AS",
+    "date": "2023-03-31",
+    "classA": 2086.05,
+    "classB": 1909.96,
+    "classC": 1851.27
+  },
+  {
+    "fundName": "Escali Global AS",
+    "date": "2023-04-30",
+    "classA": 2134.05,
+    "classB": 1952.6,
+    "classC": 1892.11
+  },
+  {
+    "fundName": "Escali Global AS",
+    "date": "2023-05-31",
+    "classA": 2184.28,
+    "classB": 1997.17,
+    "classC": 1934.79
+  },
+  {
+    "fundName": "Escali Global AS",
+    "date": "2023-06-30",
+    "classA": 2154.4,
+    "classB": 1968.52,
+    "classC": 1906.56
+  },
+  {
+    "fundName": "Escali Global AS",
+    "date": "2023-07-31",
+    "classA": 2099.4,
+    "classB": 1916.92,
+    "classC": 1856.1
+  },
+  {
+    "fundName": "Escali Global AS",
+    "date": "2023-08-31",
+    "classA": 2126.82,
+    "classB": 1940.61,
+    "classC": 1878.54
+  },
+  {
+    "fundName": "Escali Global AS",
+    "date": "2023-09-30",
+    "classA": 2058.09,
+    "classB": 1876.63,
+    "classC": 1816.14
+  },
+  {
+    "fundName": "Escali Global AS",
+    "date": "2023-10-31",
+    "classA": 2068.65,
+    "classB": 1884.94,
+    "classC": 1823.7
+  },
+  {
+    "fundName": "Escali Global AS",
+    "date": "2023-11-30",
+    "classA": 2126.68,
+    "classB": 1936.5,
+    "classC": 1873.11
+  },
+  {
+    "fundName": "Escali Global AS",
+    "date": "2023-12-31",
+    "classA": 2112.99,
+    "classB": 1922.69,
+    "classC": 1859.26
+  },
+  {
+    "fundName": "Escali Global AS",
+    "date": "2024-01-31",
+    "classA": 2176.9,
+    "classB": 1979.46,
+    "classC": 1913.64
+  },
+  {
+    "fundName": "Escali Global AS",
+    "date": "2024-02-29",
+    "classA": 2272.94,
+    "classB": 2065.43,
+    "classC": 1996.26
+  },
+  {
+    "fundName": "Escali Global AS",
+    "date": "2024-03-31",
+    "classA": 2390.07,
+    "classB": 2170.35,
+    "classC": 2097.11
+  },
+  {
+    "fundName": "Escali Global AS",
+    "date": "2024-04-30",
+    "classA": 2382.6,
+    "classB": 2162.1,
+    "classC": 2088.59
+  },
+  {
+    "fundName": "Escali Global AS",
+    "date": "2024-05-31",
+    "classA": 2306.41,
+    "classB": 2091.49,
+    "classC": 2019.85
+  },
+  {
+    "fundName": "Escali Global AS",
+    "date": "2024-06-30",
+    "classA": 2372.11,
+    "classB": 2149.6,
+    "classC": 2075.43
+  },
+  {
+    "fundName": "Escali Global AS",
+    "date": "2024-07-31",
+    "classA": 2436.5,
+    "classB": 2206.4,
+    "classC": 2129.7
+  },
+  {
+    "fundName": "Escali Global AS",
+    "date": "2024-08-31",
+    "classA": 2409.74,
+    "classB": 2180.63,
+    "classC": 2104.26
+  },
+  {
+    "fundName": "Escali Global AS",
+    "date": "2024-09-30",
+    "classA": 2468.26,
+    "classB": 2232.07,
+    "classC": 2153.34
+  },
+  {
+    "fundName": "Escali Global AS",
+    "date": "2024-10-31",
+    "classA": 2536.22,
+    "classB": 2291.91,
+    "classC": 2210.47
+  },
+  {
+    "fundName": "Escali Global AS",
+    "date": "2024-11-30",
+    "classA": 2639.24,
+    "classB": 2383.38,
+    "classC": 2298.09
+  },
+  {
+    "fundName": "Escali Global AS",
+    "date": "2024-12-31",
+    "classA": 2597.03,
+    "classB": 2343.61,
+    "classC": 2259.13
+  },
+  {
+    "fundName": "Escali Global AS",
+    "date": "2025-01-31",
+    "classA": 2689.9,
+    "classB": 2425.7,
+    "classC": 2337.63
+  },
+  {
+    "fundName": "Escali Global AS",
+    "date": "2025-02-28",
+    "classA": 2625.57,
+    "classB": 2366.18,
+    "classC": 2279.71
+  },
+  {
+    "fundName": "Escali Global AS",
+    "date": "2025-03-31",
+    "classA": 2400.34,
+    "classB": 2161.67,
+    "classC": 2082.11
+  },
+  {
+    "fundName": "Escali Global AS",
+    "date": "2025-04-30",
+    "classA": 2414.23,
+    "classB": 2172.69,
+    "classC": 2092.18
+  },
+  {
+    "fundName": "Escali Global AS",
+    "date": "2025-05-31",
+    "classA": 2429.78,
+    "classB": 2185.14,
+    "classC": 2103.59
+  },
+  {
+    "fundName": "Escali Global AS",
+    "date": "2025-06-30",
+    "classA": 2483.15,
+    "classB": 2231.6,
+    "classC": 2147.75
+  },
+  {
+    "fundName": "Escali Global AS",
+    "date": "2025-07-31",
+    "classA": 2542.45,
+    "classB": 2283.28,
+    "classC": 2196.89
+  },
+  {
+    "fundName": "Escali Global AS",
+    "date": "2025-08-31",
+    "classA": 2550.09,
+    "classB": 2288.51,
+    "classC": 2201.32
+  },
+  {
+    "fundName": "Escali Global AS",
+    "date": "2025-09-30",
+    "classA": 2599.57,
+    "classB": 2331.32,
+    "classC": 2241.9
+  },
+  {
+    "fundName": "Escali Global AS",
+    "date": "2025-10-31",
+    "classA": 2628.41,
+    "classB": 2355.51,
+    "classC": 2264.54
+  },
+  {
+    "fundName": "Escali Global AS",
+    "date": "2025-11-30",
+    "classA": 2665.8,
+    "classB": 2387.37,
+    "classC": 2294.56
+  },
+  {
+    "fundName": "Escali Global AS",
+    "date": "2025-12-31",
+    "classA": 2698.22,
+    "classB": 2414.69,
+    "classC": 2320.17
+  },
+  {
+    "fundName": "Escali Global AS",
+    "date": "2026-01-31",
+    "classA": 2639.04,
+    "classB": 2360.04,
+    "classC": 2267.04
+  },
+  {
+    "fundName": "Escali Kreditt AS",
+    "date": "2012-12-31",
+    "classA": 106902.75,
+    "classB": 106098.78,
+    "classC": 105830.79
+  },
+  {
+    "fundName": "Escali Kreditt AS",
+    "date": "2013-12-31",
+    "classA": 114478.3,
+    "classB": 112758.77,
+    "classC": 112185.6
+  },
+  {
+    "fundName": "Escali Kreditt AS",
+    "date": "2014-01-31",
+    "classA": 116525.16,
+    "classB": 114700.66,
+    "classC": 114092.5
+  },
+  {
+    "fundName": "Escali Kreditt AS",
+    "date": "2014-02-28",
+    "classA": 116586.02,
+    "classB": 114693.49,
+    "classC": 114062.65
+  },
+  {
+    "fundName": "Escali Kreditt AS",
+    "date": "2014-03-31",
+    "classA": 113668.05,
+    "classB": 111750.49,
+    "classC": 111111.3
+  },
+  {
+    "fundName": "Escali Kreditt AS",
+    "date": "2014-04-30",
+    "classA": 117338.79,
+    "classB": 115286.97,
+    "classC": 114603.03
+  },
+  {
+    "fundName": "Escali Kreditt AS",
+    "date": "2014-05-31",
+    "classA": 118537.87,
+    "classB": 116389.57,
+    "classC": 115673.48
+  },
+  {
+    "fundName": "Escali Kreditt AS",
+    "date": "2014-06-30",
+    "classA": 118553.85,
+    "classB": 116332.18,
+    "classC": 115591.63
+  },
+  {
+    "fundName": "Escali Kreditt AS",
+    "date": "2014-07-31",
+    "classA": 118506.18,
+    "classB": 116209.92,
+    "classC": 115444.5
+  },
+  {
+    "fundName": "Escali Kreditt AS",
+    "date": "2014-08-31",
+    "classA": 118233.47,
+    "classB": 115867.18,
+    "classC": 115078.42
+  },
+  {
+    "fundName": "Escali Kreditt AS",
+    "date": "2014-09-30",
+    "classA": 120839,
+    "classB": 118346.07,
+    "classC": 117515.1
+  },
+  {
+    "fundName": "Escali Kreditt AS",
+    "date": "2014-10-31",
+    "classA": 120839,
+    "classB": 118269.1,
+    "classC": 117412.47
+  },
+  {
+    "fundName": "Escali Kreditt AS",
+    "date": "2014-11-30",
+    "classA": 117148.13,
+    "classB": 114584.51,
+    "classC": 113729.97
+  },
+  {
+    "fundName": "Escali Kreditt AS",
+    "date": "2014-12-31",
+    "classA": 114385.14,
+    "classB": 111809.12,
+    "classC": 110950.45
+  },
+  {
+    "fundName": "Escali Kreditt AS",
+    "date": "2015-01-31",
+    "classA": 113659.9,
+    "classB": 111027.82,
+    "classC": 110150.46
+  },
+  {
+    "fundName": "Escali Kreditt AS",
+    "date": "2015-02-28",
+    "classA": 111594.91,
+    "classB": 108946.44,
+    "classC": 108063.62
+  },
+  {
+    "fundName": "Escali Kreditt AS",
+    "date": "2015-03-31",
+    "classA": 111134.15,
+    "classB": 108425.83,
+    "classC": 107523.05
+  },
+  {
+    "fundName": "Escali Kreditt AS",
+    "date": "2015-04-30",
+    "classA": 112086.45,
+    "classB": 109285.82,
+    "classC": 108352.28
+  },
+  {
+    "fundName": "Escali Kreditt AS",
+    "date": "2015-05-31",
+    "classA": 115308.07,
+    "classB": 112353.5,
+    "classC": 111368.64
+  },
+  {
+    "fundName": "Escali Kreditt AS",
+    "date": "2015-06-30",
+    "classA": 112006.32,
+    "classB": 109067.3,
+    "classC": 108087.63
+  },
+  {
+    "fundName": "Escali Kreditt AS",
+    "date": "2015-07-31",
+    "classA": 115856.55,
+    "classB": 112742.71,
+    "classC": 111704.76
+  },
+  {
+    "fundName": "Escali Kreditt AS",
+    "date": "2015-08-31",
+    "classA": 112215.8,
+    "classB": 109128.33,
+    "classC": 108099.17
+  },
+  {
+    "fundName": "Escali Kreditt AS",
+    "date": "2015-09-30",
+    "classA": 108541.83,
+    "classB": 105488.53,
+    "classC": 104470.77
+  },
+  {
+    "fundName": "Escali Kreditt AS",
+    "date": "2015-10-31",
+    "classA": 106582.31,
+    "classB": 103516.24,
+    "classC": 102494.22
+  },
+  {
+    "fundName": "Escali Kreditt AS",
+    "date": "2015-11-30",
+    "classA": 110893.67,
+    "classB": 107635.22,
+    "classC": 106549.07
+  },
+  {
+    "fundName": "Escali Kreditt AS",
+    "date": "2015-12-31",
+    "classA": 109831.17,
+    "classB": 106533.98,
+    "classC": 105434.91
+  },
+  {
+    "fundName": "Escali Kreditt AS",
+    "date": "2016-01-31",
+    "classA": 106960.34,
+    "classB": 103681.2,
+    "classC": 102588.15
+  },
+  {
+    "fundName": "Escali Kreditt AS",
+    "date": "2016-02-29",
+    "classA": 103911.67,
+    "classB": 100664.07,
+    "classC": 99581.54
+  },
+  {
+    "fundName": "Escali Kreditt AS",
+    "date": "2016-03-31",
+    "classA": 106911.06,
+    "classB": 103501.62,
+    "classC": 102365.14
+  },
+  {
+    "fundName": "Escali Kreditt AS",
+    "date": "2016-04-30",
+    "classA": 109027.88,
+    "classB": 105483.73,
+    "classC": 104302.34
+  },
+  {
+    "fundName": "Escali Kreditt AS",
+    "date": "2016-05-31",
+    "classA": 111417.22,
+    "classB": 107724.43,
+    "classC": 106493.49
+  },
+  {
+    "fundName": "Escali Kreditt AS",
+    "date": "2016-06-30",
+    "classA": 110324.08,
+    "classB": 106599.51,
+    "classC": 105357.99
+  },
+  {
+    "fundName": "Escali Kreditt AS",
+    "date": "2016-07-31",
+    "classA": 111068.92,
+    "classB": 107248.45,
+    "classC": 105974.96
+  },
+  {
+    "fundName": "Escali Kreditt AS",
+    "date": "2016-08-31",
+    "classA": 112560.82,
+    "classB": 108617.34,
+    "classC": 107302.84
+  },
+  {
+    "fundName": "Escali Kreditt AS",
+    "date": "2016-09-30",
+    "classA": 113190.7,
+    "classB": 109155.37,
+    "classC": 107810.27
+  },
+  {
+    "fundName": "Escali Kreditt AS",
+    "date": "2016-11-30",
+    "classA": 115105.16,
+    "classB": 110857.31,
+    "classC": 109441.36
+  },
+  {
+    "fundName": "Escali Kreditt AS",
+    "date": "2016-12-31",
+    "classA": 118462.09,
+    "classB": 114014.89,
+    "classC": 112532.49
+  },
+  {
+    "fundName": "Escali Kreditt AS",
+    "date": "2017-01-31",
+    "classA": 121158.7,
+    "classB": 116533.09,
+    "classC": 114991.22
+  },
+  {
+    "fundName": "Escali Kreditt AS",
+    "date": "2017-02-28",
+    "classA": 122713.03,
+    "classB": 117957.48,
+    "classC": 116372.3
+  },
+  {
+    "fundName": "Escali Kreditt AS",
+    "date": "2017-03-31",
+    "classA": 122537.39,
+    "classB": 117710.59,
+    "classC": 116101.66
+  },
+  {
+    "fundName": "Escali Kreditt AS",
+    "date": "2017-04-30",
+    "classA": 123432.42,
+    "classB": 118494.28,
+    "classC": 116848.23
+  },
+  {
+    "fundName": "Escali Kreditt AS",
+    "date": "2017-05-31",
+    "classA": 124810.74,
+    "classB": 119737.95,
+    "classC": 118047.02
+  },
+  {
+    "fundName": "Escali Kreditt AS",
+    "date": "2017-06-30",
+    "classA": 120379.34,
+    "classB": 115412.46,
+    "classC": 113756.83
+  },
+  {
+    "fundName": "Escali Kreditt AS",
+    "date": "2017-07-31",
+    "classA": 121659.12,
+    "classB": 116561.94,
+    "classC": 114862.87
+  },
+  {
+    "fundName": "Escali Kreditt AS",
+    "date": "2017-08-31",
+    "classA": 123994.4,
+    "classB": 118720.39,
+    "classC": 116962.39
+  },
+  {
+    "fundName": "Escali Kreditt AS",
+    "date": "2017-09-30",
+    "classA": 123061.77,
+    "classB": 117751.57,
+    "classC": 115981.5
+  },
+  {
+    "fundName": "Escali Kreditt AS",
+    "date": "2017-10-31",
+    "classA": 124069.99,
+    "classB": 118637.25,
+    "classC": 116826.34
+  },
+  {
+    "fundName": "Escali Kreditt AS",
+    "date": "2017-11-30",
+    "classA": 121626.37,
+    "classB": 116225.66,
+    "classC": 114425.42
+  },
+  {
+    "fundName": "Escali Kreditt AS",
+    "date": "2017-12-31",
+    "classA": 123982.34,
+    "classB": 118398.04,
+    "classC": 116536.61
+  },
+  {
+    "fundName": "Escali Kreditt AS",
+    "date": "2018-01-31",
+    "classA": 124635.51,
+    "classB": 118942.4,
+    "classC": 117044.7
+  },
+  {
+    "fundName": "Escali Kreditt AS",
+    "date": "2018-02-28",
+    "classA": 125964.21,
+    "classB": 120137.93,
+    "classC": 118195.84
+  },
+  {
+    "fundName": "Escali Kreditt AS",
+    "date": "2018-03-31",
+    "classA": 125750.08,
+    "classB": 119853.61,
+    "classC": 117888.12
+  },
+  {
+    "fundName": "Escali Kreditt AS",
+    "date": "2018-04-30",
+    "classA": 123994.94,
+    "classB": 118104.33,
+    "classC": 116140.79
+  },
+  {
+    "fundName": "Escali Kreditt AS",
+    "date": "2018-05-31",
+    "classA": 126127.51,
+    "classB": 120055.25,
+    "classC": 118031.16
+  },
+  {
+    "fundName": "Escali Kreditt AS",
+    "date": "2018-06-30",
+    "classA": 122324.64,
+    "classB": 116360.06,
+    "classC": 114371.86
+  },
+  {
+    "fundName": "Escali Kreditt AS",
+    "date": "2018-07-31",
+    "classA": 122991.68,
+    "classB": 116916.23,
+    "classC": 114891.08
+  },
+  {
+    "fundName": "Escali Kreditt AS",
+    "date": "2018-08-20",
+    "classA": 123999.61,
+    "classB": 117823.41,
+    "classC": 115764.68
+  },
+  {
+    "fundName": "Escali Kreditt AS",
+    "date": "2018-08-21",
+    "classA": 122991.68,
+    "classB": 116863.16,
+    "classC": 114820.31
+  },
+  {
+    "fundName": "Escali Kreditt AS",
+    "date": "2018-08-31",
+    "classA": 122943.68,
+    "classB": 116792.29,
+    "classC": 114741.82
+  },
+  {
+    "fundName": "Escali Kreditt AS",
+    "date": "2018-09-30",
+    "classA": 124156.43,
+    "classB": 117867.82,
+    "classC": 115771.62
+  },
+  {
+    "fundName": "Escali Kreditt AS",
+    "date": "2018-10-31",
+    "classA": 123823.19,
+    "classB": 117472.59,
+    "classC": 115355.72
+  },
+  {
+    "fundName": "Escali Kreditt AS",
+    "date": "2018-11-30",
+    "classA": 122534.18,
+    "classB": 116174.15,
+    "classC": 114054.14
+  },
+  {
+    "fundName": "Escali Kreditt AS",
+    "date": "2018-12-31",
+    "classA": 124420.21,
+    "classB": 117883.04,
+    "classC": 115703.98
+  },
+  {
+    "fundName": "Escali Kreditt AS",
+    "date": "2019-01-31",
+    "classA": 123454.27,
+    "classB": 116889.21,
+    "classC": 114700.85
+  },
+  {
+    "fundName": "Escali Kreditt AS",
+    "date": "2019-02-28",
+    "classA": 124741.92,
+    "classB": 118036.61,
+    "classC": 115801.51
+  },
+  {
+    "fundName": "Escali Kreditt AS",
+    "date": "2019-03-31",
+    "classA": 123475.59,
+    "classB": 116759.7,
+    "classC": 114521.07
+  },
+  {
+    "fundName": "Escali Kreditt AS",
+    "date": "2019-04-30",
+    "classA": 127380.74,
+    "classB": 120373.93,
+    "classC": 118038.32
+  },
+  {
+    "fundName": "Escali Kreditt AS",
+    "date": "2019-05-31",
+    "classA": 128620.01,
+    "classB": 121463.1,
+    "classC": 119077.46
+  },
+  {
+    "fundName": "Escali Kreditt AS",
+    "date": "2019-06-30",
+    "classA": 125610.32,
+    "classB": 118543.45,
+    "classC": 116187.83
+  },
+  {
+    "fundName": "Escali Kreditt AS",
+    "date": "2019-07-31",
+    "classA": 125907.27,
+    "classB": 118743.49,
+    "classC": 116355.57
+  },
+  {
+    "fundName": "Escali Kreditt AS",
+    "date": "2019-08-31",
+    "classA": 125683.75,
+    "classB": 118452.63,
+    "classC": 116042.26
+  },
+  {
+    "fundName": "Escali Kreditt AS",
+    "date": "2019-09-30",
+    "classA": 124571.03,
+    "classB": 117327.14,
+    "classC": 114912.51
+  },
+  {
+    "fundName": "Escali Kreditt AS",
+    "date": "2019-10-31",
+    "classA": 126335.39,
+    "classB": 118908.43,
+    "classC": 116432.77
+  },
+  {
+    "fundName": "Escali Kreditt AS",
+    "date": "2019-11-30",
+    "classA": 127344.44,
+    "classB": 119779.66,
+    "classC": 117258.06
+  },
+  {
+    "fundName": "Escali Kreditt AS",
+    "date": "2019-12-31",
+    "classA": 128838.46,
+    "classB": 121102.86,
+    "classC": 118524.32
+  },
+  {
+    "fundName": "Escali Kreditt AS",
+    "date": "2020-01-31",
+    "classA": 130716.63,
+    "classB": 122785,
+    "classC": 120141.12
+  },
+  {
+    "fundName": "Escali Kreditt AS",
+    "date": "2020-02-29",
+    "classA": 125725.74,
+    "classB": 118022.02,
+    "classC": 115454.12
+  },
+  {
+    "fundName": "Escali Kreditt AS",
+    "date": "2020-03-31",
+    "classA": 107637.25,
+    "classB": 100973.32,
+    "classC": 98752.02
+  },
+  {
+    "fundName": "Escali Kreditt AS",
+    "date": "2020-04-30",
+    "classA": 110020.36,
+    "classB": 103141.07,
+    "classC": 100847.98
+  },
+  {
+    "fundName": "Escali Kreditt AS",
+    "date": "2020-05-31",
+    "classA": 109800.34,
+    "classB": 102864.87,
+    "classC": 100553.05
+  },
+  {
+    "fundName": "Escali Kreditt AS",
+    "date": "2020-06-30",
+    "classA": 112736.59,
+    "classB": 105546.16,
+    "classC": 103149.35
+  },
+  {
+    "fundName": "Escali Kreditt AS",
+    "date": "2020-07-31",
+    "classA": 113179.23,
+    "classB": 105888.47,
+    "classC": 103458.22
+  },
+  {
+    "fundName": "Escali Kreditt AS",
+    "date": "2020-08-31",
+    "classA": 114410.56,
+    "classB": 106967.6,
+    "classC": 104486.62
+  },
+  {
+    "fundName": "Escali Kreditt AS",
+    "date": "2020-09-30",
+    "classA": 113948.71,
+    "classB": 106465.56,
+    "classC": 103971.17
+  },
+  {
+    "fundName": "Escali Kreditt AS",
+    "date": "2020-10-31",
+    "classA": 113530.01,
+    "classB": 106002.04,
+    "classC": 103492.71
+  },
+  {
+    "fundName": "Escali Kreditt AS",
+    "date": "2020-11-30",
+    "classA": 116086.06,
+    "classB": 108317.04,
+    "classC": 105727.37
+  },
+  {
+    "fundName": "Escali Kreditt AS",
+    "date": "2020-12-31",
+    "classA": 117601.16,
+    "classB": 109655.83,
+    "classC": 107007.39
+  },
+  {
+    "fundName": "Escali Kreditt AS",
+    "date": "2021-01-31",
+    "classA": 119151.48,
+    "classB": 111025.51,
+    "classC": 108316.86
+  },
+  {
+    "fundName": "Escali Kreditt AS",
+    "date": "2021-02-28",
+    "classA": 119469.44,
+    "classB": 111253.05,
+    "classC": 108514.26
+  },
+  {
+    "fundName": "Escali Kreditt AS",
+    "date": "2021-03-31",
+    "classA": 120581.24,
+    "classB": 112211.58,
+    "classC": 109421.69
+  },
+  {
+    "fundName": "Escali Kreditt AS",
+    "date": "2021-04-30",
+    "classA": 121416.69,
+    "classB": 112914.2,
+    "classC": 110080.03
+  },
+  {
+    "fundName": "Escali Kreditt AS",
+    "date": "2021-05-31",
+    "classA": 123046.19,
+    "classB": 114351.21,
+    "classC": 111452.88
+  },
+  {
+    "fundName": "Escali Kreditt AS",
+    "date": "2021-06-30",
+    "classA": 116319.63,
+    "classB": 108028.27,
+    "classC": 105264.48
+  },
+  {
+    "fundName": "Escali Kreditt AS",
+    "date": "2021-07-31",
+    "classA": 117404.89,
+    "classB": 108961.39,
+    "classC": 106146.89
+  },
+  {
+    "fundName": "Escali Kreditt AS",
+    "date": "2021-08-31",
+    "classA": 118062.07,
+    "classB": 109496.1,
+    "classC": 106640.78
+  },
+  {
+    "fundName": "Escali Kreditt AS",
+    "date": "2021-09-30",
+    "classA": 119222.49,
+    "classB": 110498.83,
+    "classC": 107590.95
+  },
+  {
+    "fundName": "Escali Kreditt AS",
+    "date": "2021-10-31",
+    "classA": 121146.07,
+    "classB": 112204.49,
+    "classC": 109223.97
+  },
+  {
+    "fundName": "Escali Kreditt AS",
+    "date": "2021-11-30",
+    "classA": 120999.75,
+    "classB": 111994.39,
+    "classC": 108992.6
+  },
+  {
+    "fundName": "Escali Kreditt AS",
+    "date": "2021-12-31",
+    "classA": 123663.56,
+    "classB": 114381.17,
+    "classC": 111287.04
+  },
+  {
+    "fundName": "Escali Kreditt AS",
+    "date": "2022-01-31",
+    "classA": 125249.78,
+    "classB": 115768.54,
+    "classC": 112608.13
+  },
+  {
+    "fundName": "Escali Kreditt AS",
+    "date": "2022-02-28",
+    "classA": 125916.74,
+    "classB": 116312.57,
+    "classC": 113111.18
+  },
+  {
+    "fundName": "Escali Kreditt AS",
+    "date": "2022-03-31",
+    "classA": 126005.39,
+    "classB": 116314.19,
+    "classC": 113083.8
+  },
+  {
+    "fundName": "Escali Kreditt AS",
+    "date": "2022-04-30",
+    "classA": 126498.03,
+    "classB": 116690.97,
+    "classC": 113421.95
+  },
+  {
+    "fundName": "Escali Kreditt AS",
+    "date": "2022-05-31",
+    "classA": 126079.26,
+    "classB": 116224.35,
+    "classC": 112939.38
+  },
+  {
+    "fundName": "Escali Kreditt AS",
+    "date": "2022-06-30",
+    "classA": 116001.96,
+    "classB": 106863.23,
+    "classC": 103816.99
+  },
+  {
+    "fundName": "Escali Kreditt AS",
+    "date": "2022-07-31",
+    "classA": 120177,
+    "classB": 110632.81,
+    "classC": 107451.41
+  },
+  {
+    "fundName": "Escali Kreditt AS",
+    "date": "2022-08-31",
+    "classA": 118985.18,
+    "classB": 109459.85,
+    "classC": 106284.73
+  },
+  {
+    "fundName": "Escali Kreditt AS",
+    "date": "2022-09-30",
+    "classA": 119577.16,
+    "classB": 109930.72,
+    "classC": 106715.24
+  },
+  {
+    "fundName": "Escali Kreditt AS",
+    "date": "2022-10-31",
+    "classA": 118993.31,
+    "classB": 109318.18,
+    "classC": 106093.13
+  },
+  {
+    "fundName": "Escali Kreditt AS",
+    "date": "2022-11-30",
+    "classA": 119872.16,
+    "classB": 110051.67,
+    "classC": 106778.18
+  },
+  {
+    "fundName": "Escali Kreditt AS",
+    "date": "2022-12-31",
+    "classA": 120470.28,
+    "classB": 110524.06,
+    "classC": 107208.65
+  },
+  {
+    "fundName": "Escali Kreditt AS",
+    "date": "2023-01-31",
+    "classA": 122054.53,
+    "classB": 111899.76,
+    "classC": 108514.84
+  },
+  {
+    "fundName": "Escali Kreditt AS",
+    "date": "2023-02-28",
+    "classA": 123024.62,
+    "classB": 112718.36,
+    "classC": 109282.94
+  },
+  {
+    "fundName": "Escali Kreditt AS",
+    "date": "2023-03-31",
+    "classA": 123097.47,
+    "classB": 112706.69,
+    "classC": 109243.1
+  },
+  {
+    "fundName": "Escali Kreditt AS",
+    "date": "2023-04-30",
+    "classA": 123825.55,
+    "classB": 113296.99,
+    "classC": 109787.46
+  },
+  {
+    "fundName": "Escali Kreditt AS",
+    "date": "2023-05-31",
+    "classA": 124257.95,
+    "classB": 113613.47,
+    "classC": 110065.31
+  },
+  {
+    "fundName": "Escali Kreditt AS",
+    "date": "2023-06-30",
+    "classA": 121537.31,
+    "classB": 111050.97,
+    "classC": 107555.52
+  },
+  {
+    "fundName": "Escali Kreditt AS",
+    "date": "2023-07-31",
+    "classA": 122096.68,
+    "classB": 111484.3,
+    "classC": 107946.85
+  },
+  {
+    "fundName": "Escali Kreditt AS",
+    "date": "2023-08-31",
+    "classA": 122556.67,
+    "classB": 111826.25,
+    "classC": 108249.44
+  },
+  {
+    "fundName": "Escali Kreditt AS",
+    "date": "2023-09-30",
+    "classA": 123005.38,
+    "classB": 112159.84,
+    "classC": 108544.67
+  },
+  {
+    "fundName": "Escali Kreditt AS",
+    "date": "2023-10-31",
+    "classA": 122782.1,
+    "classB": 111878.04,
+    "classC": 108243.35
+  },
+  {
+    "fundName": "Escali Kreditt AS",
+    "date": "2023-11-30",
+    "classA": 123524.54,
+    "classB": 112478.4,
+    "classC": 108796.35
+  },
+  {
+    "fundName": "Escali Kreditt AS",
+    "date": "2023-12-31",
+    "classA": 122746.9,
+    "classB": 111692.11,
+    "classC": 108007.18
+  },
+  {
+    "fundName": "Escali Kreditt AS",
+    "date": "2024-01-31",
+    "classA": 123905.44,
+    "classB": 112667.39,
+    "classC": 108921.37
+  },
+  {
+    "fundName": "Escali Kreditt AS",
+    "date": "2024-02-29",
+    "classA": 123606.51,
+    "classB": 112321.91,
+    "classC": 108560.38
+  },
+  {
+    "fundName": "Escali Kreditt AS",
+    "date": "2024-03-31",
+    "classA": 122447.9,
+    "classB": 111191.08,
+    "classC": 107438.81
+  },
+  {
+    "fundName": "Escali Kreditt AS",
+    "date": "2024-04-30",
+    "classA": 123297.92,
+    "classB": 111886.95,
+    "classC": 108083.29
+  },
+  {
+    "fundName": "Escali Kreditt AS",
+    "date": "2024-05-31",
+    "classA": 123976.43,
+    "classB": 112423.69,
+    "classC": 108572.78
+  },
+  {
+    "fundName": "Escali Kreditt AS",
+    "date": "2024-06-30",
+    "classA": 120847.76,
+    "classB": 109512.07,
+    "classC": 105733.51
+  },
+  {
+    "fundName": "Escali Kreditt AS",
+    "date": "2024-07-31",
+    "classA": 121686.08,
+    "classB": 110194.25,
+    "classC": 106363.64
+  },
+  {
+    "fundName": "Escali Kreditt AS",
+    "date": "2024-08-31",
+    "classA": 122790.9,
+    "classB": 111116.51,
+    "classC": 107225.05
+  },
+  {
+    "fundName": "Escali Kreditt AS",
+    "date": "2024-09-30",
+    "classA": 125584.52,
+    "classB": 113567.11,
+    "classC": 109561.31
+  },
+  {
+    "fundName": "Escali Kreditt AS",
+    "date": "2024-10-31",
+    "classA": 126.27,
+    "classB": 114.11,
+    "classC": 110.05
+  },
+  {
+    "fundName": "Escali Kreditt AS",
+    "date": "2024-11-30",
+    "classA": 126.28,
+    "classB": 114.04,
+    "classC": 109.96
+  },
+  {
+    "fundName": "Escali Kreditt AS",
+    "date": "2024-12-31",
+    "classA": 126.48,
+    "classB": 114.14,
+    "classC": 110.02
+  },
+  {
+    "fundName": "Escali Kreditt AS",
+    "date": "2025-01-31",
+    "classA": 127.99,
+    "classB": 115.42,
+    "classC": 111.23
+  },
+  {
+    "fundName": "Escali Kreditt AS",
+    "date": "2025-02-28",
+    "classA": 128.99,
+    "classB": 116.25,
+    "classC": 112
+  },
+  {
+    "fundName": "Escali Kreditt AS",
+    "date": "2025-03-31",
+    "classA": 128.98,
+    "classB": 116.16,
+    "classC": 111.88
+  },
+  {
+    "fundName": "Escali Kreditt AS",
+    "date": "2025-04-30",
+    "classA": 128.24,
+    "classB": 115.41,
+    "classC": 111.13
+  },
+  {
+    "fundName": "Escali Kreditt AS",
+    "date": "2025-05-31",
+    "classA": 127.4,
+    "classB": 114.57,
+    "classC": 110.3
+  },
+  {
+    "fundName": "Escali Kreditt AS",
+    "date": "2025-06-30",
+    "classA": 127,
+    "classB": 114.13,
+    "classC": 109.85
+  },
+  {
+    "fundName": "Escali Kreditt AS",
+    "date": "2025-07-31",
+    "classA": 127.64,
+    "classB": 114.63,
+    "classC": 110.29
+  },
+  {
+    "fundName": "Escali Kreditt AS",
+    "date": "2025-08-31",
+    "classA": 128.33,
+    "classB": 115.17,
+    "classC": 110.78
+  },
+  {
+    "fundName": "Escali Kreditt AS",
+    "date": "2025-09-30",
+    "classA": 129.58,
+    "classB": 116.21,
+    "classC": 111.75
+  },
+  {
+    "fundName": "Escali Kreditt AS",
+    "date": "2025-10-31",
+    "classA": 129.35,
+    "classB": 115.92,
+    "classC": 111.44
+  },
+  {
+    "fundName": "Escali Kreditt AS",
+    "date": "2025-11-30",
+    "classA": 129.71,
+    "classB": 116.16,
+    "classC": 111.65
+  },
+  {
+    "fundName": "Escali Kreditt AS",
+    "date": "2025-12-31",
+    "classA": 127.8,
+    "classB": 114.37,
+    "classC": 109.89
+  },
+  {
+    "fundName": "Escali Norden AS",
+    "date": "2011-12-31",
+    "classA": 1303.89,
+    "classB": 1303.89,
+    "classC": 1303.89
+  },
+  {
+    "fundName": "Escali Norden AS",
+    "date": "2012-01-01",
+    "classA": 1664,
+    "classB": 1663.97,
+    "classC": 1663.95
+  },
+  {
+    "fundName": "Escali Norden AS",
+    "date": "2012-12-31",
+    "classA": 1429.7,
+    "classB": 1418.95,
+    "classC": 1415.36
+  },
+  {
+    "fundName": "Escali Norden AS",
+    "date": "2013-01-01",
+    "classA": 1664,
+    "classB": 1651.45,
+    "classC": 1647.27
+  },
+  {
+    "fundName": "Escali Norden AS",
+    "date": "2013-12-31",
+    "classA": 1955.69,
+    "classB": 1926.31,
+    "classC": 1916.52
+  },
+  {
+    "fundName": "Escali Norden AS",
+    "date": "2014-01-01",
+    "classA": 1955.69,
+    "classB": 1926.27,
+    "classC": 1916.47
+  },
+  {
+    "fundName": "Escali Norden AS",
+    "date": "2014-01-31",
+    "classA": 1944.51,
+    "classB": 1914.06,
+    "classC": 1903.92
+  },
+  {
+    "fundName": "Escali Norden AS",
+    "date": "2014-02-28",
+    "classA": 1967.98,
+    "classB": 1936.03,
+    "classC": 1925.39
+  },
+  {
+    "fundName": "Escali Norden AS",
+    "date": "2014-03-31",
+    "classA": 1957.97,
+    "classB": 1924.94,
+    "classC": 1913.93
+  },
+  {
+    "fundName": "Escali Norden AS",
+    "date": "2014-04-30",
+    "classA": 1963.24,
+    "classB": 1928.91,
+    "classC": 1917.47
+  },
+  {
+    "fundName": "Escali Norden AS",
+    "date": "2014-05-31",
+    "classA": 1994.3,
+    "classB": 1958.16,
+    "classC": 1946.11
+  },
+  {
+    "fundName": "Escali Norden AS",
+    "date": "2014-06-30",
+    "classA": 2079.04,
+    "classB": 2040.08,
+    "classC": 2027.09
+  },
+  {
+    "fundName": "Escali Norden AS",
+    "date": "2014-07-31",
+    "classA": 2055.73,
+    "classB": 2015.9,
+    "classC": 2002.62
+  },
+  {
+    "fundName": "Escali Norden AS",
+    "date": "2014-08-31",
+    "classA": 2051.06,
+    "classB": 2010.01,
+    "classC": 1996.33
+  },
+  {
+    "fundName": "Escali Norden AS",
+    "date": "2014-09-30",
+    "classA": 2051.06,
+    "classB": 2008.75,
+    "classC": 1994.64
+  },
+  {
+    "fundName": "Escali Norden AS",
+    "date": "2014-10-31",
+    "classA": 2037.27,
+    "classB": 1993.94,
+    "classC": 1979.5
+  },
+  {
+    "fundName": "Escali Norden AS",
+    "date": "2014-11-30",
+    "classA": 2106.52,
+    "classB": 2060.42,
+    "classC": 2045.06
+  },
+  {
+    "fundName": "Escali Norden AS",
+    "date": "2014-12-31",
+    "classA": 2176.46,
+    "classB": 2127.44,
+    "classC": 2111.11
+  },
+  {
+    "fundName": "Escali Norden AS",
+    "date": "2015-01-31",
+    "classA": 2214.76,
+    "classB": 2163.47,
+    "classC": 2146.38
+  },
+  {
+    "fundName": "Escali Norden AS",
+    "date": "2015-02-28",
+    "classA": 2234.28,
+    "classB": 2181.25,
+    "classC": 2163.58
+  },
+  {
+    "fundName": "Escali Norden AS",
+    "date": "2015-03-31",
+    "classA": 2330.81,
+    "classB": 2274.01,
+    "classC": 2255.07
+  },
+  {
+    "fundName": "Escali Norden AS",
+    "date": "2015-04-30",
+    "classA": 2346.93,
+    "classB": 2288.29,
+    "classC": 2268.74
+  },
+  {
+    "fundName": "Escali Norden AS",
+    "date": "2015-05-31",
+    "classA": 2406.86,
+    "classB": 2345.19,
+    "classC": 2324.63
+  },
+  {
+    "fundName": "Escali Norden AS",
+    "date": "2015-06-30",
+    "classA": 2347.48,
+    "classB": 2285.88,
+    "classC": 2265.35
+  },
+  {
+    "fundName": "Escali Norden AS",
+    "date": "2015-07-31",
+    "classA": 2425.77,
+    "classB": 2360.57,
+    "classC": 2338.84
+  },
+  {
+    "fundName": "Escali Norden AS",
+    "date": "2015-08-31",
+    "classA": 2308.65,
+    "classB": 2245.13,
+    "classC": 2223.96
+  },
+  {
+    "fundName": "Escali Norden AS",
+    "date": "2015-09-30",
+    "classA": 2280.12,
+    "classB": 2215.98,
+    "classC": 2194.6
+  },
+  {
+    "fundName": "Escali Norden AS",
+    "date": "2015-10-31",
+    "classA": 2344.25,
+    "classB": 2276.81,
+    "classC": 2254.33
+  },
+  {
+    "fundName": "Escali Norden AS",
+    "date": "2015-11-30",
+    "classA": 2402.36,
+    "classB": 2331.77,
+    "classC": 2308.24
+  },
+  {
+    "fundName": "Escali Norden AS",
+    "date": "2015-12-31",
+    "classA": 2390.96,
+    "classB": 2319.18,
+    "classC": 2295.26
+  },
+  {
+    "fundName": "Escali Norden AS",
+    "date": "2016-01-31",
+    "classA": 2190.95,
+    "classB": 2123.78,
+    "classC": 2101.39
+  },
+  {
+    "fundName": "Escali Norden AS",
+    "date": "2016-02-29",
+    "classA": 2216.27,
+    "classB": 2147,
+    "classC": 2123.92
+  },
+  {
+    "fundName": "Escali Norden AS",
+    "date": "2016-03-31",
+    "classA": 2262.08,
+    "classB": 2189.94,
+    "classC": 2165.9
+  },
+  {
+    "fundName": "Escali Norden AS",
+    "date": "2016-04-30",
+    "classA": 2309.7,
+    "classB": 2234.62,
+    "classC": 2209.59
+  },
+  {
+    "fundName": "Escali Norden AS",
+    "date": "2016-05-31",
+    "classA": 2429.32,
+    "classB": 2348.8,
+    "classC": 2321.96
+  },
+  {
+    "fundName": "Escali Norden AS",
+    "date": "2016-06-30",
+    "classA": 2340.52,
+    "classB": 2261.5,
+    "classC": 2235.16
+  },
+  {
+    "fundName": "Escali Norden AS",
+    "date": "2016-07-31",
+    "classA": 2427.67,
+    "classB": 2344.16,
+    "classC": 2316.33
+  },
+  {
+    "fundName": "Escali Norden AS",
+    "date": "2016-08-31",
+    "classA": 2403.66,
+    "classB": 2319.45,
+    "classC": 2291.38
+  },
+  {
+    "fundName": "Escali Norden AS",
+    "date": "2016-09-30",
+    "classA": 2411.38,
+    "classB": 2325.41,
+    "classC": 2296.76
+  },
+  {
+    "fundName": "Escali Norden AS",
+    "date": "2016-10-31",
+    "classA": 2403.87,
+    "classB": 2316.64,
+    "classC": 2287.56
+  },
+  {
+    "fundName": "Escali Norden AS",
+    "date": "2016-11-30",
+    "classA": 2484.12,
+    "classB": 2392.45,
+    "classC": 2361.89
+  },
+  {
+    "fundName": "Escali Norden AS",
+    "date": "2016-12-31",
+    "classA": 2629.34,
+    "classB": 2530.63,
+    "classC": 2497.73
+  },
+  {
+    "fundName": "Escali Norden AS",
+    "date": "2017-01-31",
+    "classA": 2663.4,
+    "classB": 2561.72,
+    "classC": 2527.82
+  },
+  {
+    "fundName": "Escali Norden AS",
+    "date": "2017-02-28",
+    "classA": 2707.58,
+    "classB": 2602.65,
+    "classC": 2567.68
+  },
+  {
+    "fundName": "Escali Norden AS",
+    "date": "2017-03-31",
+    "classA": 2698.88,
+    "classB": 2592.57,
+    "classC": 2557.13
+  },
+  {
+    "fundName": "Escali Norden AS",
+    "date": "2017-04-30",
+    "classA": 2769,
+    "classB": 2658.22,
+    "classC": 2621.29
+  },
+  {
+    "fundName": "Escali Norden AS",
+    "date": "2017-05-31",
+    "classA": 2723.83,
+    "classB": 2613.12,
+    "classC": 2576.22
+  },
+  {
+    "fundName": "Escali Norden AS",
+    "date": "2017-06-30",
+    "classA": 2630.68,
+    "classB": 2522.14,
+    "classC": 2485.96
+  },
+  {
+    "fundName": "Escali Norden AS",
+    "date": "2017-07-31",
+    "classA": 2685.69,
+    "classB": 2573.17,
+    "classC": 2535.66
+  },
+  {
+    "fundName": "Escali Norden AS",
+    "date": "2017-08-31",
+    "classA": 2674.41,
+    "classB": 2560.66,
+    "classC": 2522.74
+  },
+  {
+    "fundName": "Escali Norden AS",
+    "date": "2017-09-30",
+    "classA": 2869,
+    "classB": 2745.2,
+    "classC": 2703.93
+  },
+  {
+    "fundName": "Escali Norden AS",
+    "date": "2017-10-31",
+    "classA": 2945.22,
+    "classB": 2816.26,
+    "classC": 2773.27
+  },
+  {
+    "fundName": "Escali Norden AS",
+    "date": "2017-11-30",
+    "classA": 2856.16,
+    "classB": 2729.33,
+    "classC": 2687.06
+  },
+  {
+    "fundName": "Escali Norden AS",
+    "date": "2017-12-31",
+    "classA": 2954.01,
+    "classB": 2820.96,
+    "classC": 2776.61
+  },
+  {
+    "fundName": "Escali Norden AS",
+    "date": "2018-01-31",
+    "classA": 2974.46,
+    "classB": 2838.59,
+    "classC": 2793.3
+  },
+  {
+    "fundName": "Escali Norden AS",
+    "date": "2018-02-28",
+    "classA": 2921.46,
+    "classB": 2786.33,
+    "classC": 2741.29
+  },
+  {
+    "fundName": "Escali Norden AS",
+    "date": "2018-03-31",
+    "classA": 2782.45,
+    "classB": 2651.98,
+    "classC": 2608.49
+  },
+  {
+    "fundName": "Escali Norden AS",
+    "date": "2018-04-30",
+    "classA": 2945.54,
+    "classB": 2805.61,
+    "classC": 2758.96
+  },
+  {
+    "fundName": "Escali Norden AS",
+    "date": "2018-05-31",
+    "classA": 3002.9,
+    "classB": 2858.33,
+    "classC": 2810.14
+  },
+  {
+    "fundName": "Escali Norden AS",
+    "date": "2018-06-30",
+    "classA": 2932.24,
+    "classB": 2789.26,
+    "classC": 2741.6
+  },
+  {
+    "fundName": "Escali Norden AS",
+    "date": "2018-07-31",
+    "classA": 2960.85,
+    "classB": 2814.59,
+    "classC": 2765.84
+  },
+  {
+    "fundName": "Escali Norden AS",
+    "date": "2018-08-20",
+    "classA": 2942.09,
+    "classB": 2795.55,
+    "classC": 2746.7
+  },
+  {
+    "fundName": "Escali Norden AS",
+    "date": "2018-08-21",
+    "classA": 2960.85,
+    "classB": 2813.31,
+    "classC": 2764.14
+  },
+  {
+    "fundName": "Escali Norden AS",
+    "date": "2018-08-31",
+    "classA": 3037.72,
+    "classB": 2885.73,
+    "classC": 2835.07
+  },
+  {
+    "fundName": "Escali Norden AS",
+    "date": "2018-09-30",
+    "classA": 3072.57,
+    "classB": 2916.94,
+    "classC": 2865.07
+  },
+  {
+    "fundName": "Escali Norden AS",
+    "date": "2018-10-31",
+    "classA": 2700.86,
+    "classB": 2562.34,
+    "classC": 2516.17
+  },
+  {
+    "fundName": "Escali Norden AS",
+    "date": "2018-11-30",
+    "classA": 2500.97,
+    "classB": 2371.16,
+    "classC": 2327.89
+  },
+  {
+    "fundName": "Escali Norden AS",
+    "date": "2018-12-31",
+    "classA": 2229.32,
+    "classB": 2112.19,
+    "classC": 2073.15
+  },
+  {
+    "fundName": "Escali Norden AS",
+    "date": "2019-01-31",
+    "classA": 2410.56,
+    "classB": 2282.37,
+    "classC": 2239.64
+  },
+  {
+    "fundName": "Escali Norden AS",
+    "date": "2019-02-28",
+    "classA": 2499.15,
+    "classB": 2364.81,
+    "classC": 2320.03
+  },
+  {
+    "fundName": "Escali Norden AS",
+    "date": "2019-03-31",
+    "classA": 2523.49,
+    "classB": 2386.24,
+    "classC": 2340.49
+  },
+  {
+    "fundName": "Escali Norden AS",
+    "date": "2019-04-30",
+    "classA": 2624.85,
+    "classB": 2480.47,
+    "classC": 2432.34
+  },
+  {
+    "fundName": "Escali Norden AS",
+    "date": "2019-05-31",
+    "classA": 2405.04,
+    "classB": 2271.21,
+    "classC": 2226.61
+  },
+  {
+    "fundName": "Escali Norden AS",
+    "date": "2019-06-30",
+    "classA": 2335.82,
+    "classB": 2204.41,
+    "classC": 2160.6
+  },
+  {
+    "fundName": "Escali Norden AS",
+    "date": "2019-07-31",
+    "classA": 2335.1,
+    "classB": 2202.24,
+    "classC": 2157.95
+  },
+  {
+    "fundName": "Escali Norden AS",
+    "date": "2019-08-31",
+    "classA": 2262.38,
+    "classB": 2132.22,
+    "classC": 2088.83
+  },
+  {
+    "fundName": "Escali Norden AS",
+    "date": "2019-09-30",
+    "classA": 2353.55,
+    "classB": 2216.69,
+    "classC": 2171.07
+  },
+  {
+    "fundName": "Escali Norden AS",
+    "date": "2019-10-31",
+    "classA": 2420.38,
+    "classB": 2278.09,
+    "classC": 2230.66
+  },
+  {
+    "fundName": "Escali Norden AS",
+    "date": "2019-11-30",
+    "classA": 2486.3,
+    "classB": 2338.6,
+    "classC": 2289.37
+  },
+  {
+    "fundName": "Escali Norden AS",
+    "date": "2019-12-31",
+    "classA": 2596.58,
+    "classB": 2440.68,
+    "classC": 2388.71
+  },
+  {
+    "fundName": "Escali Norden AS",
+    "date": "2020-01-31",
+    "classA": 2539.94,
+    "classB": 2385.82,
+    "classC": 2334.45
+  },
+  {
+    "fundName": "Escali Norden AS",
+    "date": "2020-02-29",
+    "classA": 2278.54,
+    "classB": 2138.92,
+    "classC": 2092.39
+  },
+  {
+    "fundName": "Escali Norden AS",
+    "date": "2020-03-31",
+    "classA": 1989.6,
+    "classB": 1866.42,
+    "classC": 1825.36
+  },
+  {
+    "fundName": "Escali Norden AS",
+    "date": "2020-04-30",
+    "classA": 2209.79,
+    "classB": 2071.62,
+    "classC": 2025.56
+  },
+  {
+    "fundName": "Escali Norden AS",
+    "date": "2020-05-31",
+    "classA": 2240.3,
+    "classB": 2098.79,
+    "classC": 2051.62
+  },
+  {
+    "fundName": "Escali Norden AS",
+    "date": "2020-06-30",
+    "classA": 2326.14,
+    "classB": 2177.78,
+    "classC": 2128.32
+  },
+  {
+    "fundName": "Escali Norden AS",
+    "date": "2020-07-31",
+    "classA": 2425.01,
+    "classB": 2268.8,
+    "classC": 2216.72
+  },
+  {
+    "fundName": "Escali Norden AS",
+    "date": "2020-08-31",
+    "classA": 2501.19,
+    "classB": 2338.48,
+    "classC": 2284.24
+  },
+  {
+    "fundName": "Escali Norden AS",
+    "date": "2020-09-30",
+    "classA": 2581.37,
+    "classB": 2411.85,
+    "classC": 2355.34
+  },
+  {
+    "fundName": "Escali Norden AS",
+    "date": "2020-10-31",
+    "classA": 2586.72,
+    "classB": 2415.2,
+    "classC": 2358.03
+  },
+  {
+    "fundName": "Escali Norden AS",
+    "date": "2020-11-30",
+    "classA": 2924.84,
+    "classB": 2729.1,
+    "classC": 2663.85
+  },
+  {
+    "fundName": "Escali Norden AS",
+    "date": "2020-12-31",
+    "classA": 3307.34,
+    "classB": 3083.89,
+    "classC": 3009.41
+  },
+  {
+    "fundName": "Escali Norden AS",
+    "date": "2021-01-31",
+    "classA": 3419.92,
+    "classB": 3186.69,
+    "classC": 3108.94
+  },
+  {
+    "fundName": "Escali Norden AS",
+    "date": "2021-02-28",
+    "classA": 3482.55,
+    "classB": 3243.04,
+    "classC": 3163.2
+  },
+  {
+    "fundName": "Escali Norden AS",
+    "date": "2021-03-31",
+    "classA": 3448.78,
+    "classB": 3209.4,
+    "classC": 3129.6
+  },
+  {
+    "fundName": "Escali Norden AS",
+    "date": "2021-04-30",
+    "classA": 3494.28,
+    "classB": 3249.58,
+    "classC": 3168.02
+  },
+  {
+    "fundName": "Escali Norden AS",
+    "date": "2021-05-31",
+    "classA": 3437.95,
+    "classB": 3195.01,
+    "classC": 3114.03
+  },
+  {
+    "fundName": "Escali Norden AS",
+    "date": "2021-06-30",
+    "classA": 3336.59,
+    "classB": 3098.76,
+    "classC": 3019.48
+  },
+  {
+    "fundName": "Escali Norden AS",
+    "date": "2021-07-31",
+    "classA": 3420.13,
+    "classB": 3174.16,
+    "classC": 3092.17
+  },
+  {
+    "fundName": "Escali Norden AS",
+    "date": "2021-08-31",
+    "classA": 3510.21,
+    "classB": 3255.53,
+    "classC": 3170.63
+  },
+  {
+    "fundName": "Escali Norden AS",
+    "date": "2021-09-30",
+    "classA": 3482.5,
+    "classB": 3227.68,
+    "classC": 3142.74
+  },
+  {
+    "fundName": "Escali Norden AS",
+    "date": "2021-10-31",
+    "classA": 3439.85,
+    "classB": 3185.96,
+    "classC": 3101.33
+  },
+  {
+    "fundName": "Escali Norden AS",
+    "date": "2021-11-30",
+    "classA": 3451.95,
+    "classB": 3195.04,
+    "classC": 3109.4
+  },
+  {
+    "fundName": "Escali Norden AS",
+    "date": "2021-12-31",
+    "classA": 3375.11,
+    "classB": 3121.77,
+    "classC": 3037.32
+  },
+  {
+    "fundName": "Escali Norden AS",
+    "date": "2022-01-31",
+    "classA": 3162.87,
+    "classB": 2923.45,
+    "classC": 2843.64
+  },
+  {
+    "fundName": "Escali Norden AS",
+    "date": "2022-02-28",
+    "classA": 2972.48,
+    "classB": 2745.76,
+    "classC": 2670.18
+  },
+  {
+    "fundName": "Escali Norden AS",
+    "date": "2022-03-31",
+    "classA": 3089.77,
+    "classB": 2852.13,
+    "classC": 2772.92
+  },
+  {
+    "fundName": "Escali Norden AS",
+    "date": "2022-04-30",
+    "classA": 3092.8,
+    "classB": 2853.02,
+    "classC": 2773.1
+  },
+  {
+    "fundName": "Escali Norden AS",
+    "date": "2022-05-31",
+    "classA": 3184.83,
+    "classB": 2935.89,
+    "classC": 2852.91
+  },
+  {
+    "fundName": "Escali Norden AS",
+    "date": "2022-06-30",
+    "classA": 2796.52,
+    "classB": 2576.21,
+    "classC": 2502.77
+  },
+  {
+    "fundName": "Escali Norden AS",
+    "date": "2022-07-31",
+    "classA": 3026.23,
+    "classB": 2785.89,
+    "classC": 2705.78
+  },
+  {
+    "fundName": "Escali Norden AS",
+    "date": "2022-08-31",
+    "classA": 3014.68,
+    "classB": 2773.34,
+    "classC": 2692.89
+  },
+  {
+    "fundName": "Escali Norden AS",
+    "date": "2022-09-30",
+    "classA": 2772.46,
+    "classB": 2548.8,
+    "classC": 2474.25
+  },
+  {
+    "fundName": "Escali Norden AS",
+    "date": "2022-10-31",
+    "classA": 2990.19,
+    "classB": 2747.06,
+    "classC": 2666.02
+  },
+  {
+    "fundName": "Escali Norden AS",
+    "date": "2022-11-30",
+    "classA": 3055.99,
+    "classB": 2805.63,
+    "classC": 2722.18
+  },
+  {
+    "fundName": "Escali Norden AS",
+    "date": "2022-12-31",
+    "classA": 3088.13,
+    "classB": 2833.17,
+    "classC": 2748.18
+  },
+  {
+    "fundName": "Escali Norden AS",
+    "date": "2023-01-31",
+    "classA": 3222.33,
+    "classB": 2954.24,
+    "classC": 2864.87
+  },
+  {
+    "fundName": "Escali Norden AS",
+    "date": "2023-02-28",
+    "classA": 3452.65,
+    "classB": 3163.41,
+    "classC": 3066.99
+  },
+  {
+    "fundName": "Escali Norden AS",
+    "date": "2023-03-31",
+    "classA": 3354.84,
+    "classB": 3071.65,
+    "classC": 2977.26
+  },
+  {
+    "fundName": "Escali Norden AS",
+    "date": "2023-04-30",
+    "classA": 3418.47,
+    "classB": 3127.81,
+    "classC": 3030.92
+  },
+  {
+    "fundName": "Escali Norden AS",
+    "date": "2023-05-31",
+    "classA": 3369.32,
+    "classB": 3080.69,
+    "classC": 2984.48
+  },
+  {
+    "fundName": "Escali Norden AS",
+    "date": "2023-06-30",
+    "classA": 3296.93,
+    "classB": 3012.47,
+    "classC": 2917.65
+  },
+  {
+    "fundName": "Escali Norden AS",
+    "date": "2023-07-31",
+    "classA": 3342.87,
+    "classB": 3052.32,
+    "classC": 2955.46
+  },
+  {
+    "fundName": "Escali Norden AS",
+    "date": "2023-08-31",
+    "classA": 3363.16,
+    "classB": 3068.7,
+    "classC": 2970.55
+  },
+  {
+    "fundName": "Escali Norden AS",
+    "date": "2023-09-30",
+    "classA": 3398.09,
+    "classB": 3098.48,
+    "classC": 2998.6
+  },
+  {
+    "fundName": "Escali Norden AS",
+    "date": "2023-10-31",
+    "classA": 3448.9,
+    "classB": 3142.61,
+    "classC": 3040.51
+  },
+  {
+    "fundName": "Escali Norden AS",
+    "date": "2023-11-30",
+    "classA": 3427.9,
+    "classB": 3121.36,
+    "classC": 3019.18
+  },
+  {
+    "fundName": "Escali Norden AS",
+    "date": "2023-12-31",
+    "classA": 3488.66,
+    "classB": 3174.47,
+    "classC": 3069.73
+  },
+  {
+    "fundName": "Escali Norden AS",
+    "date": "2024-01-31",
+    "classA": 3546.25,
+    "classB": 3224.61,
+    "classC": 3117.4
+  },
+  {
+    "fundName": "Escali Norden AS",
+    "date": "2024-02-29",
+    "classA": 3613.92,
+    "classB": 3283.99,
+    "classC": 3174.01
+  },
+  {
+    "fundName": "Escali Norden AS",
+    "date": "2024-03-31",
+    "classA": 3840.45,
+    "classB": 3487.39,
+    "classC": 3369.71
+  },
+  {
+    "fundName": "Escali Norden AS",
+    "date": "2024-04-30",
+    "classA": 3923.9,
+    "classB": 3560.75,
+    "classC": 3439.7
+  },
+  {
+    "fundName": "Escali Norden AS",
+    "date": "2024-05-31",
+    "classA": 4123.92,
+    "classB": 3739.63,
+    "classC": 3611.54
+  },
+  {
+    "fundName": "Escali Norden AS",
+    "date": "2024-06-30",
+    "classA": 4051.21,
+    "classB": 3671.2,
+    "classC": 3544.53
+  },
+  {
+    "fundName": "Escali Norden AS",
+    "date": "2024-07-31",
+    "classA": 4160.59,
+    "classB": 3767.67,
+    "classC": 3636.7
+  },
+  {
+    "fundName": "Escali Norden AS",
+    "date": "2024-08-31",
+    "classA": 4010.46,
+    "classB": 3629.16,
+    "classC": 3502.07
+  },
+  {
+    "fundName": "Escali Norden AS",
+    "date": "2024-09-30",
+    "classA": 3858.57,
+    "classB": 3489.34,
+    "classC": 3366.26
+  },
+  {
+    "fundName": "Escali Norden AS",
+    "date": "2024-10-31",
+    "classA": 3839.35,
+    "classB": 3469.51,
+    "classC": 3346.23
+  },
+  {
+    "fundName": "Escali Norden AS",
+    "date": "2024-11-30",
+    "classA": 3785.83,
+    "classB": 3418.81,
+    "classC": 3296.47
+  },
+  {
+    "fundName": "Escali Norden AS",
+    "date": "2024-12-31",
+    "classA": 3641.32,
+    "classB": 3285.99,
+    "classC": 3167.55
+  },
+  {
+    "fundName": "Escali Norden AS",
+    "date": "2025-01-31",
+    "classA": 3757.4,
+    "classB": 3388.35,
+    "classC": 3265.34
+  },
+  {
+    "fundName": "Escali Norden AS",
+    "date": "2025-02-28",
+    "classA": 3725.31,
+    "classB": 3357.27,
+    "classC": 3234.59
+  },
+  {
+    "fundName": "Escali Norden AS",
+    "date": "2025-03-31",
+    "classA": 3442.25,
+    "classB": 3099.98,
+    "classC": 2985.89
+  },
+  {
+    "fundName": "Escali Norden AS",
+    "date": "2025-04-30",
+    "classA": 3387.04,
+    "classB": 3048.17,
+    "classC": 2935.22
+  },
+  {
+    "fundName": "Escali Norden AS",
+    "date": "2025-05-31",
+    "classA": 3513.73,
+    "classB": 3159.95,
+    "classC": 3042.02
+  },
+  {
+    "fundName": "Escali Norden AS",
+    "date": "2025-06-30",
+    "classA": 3616.01,
+    "classB": 3249.7,
+    "classC": 3127.6
+  },
+  {
+    "fundName": "Escali Norden AS",
+    "date": "2025-07-31",
+    "classA": 3607.65,
+    "classB": 3239.89,
+    "classC": 3117.31
+  },
+  {
+    "fundName": "Escali Norden AS",
+    "date": "2025-08-31",
+    "classA": 3702.01,
+    "classB": 3322.28,
+    "classC": 3195.7
+  },
+  {
+    "fundName": "Escali Norden AS",
+    "date": "2025-09-30",
+    "classA": 3668.12,
+    "classB": 3289.6,
+    "classC": 3163.43
+  },
+  {
+    "fundName": "Escali Norden AS",
+    "date": "2025-10-31",
+    "classA": 3832.06,
+    "classB": 3434.18,
+    "classC": 3301.56
+  },
+  {
+    "fundName": "Escali Norden AS",
+    "date": "2025-11-30",
+    "classA": 3776.72,
+    "classB": 3382.26,
+    "classC": 3250.77
+  },
+  {
+    "fundName": "Escali Norden AS",
+    "date": "2025-12-31",
+    "classA": 3969.02,
+    "classB": 3551.95,
+    "classC": 3412.92
+  },
+  {
+    "fundName": "Escali Norden AS",
+    "date": "2026-01-31",
+    "classA": 3948.3,
+    "classB": 3530.89,
+    "classC": 3391.75
+  },
+  {
+    "fundName": null,
+    "date": null,
+    "classA": null,
+    "classB": null,
+    "classC": null
+  },
+  {
+    "fundName": null,
+    "date": null,
+    "classA": null,
+    "classB": null,
+    "classC": null
+  },
+  {
+    "fundName": null,
+    "date": null,
+    "classA": null,
+    "classB": null,
+    "classC": null
+  },
+  {
+    "fundName": null,
+    "date": null,
+    "classA": null,
+    "classB": null,
+    "classC": null
+  },
+  {
+    "fundName": null,
+    "date": null,
+    "classA": null,
+    "classB": null,
+    "classC": null
+  },
+  {
+    "fundName": null,
+    "date": null,
+    "classA": null,
+    "classB": null,
+    "classC": null
+  },
+  {
+    "fundName": null,
+    "date": null,
+    "classA": null,
+    "classB": null,
+    "classC": null
+  },
+  {
+    "fundName": null,
+    "date": null,
+    "classA": null,
+    "classB": null,
+    "classC": null
+  },
+  {
+    "fundName": null,
+    "date": null,
+    "classA": null,
+    "classB": null,
+    "classC": null
+  },
+  {
+    "fundName": null,
+    "date": null,
+    "classA": null,
+    "classB": null,
+    "classC": null
+  },
+  {
+    "fundName": null,
+    "date": null,
+    "classA": null,
+    "classB": null,
+    "classC": null
+  },
+  {
+    "fundName": null,
+    "date": null,
+    "classA": null,
+    "classB": null,
+    "classC": null
+  },
+  {
+    "fundName": null,
+    "date": null,
+    "classA": null,
+    "classB": null,
+    "classC": null
+  },
+  {
+    "fundName": null,
+    "date": null,
+    "classA": null,
+    "classB": null,
+    "classC": null
+  },
+  {
+    "fundName": null,
+    "date": null,
+    "classA": null,
+    "classB": null,
+    "classC": null
+  },
+  {
+    "fundName": null,
+    "date": null,
+    "classA": null,
+    "classB": null,
+    "classC": null
+  },
+  {
+    "fundName": null,
+    "date": null,
+    "classA": null,
+    "classB": null,
+    "classC": null
+  },
+  {
+    "fundName": null,
+    "date": null,
+    "classA": null,
+    "classB": null,
+    "classC": null
+  },
+  {
+    "fundName": null,
+    "date": null,
+    "classA": null,
+    "classB": null,
+    "classC": null
+  },
+  {
+    "fundName": null,
+    "date": null,
+    "classA": null,
+    "classB": null,
+    "classC": null
+  },
+  {
+    "fundName": null,
+    "date": null,
+    "classA": null,
+    "classB": null,
+    "classC": null
+  },
+  {
+    "fundName": null,
+    "date": null,
+    "classA": null,
+    "classB": null,
+    "classC": null
+  },
+  {
+    "fundName": null,
+    "date": null,
+    "classA": null,
+    "classB": null,
+    "classC": null
+  },
+  {
+    "fundName": null,
+    "date": null,
+    "classA": null,
+    "classB": null,
+    "classC": null
+  },
+  {
+    "fundName": null,
+    "date": null,
+    "classA": null,
+    "classB": null,
+    "classC": null
+  },
+  {
+    "fundName": null,
+    "date": null,
+    "classA": null,
+    "classB": null,
+    "classC": null
+  },
+  {
+    "fundName": null,
+    "date": null,
+    "classA": null,
+    "classB": null,
+    "classC": null
+  },
+  {
+    "fundName": null,
+    "date": null,
+    "classA": null,
+    "classB": null,
+    "classC": null
+  },
+  {
+    "fundName": null,
+    "date": null,
+    "classA": null,
+    "classB": null,
+    "classC": null
+  },
+  {
+    "fundName": null,
+    "date": null,
+    "classA": null,
+    "classB": null,
+    "classC": null
+  },
+  {
+    "fundName": null,
+    "date": null,
+    "classA": null,
+    "classB": null,
+    "classC": null
+  },
+  {
+    "fundName": null,
+    "date": null,
+    "classA": null,
+    "classB": null,
+    "classC": null
+  },
+  {
+    "fundName": null,
+    "date": null,
+    "classA": null,
+    "classB": null,
+    "classC": null
+  },
+  {
+    "fundName": null,
+    "date": null,
+    "classA": null,
+    "classB": null,
+    "classC": null
+  },
+  {
+    "fundName": null,
+    "date": null,
+    "classA": null,
+    "classB": null,
+    "classC": null
+  },
+  {
+    "fundName": null,
+    "date": null,
+    "classA": null,
+    "classB": null,
+    "classC": null
+  },
+  {
+    "fundName": null,
+    "date": null,
+    "classA": null,
+    "classB": null,
+    "classC": null
+  },
+  {
+    "fundName": null,
+    "date": null,
+    "classA": null,
+    "classB": null,
+    "classC": null
+  },
+  {
+    "fundName": null,
+    "date": null,
+    "classA": null,
+    "classB": null,
+    "classC": null
+  },
+  {
+    "fundName": null,
+    "date": null,
+    "classA": null,
+    "classB": null,
+    "classC": null
+  },
+  {
+    "fundName": null,
+    "date": null,
+    "classA": null,
+    "classB": null,
+    "classC": null
+  },
+  {
+    "fundName": null,
+    "date": null,
+    "classA": null,
+    "classB": null,
+    "classC": null
+  },
+  {
+    "fundName": null,
+    "date": null,
+    "classA": null,
+    "classB": null,
+    "classC": null
+  },
+  {
+    "fundName": null,
+    "date": null,
+    "classA": null,
+    "classB": null,
+    "classC": null
+  },
+  {
+    "fundName": null,
+    "date": null,
+    "classA": null,
+    "classB": null,
+    "classC": null
+  },
+  {
+    "fundName": null,
+    "date": null,
+    "classA": null,
+    "classB": null,
+    "classC": null
+  },
+  {
+    "fundName": null,
+    "date": null,
+    "classA": null,
+    "classB": null,
+    "classC": null
+  },
+  {
+    "fundName": null,
+    "date": null,
+    "classA": null,
+    "classB": null,
+    "classC": null
+  },
+  {
+    "fundName": null,
+    "date": null,
+    "classA": null,
+    "classB": null,
+    "classC": null
+  },
+  {
+    "fundName": null,
+    "date": null,
+    "classA": null,
+    "classB": null,
+    "classC": null
+  },
+  {
+    "fundName": null,
+    "date": null,
+    "classA": null,
+    "classB": null,
+    "classC": null
+  },
+  {
+    "fundName": null,
+    "date": null,
+    "classA": null,
+    "classB": null,
+    "classC": null
+  },
+  {
+    "fundName": null,
+    "date": null,
+    "classA": null,
+    "classB": null,
+    "classC": null
+  },
+  {
+    "fundName": null,
+    "date": null,
+    "classA": null,
+    "classB": null,
+    "classC": null
+  },
+  {
+    "fundName": null,
+    "date": null,
+    "classA": null,
+    "classB": null,
+    "classC": null
+  },
+  {
+    "fundName": null,
+    "date": null,
+    "classA": null,
+    "classB": null,
+    "classC": null
+  },
+  {
+    "fundName": null,
+    "date": null,
+    "classA": null,
+    "classB": null,
+    "classC": null
+  },
+  {
+    "fundName": null,
+    "date": null,
+    "classA": null,
+    "classB": null,
+    "classC": null
+  },
+  {
+    "fundName": null,
+    "date": null,
+    "classA": null,
+    "classB": null,
+    "classC": null
+  }
+]

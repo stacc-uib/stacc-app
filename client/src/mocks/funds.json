@@ -1,0 +1,32 @@
+[
+  {
+    "name": "Escali Global AS",
+    "shareClasses": [
+      "Escali Global AS - Klasse A",
+      "Escali Global AS - Klasse B",
+      "Escali Global AS - Klasse C"
+    ],
+    "tradeCount": 573,
+    "latestPriceDate": "2026-01-31"
+  },
+  {
+    "name": "Escali Kreditt AS",
+    "shareClasses": [
+      "Escali Kreditt AS - Klasse A",
+      "Escali Kreditt AS - Klasse B",
+      "Escali Kreditt AS - Klasse C"
+    ],
+    "tradeCount": 390,
+    "latestPriceDate": "2025-12-31"
+  },
+  {
+    "name": "Escali Norden AS",
+    "shareClasses": [
+      "Escali Norden AS - Klasse A",
+      "Escali Norden AS - Klasse B",
+      "Escali Norden AS - Klasse C"
+    ],
+    "tradeCount": 538,
+    "latestPriceDate": "2026-01-31"
+  }
+]
