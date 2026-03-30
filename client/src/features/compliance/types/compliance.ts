@@ -132,10 +132,26 @@ export type IncidentOverview = {
   incidents: ComplianceIncident[];
 };
 
+export type ComplianceCalendarCategory = 'finanstilsynet' | 'skatt' | 'pep';
+
+export type ComplianceCalendarEvent = {
+  id: string;
+  title: string;
+  category: ComplianceCalendarCategory;
+  date: string;
+  dateLabel: string;
+  summary: string;
+};
+
+export type ComplianceCalendarOverview = {
+  events: ComplianceCalendarEvent[];
+};
+
 export type CompliancePageData = {
   overview: ComplianceOverviewData;
   investorClassification: InvestorClassificationOverview;
   amlPep: AmlPepOverview;
   reportingWorkspace: ReportingWorkspaceOverview;
   incidents: IncidentOverview;
+  calendar: ComplianceCalendarOverview;
 };

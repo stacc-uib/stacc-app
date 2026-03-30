@@ -447,16 +447,31 @@ button {
   gap: 1rem;
 }
 
+.stack-card__row--dense {
+  align-items: center;
+  justify-content: flex-start;
+  gap: 0.5rem;
+}
+
 .stack-card__title {
   margin: 0;
   font-size: 1rem;
   color: #111827;
 }
 
+.stack-card__title--spaced {
+  margin-top: 0.7rem;
+}
+
 .stack-card__meta {
   color: #6b7280;
   font-size: 0.85rem;
   white-space: nowrap;
+}
+
+.stack-card__meta--strong {
+  color: #111827;
+  font-weight: 700;
 }
 
 .stack-card__body {
@@ -573,6 +588,136 @@ button {
 .status-badge--neutral {
   background: #f3f4f6;
   color: #374151;
+}
+
+.feature-section--calendar .feature-section__surface {
+  border-top: 4px solid #0f766e;
+}
+
+.calendar-card {
+  padding: 1.25rem;
+  border: 1px solid rgba(17, 24, 39, 0.08);
+  border-radius: 1.25rem;
+  background: rgba(255, 255, 255, 0.95);
+}
+
+.calendar-card__header {
+  display: grid;
+  grid-template-columns: 44px 1fr 44px;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.calendar-card__title {
+  margin: 0;
+  text-align: center;
+  font-size: 1.35rem;
+  color: #111827;
+}
+
+.calendar-card__nav {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border: 1px solid rgba(17, 24, 39, 0.12);
+  border-radius: 0.85rem;
+  background: #fff;
+  color: #111827;
+  cursor: pointer;
+}
+
+.calendar-card__nav:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+
+.calendar-grid {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 0.55rem;
+}
+
+.calendar-grid__weekday {
+  padding: 0.35rem 0;
+  color: #6b7280;
+  font-size: 0.88rem;
+  font-weight: 700;
+  text-align: center;
+}
+
+.calendar-grid__cell {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 48px;
+}
+
+.calendar-grid__cell--empty {
+  min-height: 48px;
+}
+
+.calendar-day {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 40px;
+  min-height: 34px;
+  padding: 0.35rem 0.7rem;
+  border-radius: 0.8rem;
+  color: #111827;
+}
+
+.calendar-day--finanstilsynet {
+  background: #dbeafe;
+  color: #1d4ed8;
+  font-weight: 700;
+}
+
+.calendar-day--skatt {
+  background: #dcfce7;
+  color: #15803d;
+  font-weight: 700;
+}
+
+.calendar-day--pep {
+  background: #fef3c7;
+  color: #b45309;
+  font-weight: 700;
+}
+
+.calendar-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.25rem;
+  margin-top: 1.2rem;
+}
+
+.calendar-legend__item {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+  color: #374151;
+}
+
+.calendar-legend__dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 999px;
+}
+
+.calendar-legend__dot--finanstilsynet {
+  background: #2563eb;
+}
+
+.calendar-legend__dot--skatt {
+  background: #16a34a;
+}
+
+.calendar-legend__dot--pep {
+  background: #eab308;
 }
 
 @media (max-width: 900px) {
