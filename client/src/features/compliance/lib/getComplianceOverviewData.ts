@@ -20,20 +20,23 @@ export function getComplianceOverviewData(): ComplianceOverviewData {
       {
         id: 'alert-1',
         title: 'Forfalte PEP-kontroller',
-        description: `${formatInvestorCount(
+        description: formatInvestorCount(
           amlPepOverview.overdueReviews,
           'investorer trenger ny PEP-kontroll før neste rapporteringssyklus.',
-        )}`,
+        ),
         status: amlPepOverview.overdueReviews > 0 ? 'critical' : 'ok',
-        dueLabel: amlPepOverview.overdueReviews > 0 ? 'Krever handling nå' : 'Ingen forfalte kontroller',
+        dueLabel:
+          amlPepOverview.overdueReviews > 0
+            ? 'Krever handling nå'
+            : 'Ingen forfalte kontroller',
       },
       {
         id: 'alert-2',
         title: 'Mangler bransjeklassifisering',
-        description: `${formatInvestorCount(
+        description: formatInvestorCount(
           investorClassificationOverview.missingIndustryGroup,
           'investorer mangler fortsatt påkrevd næringsgruppering.',
-        )}`,
+        ),
         status:
           investorClassificationOverview.missingIndustryGroup > 0 ? 'warning' : 'ok',
         dueLabel:

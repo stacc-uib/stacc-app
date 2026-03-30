@@ -3,17 +3,12 @@ import ComplianceActivityPanel from '../components/ComplianceActivityPanel';
 import ComplianceStatGrid from '../components/ComplianceStatGrid';
 import InvestorClassificationSection from '../components/InvestorClassificationSection';
 import ReportingWorkspaceSection from '../components/ReportingWorkspaceSection';
-import { getAmlPepOverview } from '../lib/getAmlPepOverview';
-import { getComplianceOverviewData } from '../lib/getComplianceOverviewData';
 import { getComplianceOverviewStats } from '../lib/getComplianceOverviewStats';
-import { getInvestorClassificationOverview } from '../lib/getInvestorClassificationOverview';
-import { reportingWorkspaceMock } from '../mocks/reportingWorkspace';
+import { getCompliancePageData } from '../lib/getCompliancePageData';
 
 function CompliancePage() {
-  const complianceOverview = getComplianceOverviewData();
-  const stats = getComplianceOverviewStats(complianceOverview);
-  const investorClassificationOverview = getInvestorClassificationOverview();
-  const amlPepOverview = getAmlPepOverview();
+  const pageData = getCompliancePageData();
+  const stats = getComplianceOverviewStats(pageData.overview);
 
   return (
     <div className="content-card">
@@ -21,13 +16,13 @@ function CompliancePage() {
       <h1>Compliance</h1>
       <ComplianceStatGrid stats={stats} />
       <ComplianceActivityPanel
-        alerts={complianceOverview.alerts}
-        reportingRuns={complianceOverview.reportingRuns}
-        tasks={complianceOverview.tasks}
+        alerts={pageData.overview.alerts}
+        reportingRuns={pageData.overview.reportingRuns}
+        tasks={pageData.overview.tasks}
       />
-      <ReportingWorkspaceSection overview={reportingWorkspaceMock} />
-      <AmlPepMonitoringSection overview={amlPepOverview} />
-      <InvestorClassificationSection overview={investorClassificationOverview} />
+      <ReportingWorkspaceSection overview={pageData.reportingWorkspace} />
+      <AmlPepMonitoringSection overview={pageData.amlPep} />
+      <InvestorClassificationSection overview={pageData.investorClassification} />
     </div>
   );
 }

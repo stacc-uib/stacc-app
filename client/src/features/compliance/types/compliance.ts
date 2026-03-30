@@ -107,3 +107,10 @@ export type ReportingWorkspaceOverview = {
   runs: ReportingWorkspaceRun[];
   validationChecks: ReportingValidationCheck[];
 };
+
+export type CompliancePageData = {
+  overview: ComplianceOverviewData;
+  investorClassification: InvestorClassificationOverview;
+  amlPep: AmlPepOverview;
+  reportingWorkspace: ReportingWorkspaceOverview;
+};
