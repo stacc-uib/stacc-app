@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import ComplianceAmlPepView from '../components/ComplianceAmlPepView';
 import ComplianceClassificationView from '../components/ComplianceClassificationView';
 import ComplianceOverviewView from '../components/ComplianceOverviewView';
@@ -35,9 +35,34 @@ const complianceSubnavItems = [
   },
 ] as const;
 
+function getComplianceSubpageIdFromHash() {
+  const hash = window.location.hash.replace(/^#/, '');
+  const [, subpageId] = hash.split('/');
+
+  return complianceSubnavItems.some((item) => item.id === subpageId)
+    ? subpageId
+    : 'oversikt';
+}
+
 function CompliancePage() {
-  const [activeSubpageId, setActiveSubpageId] = useState('oversikt');
+  const [activeSubpageId, setActiveSubpageId] = useState(getComplianceSubpageIdFromHash);
   const pageData = getCompliancePageData();
+
+  useEffect(() => {
+    const handleHashChange = () => {
+      setActiveSubpageId(getComplianceSubpageIdFromHash());
+    };
+
+    window.addEventListener('hashchange', handleHashChange);
+
+    return () => {
+      window.removeEventListener('hashchange', handleHashChange);
+    };
+  }, []);
+
+  function handleSubpageSelect(nextSubpageId: string) {
+    window.location.hash = `#rapporter/${nextSubpageId}`;
+  }
 
   return (
     <div className="content-card">
@@ -50,7 +75,7 @@ function CompliancePage() {
       <ComplianceSubnav
         items={[...complianceSubnavItems]}
         activeItemId={activeSubpageId}
-        onSelect={setActiveSubpageId}
+        onSelect={handleSubpageSelect}
       />
 
       {activeSubpageId === 'oversikt' ? (
