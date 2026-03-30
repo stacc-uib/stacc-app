@@ -1,28 +1,81 @@
-import AmlPepMonitoringSection from '../components/AmlPepMonitoringSection';
-import ComplianceActivityPanel from '../components/ComplianceActivityPanel';
-import ComplianceStatGrid from '../components/ComplianceStatGrid';
-import InvestorClassificationSection from '../components/InvestorClassificationSection';
-import ReportingWorkspaceSection from '../components/ReportingWorkspaceSection';
-import { getComplianceOverviewStats } from '../lib/getComplianceOverviewStats';
+import { useState } from 'react';
+import ComplianceAmlPepView from '../components/ComplianceAmlPepView';
+import ComplianceClassificationView from '../components/ComplianceClassificationView';
+import ComplianceOverviewView from '../components/ComplianceOverviewView';
+import CompliancePlaceholderSection from '../components/CompliancePlaceholderSection';
+import ComplianceReportingView from '../components/ComplianceReportingView';
+import ComplianceSubnav from '../components/ComplianceSubnav';
 import { getCompliancePageData } from '../lib/getCompliancePageData';
 
+const complianceSubnavItems = [
+  {
+    id: 'oversikt',
+    label: 'Oversikt',
+    description: 'Samlet startside for CCO med nøkkeltall, varsler og oppgaver.',
+  },
+  {
+    id: 'rapportering',
+    label: 'Rapportering',
+    description: 'Status for rapporteringsløp, valideringsfunn og neste steg før innsending.',
+  },
+  {
+    id: 'aml-pep',
+    label: 'AML og PEP',
+    description: 'Oppfølging av risikonivå, dokumentasjon og kommende eller forfalte kontroller.',
+  },
+  {
+    id: 'klassifisering',
+    label: 'Investorstatus',
+    description: 'Kontroll på investorstatus, næringsgrupper og viktige avvik i kunderegisteret.',
+  },
+  {
+    id: 'brudd-og-avvik',
+    label: 'Brudd og avvik',
+    description: 'Eget arbeidsområde for registrering, eierskap og lukking av avvikssaker.',
+  },
+] as const;
+
 function CompliancePage() {
+  const [activeSubpageId, setActiveSubpageId] = useState('oversikt');
   const pageData = getCompliancePageData();
-  const stats = getComplianceOverviewStats(pageData.overview);
 
   return (
     <div className="content-card">
       <p className="content-card__eyebrow">Rapporter og compliance</p>
       <h1>Compliance</h1>
-      <ComplianceStatGrid stats={stats} />
-      <ComplianceActivityPanel
-        alerts={pageData.overview.alerts}
-        reportingRuns={pageData.overview.reportingRuns}
-        tasks={pageData.overview.tasks}
+      <p className="content-card__description">
+        CCO området for oversikt, rapportering og kontroll.
+      </p>
+
+      <ComplianceSubnav
+        items={[...complianceSubnavItems]}
+        activeItemId={activeSubpageId}
+        onSelect={setActiveSubpageId}
       />
-      <ReportingWorkspaceSection overview={pageData.reportingWorkspace} />
-      <AmlPepMonitoringSection overview={pageData.amlPep} />
-      <InvestorClassificationSection overview={pageData.investorClassification} />
+
+      {activeSubpageId === 'oversikt' ? (
+        <ComplianceOverviewView pageData={pageData} />
+      ) : null}
+
+      {activeSubpageId === 'rapportering' ? (
+        <ComplianceReportingView pageData={pageData} />
+      ) : null}
+
+      {activeSubpageId === 'aml-pep' ? (
+        <ComplianceAmlPepView pageData={pageData} />
+      ) : null}
+
+      {activeSubpageId === 'klassifisering' ? (
+        <ComplianceClassificationView pageData={pageData} />
+      ) : null}
+
+      {activeSubpageId === 'brudd-og-avvik' ? (
+        <CompliancePlaceholderSection
+          eyebrow="Brudd og avvik"
+          title="Arbeidsområde for avvik"
+          description="Her kommer en egen avviksside med registrering, prioritering og lukking av saker."
+        />
+      ) : null}
     </div>
   );
 }
