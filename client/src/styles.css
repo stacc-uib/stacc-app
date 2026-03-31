@@ -1231,9 +1231,13 @@ textarea {
 
 .trade-picker {
   position: relative;
+  width: 100%;
 }
 
 .trade-picker input {
+  display: block;
+  width: 100%;
+  min-width: 0;
   padding-right: 2.2rem;
 }
 
