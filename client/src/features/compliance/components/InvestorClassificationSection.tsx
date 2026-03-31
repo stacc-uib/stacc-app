@@ -214,44 +214,48 @@ function InvestorClassificationSection({
       <div className="feature-section__surface">
         <div className="feature-section__header">
           <div>
+            <p className="feature-section__eyebrow">Investorregister</p>
             <h2 className="feature-section__title">Investorregister</h2>
+            <p className="feature-section__description">
+              Faa oversikt over klassifisering, datamangler og PEP-oppfolging i ett
+              arbeidsflate.
+            </p>
           </div>
         </div>
 
-        <div className="row g-3">
+        <div className="row g-3 compliance-registry__summary-grid">
           <div className="col-12 col-md-6 col-xl-3">
-            <article className="summary-card h-100">
+            <article className="summary-card compliance-registry__summary-card h-100">
               <p className="summary-card__label">Investorer i registeret</p>
               <p className="summary-card__value">{rows.length}</p>
             </article>
           </div>
           <div className="col-12 col-md-6 col-xl-3">
-            <article className="summary-card summary-card--warning h-100">
+            <article className="summary-card summary-card--warning compliance-registry__summary-card h-100">
               <p className="summary-card__label">Mangler opplysninger</p>
               <p className="summary-card__value">{missingDataCount}</p>
             </article>
           </div>
           <div className="col-12 col-md-6 col-xl-3">
-            <article className="summary-card summary-card--warning h-100">
+            <article className="summary-card summary-card--warning compliance-registry__summary-card h-100">
               <p className="summary-card__label">PEP-oppfolging</p>
               <p className="summary-card__value">{pepFollowUpCount}</p>
             </article>
           </div>
           <div className="col-12 col-md-6 col-xl-3">
-            <article className="summary-card summary-card--ok h-100">
+            <article className="summary-card summary-card--ok compliance-registry__summary-card h-100">
               <p className="summary-card__label">Klar for rapportering</p>
               <p className="summary-card__value">{reportingReadyCount}</p>
             </article>
           </div>
         </div>
 
-        <div className="data-table-card">
+        <div className="data-table-card compliance-registry__table-card">
           <div className="data-table-card__header compliance-registry__header">
             <div>
               <h3 className="data-table-card__title">Investorregister</h3>
               <p className="data-table-card__description">
                 Oversikt over alle investorer, deres klassifisering og compliance-status
-
               </p>
             </div>
 
@@ -266,23 +270,29 @@ function InvestorClassificationSection({
             </label>
           </div>
 
-          <div className="queue-filter-row">
-            {filterOptions.map((option) => (
-              <button
-                key={option.id}
-                type="button"
-                className={`queue-filter${
-                  option.id === activeFilter ? ' queue-filter--active' : ''
-                }`}
-                onClick={() => setActiveFilter(option.id)}
-              >
-                {option.label}
-              </button>
-            ))}
+          <div className="compliance-registry__toolbar">
+            <div className="queue-filter-row compliance-registry__filters">
+              {filterOptions.map((option) => (
+                <button
+                  key={option.id}
+                  type="button"
+                  className={`queue-filter compliance-registry__filter${
+                    option.id === activeFilter ? ' queue-filter--active' : ''
+                  }`}
+                  onClick={() => setActiveFilter(option.id)}
+                >
+                  {option.label}
+                </button>
+              ))}
+            </div>
+
+            <p className="compliance-registry__results">
+              Viser {visibleRows.length} av {rows.length} investorer
+            </p>
           </div>
 
-          <div className="table-responsive table-scroll">
-            <table className="data-table data-table--wide-first-column table align-middle mb-0">
+          <div className="table-responsive table-scroll compliance-registry__table-scroll">
+            <table className="data-table data-table--wide-first-column table align-middle mb-0 compliance-registry__table">
               <thead>
                 <tr>
                   <th>Investor</th>
