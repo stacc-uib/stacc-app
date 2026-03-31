@@ -1072,6 +1072,25 @@ textarea {
 .compliance-registry__table-scroll {
   margin: 0 -0.2rem -0.2rem;
   padding: 0 0.2rem 0.2rem;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scrollbar-gutter: stable both-edges;
+}
+
+.compliance-registry__table {
+  min-width: 1180px;
+}
+
+.compliance-registry__table th,
+.compliance-registry__table td {
+  white-space: nowrap;
+  overflow-wrap: normal;
+  word-break: keep-all;
+}
+
+.compliance-registry__table .table-primary-cell,
+.compliance-registry__table .compliance-registry__tag-list {
+  min-width: max-content;
 }
 
 .compliance-registry__table thead th {
