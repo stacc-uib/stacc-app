@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { getTradeRegistrationData } from '../lib/getTradeRegistrationData';
 import type { TradeDirection, TradeSettlementStatus } from '../types/trades';
 
@@ -55,8 +55,10 @@ function isQuarterStart(dateString: string) {
 
 function TradesPage() {
   const tradeData = useMemo(() => getTradeRegistrationData(), []);
-  const [searchQuery, setSearchQuery] = useState('');
+  const investorPickerRef = useRef<HTMLDivElement | null>(null);
+  const [investorQuery, setInvestorQuery] = useState('');
   const [selectedInvestorId, setSelectedInvestorId] = useState('');
+  const [isInvestorPickerOpen, setIsInvestorPickerOpen] = useState(false);
   const [direction, setDirection] = useState<TradeDirection>('kjop');
   const [selectedFundId, setSelectedFundId] = useState('escali-global');
   const [selectedClassId, setSelectedClassId] = useState<'A' | 'B' | 'C'>('C');
@@ -70,7 +72,7 @@ function TradesPage() {
   const [lastActionMessage, setLastActionMessage] = useState('');
 
   const filteredInvestors = useMemo(() => {
-    const normalizedQuery = searchQuery.trim().toLowerCase();
+    const normalizedQuery = investorQuery.trim().toLowerCase();
 
     return tradeData.investors.filter((investor) => {
       if (!normalizedQuery) {
@@ -84,7 +86,7 @@ function TradesPage() {
         investor.investorCategory,
       ].some((value) => value.toLowerCase().includes(normalizedQuery));
     });
-  }, [searchQuery, tradeData.investors]);
+  }, [investorQuery, tradeData.investors]);
 
   const selectedInvestor = useMemo(
     () => tradeData.investors.find((investor) => investor.customerId === selectedInvestorId) ?? null,
@@ -155,7 +157,15 @@ function TradesPage() {
     }
 
     return messages;
-  }, [amountValue, direction, selectedClass.minimumSubscriptionAmount, selectedHolding?.units, selectedInvestor, tradeDate, unitsValue]);
+  }, [
+    amountValue,
+    direction,
+    selectedClass.minimumSubscriptionAmount,
+    selectedHolding?.units,
+    selectedInvestor,
+    tradeDate,
+    unitsValue,
+  ]);
 
   const canSubmit =
     Boolean(selectedInvestor) &&
@@ -196,6 +206,24 @@ function TradesPage() {
     setUnitsInput(formatEditableNumber(suggestedUnits, 2));
     setAmountInput(formatEditableNumber(suggestedUnits * selectedClass.latestPrice, 0));
   }, [direction, selectedClass, selectedHolding, selectedInvestor]);
+
+  useEffect(() => {
+    function handlePointerDown(event: MouseEvent) {
+      if (!investorPickerRef.current?.contains(event.target as Node)) {
+        setIsInvestorPickerOpen(false);
+
+        if (selectedInvestor) {
+          setInvestorQuery(selectedInvestor.investorName);
+        }
+      }
+    }
+
+    window.addEventListener('mousedown', handlePointerDown);
+
+    return () => {
+      window.removeEventListener('mousedown', handlePointerDown);
+    };
+  }, [selectedInvestor]);
 
   function handleUnitsChange(nextValue: string) {
     setUnitsInput(nextValue);
@@ -259,6 +287,14 @@ function TradesPage() {
     setLastActionMessage('');
   }
 
+  function handleInvestorSelect(customerId: string) {
+    const investor = tradeData.investors.find((item) => item.customerId === customerId);
+
+    setSelectedInvestorId(customerId);
+    setInvestorQuery(investor?.investorName ?? '');
+    setIsInvestorPickerOpen(false);
+  }
+
   return (
     <div className="content-card">
       <p className="content-card__eyebrow">Handler og andelseierregister</p>
@@ -281,35 +317,53 @@ function TradesPage() {
                 <p className="feature-section__eyebrow">Investorvalg</p>
                 <h2 className="data-table-card__title">Velg investor</h2>
                 <p className="data-table-card__description">
-                  Søk først, og velg deretter investor fra listen.
+                  Klikk i feltet for å åpne listen, eller skriv for å søke.
                 </p>
               </div>
             </div>
 
             <div className="trade-selector-grid">
-              <label className="trade-field trade-field--search">
-                <span>Søk investor</span>
-                <input
-                  type="search"
-                  value={searchQuery}
-                  onChange={(event) => setSearchQuery(event.target.value)}
-                  placeholder="Navn, kunde-ID eller kundetype"
-                />
-              </label>
-
               <label className="trade-field">
                 <span>Investor</span>
-                <select
-                  value={selectedInvestorId}
-                  onChange={(event) => setSelectedInvestorId(event.target.value)}
-                >
-                  <option value="">Velg investor</option>
-                  {filteredInvestors.map((investor) => (
-                    <option key={investor.customerId} value={investor.customerId}>
-                      {investor.investorName} · {investor.customerId}
-                    </option>
-                  ))}
-                </select>
+                <div className="trade-picker" ref={investorPickerRef}>
+                  <input
+                    type="search"
+                    value={isInvestorPickerOpen ? investorQuery : selectedInvestor?.investorName ?? investorQuery}
+                    onFocus={() => {
+                      setIsInvestorPickerOpen(true);
+                      setInvestorQuery(selectedInvestor?.investorName ?? '');
+                    }}
+                    onChange={(event) => {
+                      setInvestorQuery(event.target.value);
+                      setSelectedInvestorId('');
+                      setIsInvestorPickerOpen(true);
+                    }}
+                    placeholder="Søk investor"
+                  />
+                  <span className="trade-picker__arrow" aria-hidden="true">
+                    ▾
+                  </span>
+
+                  {isInvestorPickerOpen ? (
+                    <div className="trade-picker__menu" role="listbox" aria-label="Investorliste">
+                      {filteredInvestors.map((investor) => (
+                        <button
+                          key={investor.customerId}
+                          type="button"
+                          className="trade-picker__option"
+                          onClick={() => handleInvestorSelect(investor.customerId)}
+                        >
+                          <span>{investor.investorName}</span>
+                          <span>{investor.customerId}</span>
+                        </button>
+                      ))}
+
+                      {filteredInvestors.length === 0 ? (
+                        <div className="trade-picker__empty">Ingen investorer matcher søket.</div>
+                      ) : null}
+                    </div>
+                  ) : null}
+                </div>
               </label>
             </div>
           </section>
