@@ -29,7 +29,7 @@ export function getComplianceOverviewStats(
     },
     {
       id: 'missing-industry-classification',
-      label: 'Manglende næringsgrupper',
+      label: 'Missing industry groups',
       value: String(overview.missingIndustryClassification),
       tone: overview.missingIndustryClassification > 0 ? 'warning' : 'default',
     },

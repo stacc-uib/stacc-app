@@ -1,3 +1,4 @@
+import ComplianceOverviewCalendarPanel from './ComplianceOverviewCalendarPanel';
 import { getComplianceDashboardData } from '../lib/getComplianceDashboardData';
 import type { CompliancePageData, ComplianceSubpageId } from '../types/compliance';
 
@@ -181,6 +182,8 @@ function ComplianceDashboardSection({
               ))}
             </div>
           </section>
+
+          <ComplianceOverviewCalendarPanel overview={pageData.calendar} />
 
           <section className="feature-subsection compliance-dashboard__panel">
             <div className="feature-subsection__header compliance-dashboard__panel-header">

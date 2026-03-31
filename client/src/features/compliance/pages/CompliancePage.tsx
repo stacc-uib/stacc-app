@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react';
 import ComplianceAmlPepView from '../components/ComplianceAmlPepView';
 import ComplianceClassificationView from '../components/ComplianceClassificationView';
-import ComplianceIncidentsPageView from '../components/ComplianceIncidentsPageView';
 import ComplianceOverviewView from '../components/ComplianceOverviewView';
 import ComplianceReportingView from '../components/ComplianceReportingView';
 import ComplianceSubnav from '../components/ComplianceSubnav';
@@ -26,11 +25,6 @@ const complianceSubnavItems = [
   {
     id: 'klassifisering',
     label: 'Investorstatus',
-    description: '',
-  },
-  {
-    id: 'brudd-og-avvik',
-    label: 'Brudd og avvik',
     description: '',
   },
 ] as const;
@@ -97,10 +91,6 @@ function CompliancePage() {
 
       {activeSubpageId === 'klassifisering' ? (
         <ComplianceClassificationView pageData={pageData} />
-      ) : null}
-
-      {activeSubpageId === 'brudd-og-avvik' ? (
-        <ComplianceIncidentsPageView pageData={pageData} />
       ) : null}
     </div>
   );

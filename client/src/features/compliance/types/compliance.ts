@@ -1,10 +1,22 @@
 export type ComplianceStatus = 'ok' | 'warning' | 'critical';
+export const industryClassificationOptions = [
+  'Banks',
+  'Insurance corporations',
+  'Non-financial corporations',
+  'Households',
+  'Government',
+  'Pension funds',
+  'Other financial institutions',
+] as const;
+
+export type IndustryClassificationOption =
+  (typeof industryClassificationOptions)[number];
+
 export type ComplianceSubpageId =
   | 'oversikt'
   | 'rapportering'
   | 'aml-pep'
-  | 'klassifisering'
-  | 'brudd-og-avvik';
+  | 'klassifisering';
 
 export type ComplianceAlert = {
   id: string;
@@ -54,7 +66,7 @@ export type InvestorClassificationRow = {
   investorName: string;
   investorType: string;
   investorCategory: string;
-  industryGroup: string;
+  industryGroup: IndustryClassificationOption | null;
   pepStatus: 'Ja' | 'Nei';
   pepNextReviewLabel: string;
   classificationStatus: InvestorClassificationStatus;
@@ -114,30 +126,6 @@ export type ReportingWorkspaceOverview = {
   validationChecks: ReportingValidationCheck[];
 };
 
-export type IncidentSeverity = 'Lav' | 'Medium' | 'Høy' | 'Kritisk';
-export type IncidentStatus = 'Ny' | 'Under vurdering' | 'Tiltak pågår' | 'Lukket';
-
-export type ComplianceIncident = {
-  id: string;
-  title: string;
-  category: string;
-  severity: IncidentSeverity;
-  status: IncidentStatus;
-  owner: string;
-  relatedEntity: string;
-  detectedDateLabel: string;
-  dueDateLabel: string;
-  summary: string;
-};
-
-export type IncidentOverview = {
-  openIncidents: number;
-  criticalIncidents: number;
-  dueThisWeek: number;
-  closedThisMonth: number;
-  incidents: ComplianceIncident[];
-};
-
 export type ComplianceCalendarCategory = 'finanstilsynet' | 'skatt' | 'pep';
 
 export type ComplianceCalendarEvent = {
@@ -182,7 +170,6 @@ export type CompliancePageData = {
   investorClassification: InvestorClassificationOverview;
   amlPep: AmlPepOverview;
   reportingWorkspace: ReportingWorkspaceOverview;
-  incidents: IncidentOverview;
   calendar: ComplianceCalendarOverview;
   workQueue: ComplianceWorkQueueOverview;
 };

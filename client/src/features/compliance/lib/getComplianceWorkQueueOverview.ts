@@ -26,7 +26,7 @@ function getTaskTargetSubpageId(title: string) {
     return 'aml-pep' as const;
   }
 
-  if (normalizedTitle.includes('næringsgrupper')) {
+  if (normalizedTitle.includes('industry group')) {
     return 'klassifisering' as const;
   }
 
@@ -40,7 +40,7 @@ function getTaskTargetSubpageId(title: string) {
 export function getComplianceWorkQueueOverview(
   source: Pick<
     CompliancePageData,
-    'overview' | 'amlPep' | 'reportingWorkspace' | 'investorClassification' | 'incidents'
+    'overview' | 'amlPep' | 'reportingWorkspace' | 'investorClassification'
   >,
 ): ComplianceWorkQueueOverview {
   const items: ComplianceWorkQueueItem[] = [];
@@ -50,12 +50,12 @@ export function getComplianceWorkQueueOverview(
 
     items.push({
       id: `queue-pep-${row.customerId}`,
-      title: `PEP-kontroll må vurderes for ${row.investorName}`,
+      title: `PEP-kontroll ma vurderes for ${row.investorName}`,
       category: 'AML og PEP',
       priority: row.reviewStatus === 'Forfalt' ? 'Kritisk' : 'Høy',
       dueLabel: row.nextReviewLabel,
       owner: 'CCO',
-      actionLabel: 'Gjennomgå',
+      actionLabel: 'Gjennomga',
       actionType: 'gjennomga',
       targetSubpageId: 'aml-pep',
       summary: `Status ${row.reviewStatus.toLowerCase()} med ${row.amlRiskLevel.toLowerCase()} risiko og dokumentasjon: ${row.documentationStatus.toLowerCase()}.`,
@@ -79,7 +79,7 @@ export function getComplianceWorkQueueOverview(
       priority: 'Høy',
       dueLabel: blockedReport.periodLabel,
       owner: blockedReport.owner,
-      actionLabel: 'Fullfør',
+      actionLabel: 'Fullfor',
       actionType: 'fullfor',
       targetSubpageId: 'rapportering',
       summary: blockedReport.nextAction,
@@ -101,7 +101,7 @@ export function getComplianceWorkQueueOverview(
           row.classificationStatus === 'ikke-profesjonell' ? 'Kritisk' : 'Medium',
         dueLabel: row.pepNextReviewLabel,
         owner: 'Drift',
-        actionLabel: 'Åpne sak',
+        actionLabel: 'Apne sak',
         actionType: 'apne-sak',
         targetSubpageId: 'klassifisering',
         summary: `Investor er markert som ${row.investorCategory.toLowerCase()} med status ${formatClassificationStatus(row.classificationStatus)}.`,
@@ -115,26 +115,6 @@ export function getComplianceWorkQueueOverview(
     }
   }
 
-  const openIncident = source.incidents.incidents.find(
-    (incident) => incident.status !== 'Lukket',
-  );
-
-  if (openIncident) {
-    items.push({
-      id: `queue-incident-${openIncident.id}`,
-      title: openIncident.title,
-      category: 'Brudd og avvik',
-      priority: openIncident.severity === 'Kritisk' ? 'Kritisk' : 'Høy',
-      dueLabel: openIncident.dueDateLabel,
-      owner: openIncident.owner,
-      actionLabel: 'Åpne sak',
-      actionType: 'apne-sak',
-      targetSubpageId: 'brudd-og-avvik',
-      summary: openIncident.summary,
-      filterTags: ['alle', 'kritiske', 'denne-uken', 'mine-saker'],
-    });
-  }
-
   const openTask = source.overview.tasks.find((task) => task.status !== 'done');
 
   if (openTask) {
@@ -145,12 +125,12 @@ export function getComplianceWorkQueueOverview(
       priority: 'Medium',
       dueLabel: openTask.dueLabel,
       owner: openTask.owner,
-      actionLabel: 'Gjennomgå',
+      actionLabel: 'Gjennomga',
       actionType: 'gjennomga',
       targetSubpageId: getTaskTargetSubpageId(openTask.title),
       summary: `Oppgaven er ${
-        openTask.status === 'in-progress' ? 'pågående' : 'ikke startet'
-      } og ligger i den operative oppfølgingslisten.`,
+        openTask.status === 'in-progress' ? 'pagaende' : 'ikke startet'
+      } og ligger i den operative oppfolgingslisten.`,
       filterTags: ['alle', 'mine-saker'],
     });
   }

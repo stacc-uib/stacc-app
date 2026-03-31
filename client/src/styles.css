@@ -974,6 +974,7 @@ button {
   outline-offset: 2px;
 }
 
+
 .compliance-registry__tag-list {
   display: flex;
   flex-wrap: wrap;
@@ -1054,6 +1055,133 @@ button {
   border-top: 1px solid rgba(17, 24, 39, 0.08);
 }
 
+.calendar-mini {
+  padding: 0.9rem;
+  border: 1px solid rgba(17, 24, 39, 0.08);
+  border-radius: 1rem;
+  background: rgba(255, 255, 255, 0.92);
+}
+
+.calendar-mini__header {
+  display: grid;
+  grid-template-columns: 36px 1fr 36px;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 0.85rem;
+}
+
+.calendar-mini__title {
+  margin: 0;
+  font-size: 1rem;
+  text-align: center;
+}
+
+.calendar-mini__nav {
+  width: 36px;
+  height: 36px;
+  border: 1px solid rgba(17, 24, 39, 0.12);
+  border-radius: 0.8rem;
+  background: #fff;
+  color: #111827;
+  cursor: pointer;
+}
+
+.calendar-mini__nav:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+
+.calendar-mini__grid {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 0.4rem;
+}
+
+.calendar-mini__weekday {
+  color: #6b7280;
+  font-size: 0.76rem;
+  font-weight: 700;
+  text-align: center;
+}
+
+.calendar-mini__cell {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 40px;
+}
+
+.calendar-mini__cell--empty {
+  min-height: 40px;
+}
+
+.calendar-mini__day {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  min-height: 34px;
+  border-radius: 0.75rem;
+  color: #111827;
+}
+
+.calendar-mini__day--finanstilsynet,
+.calendar-mini__day--skatt,
+.calendar-mini__day--pep {
+  border: 0;
+  cursor: pointer;
+}
+
+.calendar-mini__day--finanstilsynet {
+  background: #dbeafe;
+  color: #1d4ed8;
+  font-weight: 700;
+}
+
+.calendar-mini__day--skatt {
+  background: #dcfce7;
+  color: #15803d;
+  font-weight: 700;
+}
+
+.calendar-mini__day--pep {
+  background: #fef3c7;
+  color: #b45309;
+  font-weight: 700;
+}
+
+.calendar-mini__tooltip {
+  position: absolute;
+  bottom: calc(100% + 0.55rem);
+  left: 50%;
+  z-index: 6;
+  display: none;
+  width: 220px;
+  padding: 0.75rem;
+  border: 1px solid rgba(17, 24, 39, 0.12);
+  border-radius: 0.9rem;
+  background: rgba(17, 24, 39, 0.96);
+  color: #f8fafc;
+  text-align: left;
+  box-shadow: 0 20px 40px rgba(15, 23, 42, 0.2);
+  transform: translateX(-50%);
+}
+
+.calendar-mini__tooltip strong,
+.calendar-mini__tooltip span {
+  display: block;
+}
+
+.calendar-mini__tooltip span + span {
+  margin-top: 0.3rem;
+}
+
+.calendar-mini__day:hover .calendar-mini__tooltip,
+.calendar-mini__day:focus-visible .calendar-mini__tooltip {
+  display: block;
+}
+
 @media (max-width: 900px) {
   .workspace {
     grid-template-columns: 1fr;
@@ -1104,6 +1232,12 @@ button {
 
   .aml-review__detail-grid {
     grid-template-columns: 1fr;
+  }
+
+  .calendar-mini__tooltip {
+    left: 0;
+    transform: none;
+    width: min(220px, calc(100vw - 6rem));
   }
 
   .queue-card {

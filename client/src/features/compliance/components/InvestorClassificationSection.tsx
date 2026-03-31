@@ -18,7 +18,7 @@ type InvestorRegistryRow = {
   pepStatus: 'Ja' | 'Nei';
   lastPepCheckLabel: string;
   nextPepCheckLabel: string;
-  industryGroup: string;
+  industryGroup: CompliancePageData['investorClassification']['rows'][number]['industryGroup'];
   complianceStatus: InvestorClassificationStatus;
   missingFields: string[];
   reportingReadiness: 'Klar' | 'Mangler data';
@@ -26,7 +26,7 @@ type InvestorRegistryRow = {
 
 const statusLabelByType: Record<InvestorClassificationStatus, string> = {
   ok: 'Klar',
-  'mangler-naering': 'Mangler næring',
+  'mangler-naering': 'Mangler næringsgruppe',
   'pep-forfaller-snart': 'PEP forfaller snart',
   'pep-forfalt': 'PEP forfalt',
   'ikke-profesjonell': 'Ikke-profesjonell',
@@ -60,17 +60,59 @@ function getReportingReadinessClassName(
     : 'status-badge status-badge--warning';
 }
 
-function getRegistryRows(pageData: CompliancePageData): InvestorRegistryRow[] {
+function toDateFromLabel(dateLabel: string) {
+  const [day, month, year] = dateLabel.split('.').map(Number);
+  return new Date(year, month - 1, day);
+}
+
+function deriveClassificationStatus(
+  investorClass: string,
+  industryGroup: InvestorRegistryRow['industryGroup'],
+  nextPepCheckLabel: string,
+): InvestorClassificationStatus {
+  if (investorClass === 'Ikke-profesjonell') {
+    return 'ikke-profesjonell';
+  }
+
+  if (!industryGroup) {
+    return 'mangler-naering';
+  }
+
+  const today = new Date('2026-03-30');
+  const nextReviewDate = toDateFromLabel(nextPepCheckLabel);
+  const diffInDays = Math.ceil(
+    (nextReviewDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24),
+  );
+
+  if (diffInDays < 0) {
+    return 'pep-forfalt';
+  }
+
+  if (diffInDays <= 14) {
+    return 'pep-forfaller-snart';
+  }
+
+  return 'ok';
+}
+
+function getRegistryRows(
+  pageData: CompliancePageData,
+): InvestorRegistryRow[] {
   const amlByCustomerId = new Map(
     pageData.amlPep.rows.map((row) => [row.customerId, row]),
   );
 
   return pageData.investorClassification.rows.map((row) => {
     const amlRow = amlByCustomerId.get(row.customerId);
+    const complianceStatus = deriveClassificationStatus(
+      row.investorCategory,
+      row.industryGroup,
+      row.pepNextReviewLabel,
+    );
     const missingFields: string[] = [];
 
-    if (row.industryGroup === 'Mangler') {
-      missingFields.push('Næringsgruppe');
+    if (!row.industryGroup) {
+      missingFields.push('Industry group');
     }
 
     if (amlRow && amlRow.documentationStatus !== 'Komplett') {
@@ -86,7 +128,7 @@ function getRegistryRows(pageData: CompliancePageData): InvestorRegistryRow[] {
       lastPepCheckLabel: amlRow?.lastReviewLabel ?? 'Ikke registrert',
       nextPepCheckLabel: row.pepNextReviewLabel,
       industryGroup: row.industryGroup,
-      complianceStatus: row.classificationStatus,
+      complianceStatus,
       missingFields,
       reportingReadiness: missingFields.length === 0 ? 'Klar' : 'Mangler data',
     };
@@ -112,7 +154,6 @@ function InvestorClassificationSection({
 }: InvestorClassificationSectionProps) {
   const [activeFilter, setActiveFilter] = useState<RegistryFilter>('alle');
   const [searchQuery, setSearchQuery] = useState('');
-
   const rows = useMemo(() => getRegistryRows(pageData), [pageData]);
 
   const visibleRows = useMemo(() => {
@@ -147,7 +188,7 @@ function InvestorClassificationSection({
           row.investorName,
           row.investorType,
           row.investorClass,
-          row.industryGroup,
+          row.industryGroup ?? '',
         ].some((value) => value.toLowerCase().includes(normalizedSearch));
       })
       .sort((left, right) => {
@@ -173,8 +214,7 @@ function InvestorClassificationSection({
       <div className="feature-section__surface">
         <div className="feature-section__header">
           <div>
-            <p className="feature-section__eyebrow">Investorregister</p>
-            <h2 className="feature-section__title">Investor compliance registry</h2>
+            <h2 className="feature-section__title">Investorregister</h2>
           </div>
         </div>
 
@@ -193,7 +233,7 @@ function InvestorClassificationSection({
           </div>
           <div className="col-12 col-md-6 col-xl-3">
             <article className="summary-card summary-card--warning h-100">
-              <p className="summary-card__label">PEP-oppfølging</p>
+              <p className="summary-card__label">PEP-oppfolging</p>
               <p className="summary-card__value">{pepFollowUpCount}</p>
             </article>
           </div>
@@ -210,17 +250,18 @@ function InvestorClassificationSection({
             <div>
               <h3 className="data-table-card__title">Investorregister</h3>
               <p className="data-table-card__description">
-                Se status på investorer
-              </p>  
+                Oversikt over alle investorer, deres klassifisering og compliance-status
+
+              </p>
             </div>
 
             <label className="compliance-registry__search">
-              <span>Søk i registeret</span>
+              <span>Sok i registeret</span>
               <input
                 type="search"
                 value={searchQuery}
                 onChange={(event) => setSearchQuery(event.target.value)}
-                placeholder="Navn, type, klasse eller næringsgruppe"
+                placeholder="Navn, type, klasse eller industry group"
               />
             </label>
           </div>
@@ -250,7 +291,7 @@ function InvestorClassificationSection({
                   <th>PEP</th>
                   <th>Siste PEP-kontroll</th>
                   <th>Neste PEP-kontroll</th>
-                  <th>Næringsgruppe</th>
+                  <th>Næring</th>
                   <th>Compliance-status</th>
                   <th>Manglende felt</th>
                   <th>Rapporteringsklar</th>
@@ -270,7 +311,7 @@ function InvestorClassificationSection({
                     <td>{row.pepStatus}</td>
                     <td>{row.lastPepCheckLabel}</td>
                     <td>{row.nextPepCheckLabel}</td>
-                    <td>{row.industryGroup}</td>
+                    <td>{row.industryGroup ?? 'Mangler'}</td>
                     <td>
                       <span className={getStatusClassName(row.complianceStatus)}>
                         {statusLabelByType[row.complianceStatus]}

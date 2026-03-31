@@ -22,20 +22,20 @@ export function getComplianceOverviewData(): ComplianceOverviewData {
         title: 'Forfalte PEP-kontroller',
         description: formatInvestorCount(
           amlPepOverview.overdueReviews,
-          'investorer trenger ny PEP-kontroll før neste rapporteringssyklus.',
+          'investorer trenger ny PEP-kontroll for neste rapporteringssyklus.',
         ),
         status: amlPepOverview.overdueReviews > 0 ? 'critical' : 'ok',
         dueLabel:
           amlPepOverview.overdueReviews > 0
-            ? 'Krever handling nå'
+            ? 'Krever handling na'
             : 'Ingen forfalte kontroller',
       },
       {
         id: 'alert-2',
-        title: 'Mangler bransjeklassifisering',
+        title: 'Missing industry group',
         description: formatInvestorCount(
           investorClassificationOverview.missingIndustryGroup,
-          'investorer mangler fortsatt påkrevd næringsgruppering.',
+          'investorer mangler fortsatt pafordret industry group.',
         ),
         status:
           investorClassificationOverview.missingIndustryGroup > 0 ? 'warning' : 'ok',
@@ -47,9 +47,9 @@ export function getComplianceOverviewData(): ComplianceOverviewData {
       {
         id: 'alert-3',
         title: 'Avstemming av skattedata',
-        description: 'Markedsverdier ved årsslutt er avstemt for alle tre fond.',
+        description: 'Markedsverdier ved arsslutt er avstemt for alle tre fond.',
         status: 'ok',
-        dueLabel: 'Fullført denne måneden',
+        dueLabel: 'Fullfort denne maneden',
       },
     ],
     reportingRuns: complianceOverviewMock.reportingRuns,

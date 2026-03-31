@@ -80,7 +80,10 @@ function getAttentionTone(
   return status === 'Forfalt' ? 'critical' : 'warning';
 }
 
-function getMetricTone(count: number, warningThreshold = 1): ComplianceDashboardMetric['tone'] {
+function getMetricTone(
+  count: number,
+  warningThreshold = 1,
+): ComplianceDashboardMetric['tone'] {
   return count >= warningThreshold ? 'warning' : 'ok';
 }
 
@@ -106,9 +109,7 @@ function toMissingIndustryItem(
   };
 }
 
-function toReportingItem(
-  run: ReportingWorkspaceRun,
-): ComplianceDashboardReportingItem {
+function toReportingItem(run: ReportingWorkspaceRun): ComplianceDashboardReportingItem {
   return {
     id: run.id,
     title: run.name,
@@ -146,7 +147,7 @@ export function getComplianceDashboardData(
   const missingRequiredDataIds = new Set<string>();
 
   pageData.investorClassification.rows.forEach((row) => {
-    if (row.industryGroup === 'Mangler') {
+    if (row.industryGroup === null) {
       missingRequiredDataIds.add(row.customerId);
     }
   });
@@ -164,21 +165,21 @@ export function getComplianceDashboardData(
         id: 'compliant-investors',
         label: 'Etterlevende investorer',
         value: String(compliantInvestors),
-        context: `${compliantInvestors} av ${pageData.overview.totalInvestors} uten åpne datamangler`,
+        context: `${compliantInvestors} av ${pageData.overview.totalInvestors} uten apne datamangler`,
         tone: 'ok',
       },
       {
         id: 'missing-required-data',
         label: 'Manglende opplysninger',
         value: String(missingRequiredDataIds.size),
-        context: 'Mangler næringsgruppe eller oppdatert dokumentasjon',
+        context: 'Mangler industry group eller oppdatert dokumentasjon',
         tone: getMetricTone(missingRequiredDataIds.size, 1),
       },
       {
         id: 'pep-overdue',
         label: 'PEP-kontroller forfalt',
         value: String(pageData.amlPep.overdueReviews),
-        context: 'Krever oppfølging før neste rapporteringssyklus',
+        context: 'Krever oppfolging for neste rapporteringssyklus',
         tone: pageData.amlPep.overdueReviews > 0 ? 'critical' : 'ok',
       },
       {
@@ -192,7 +193,7 @@ export function getComplianceDashboardData(
         id: 'reporting-ready',
         label: 'Klare for rapportering',
         value: String(pageData.reportingWorkspace.readyForSubmission),
-        context: 'Rapporter som kan godkjennes nå',
+        context: 'Rapporter som kan godkjennes na',
         tone: pageData.reportingWorkspace.readyForSubmission > 0 ? 'ok' : 'warning',
       },
     ],
@@ -201,7 +202,7 @@ export function getComplianceDashboardData(
       .slice(0, 5)
       .map(toPepAttentionItem),
     missingIndustry: pageData.investorClassification.rows
-      .filter((row) => row.industryGroup === 'Mangler')
+      .filter((row) => row.industryGroup === null)
       .slice(0, 5)
       .map(toMissingIndustryItem),
     readyReports: pageData.reportingWorkspace.runs

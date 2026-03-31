@@ -20,12 +20,14 @@ function formatDateLabel(dateString: string) {
 
 function getClassificationStatus(
   investorCategory: InvestorRecord['category'],
-  industryGroup: string | null,
+  industryGroup: InvestorClassificationRow['industryGroup'],
   pepNextReviewDate: string,
 ): InvestorClassificationStatus {
   const today = new Date('2026-03-30');
   const reviewDate = new Date(pepNextReviewDate);
-  const diffInDays = Math.ceil((reviewDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+  const diffInDays = Math.ceil(
+    (reviewDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24),
+  );
 
   if (investorCategory !== 'Professional') {
     return 'ikke-profesjonell';
@@ -57,7 +59,6 @@ export function getInvestorClassificationOverview(): InvestorClassificationOverv
 
   const rows = (investors as InvestorRecord[]).map((investor) => {
     const detail = detailByCustomerId.get(investor.customerId);
-
     const industryGroup = detail?.industryGroup ?? null;
     const pepNextReviewDate = detail?.pepNextReviewDate ?? '2026-12-31';
 
@@ -66,7 +67,7 @@ export function getInvestorClassificationOverview(): InvestorClassificationOverv
       investorName: investor.name,
       investorType: investor.customerType,
       investorCategory: toInvestorCategoryLabel(investor.category),
-      industryGroup: industryGroup ?? 'Mangler',
+      industryGroup,
       pepStatus: detail?.pepStatus ? 'Ja' : 'Nei',
       pepNextReviewLabel: formatDateLabel(pepNextReviewDate),
       classificationStatus: getClassificationStatus(
@@ -79,10 +80,16 @@ export function getInvestorClassificationOverview(): InvestorClassificationOverv
 
   return {
     totalInvestors: rows.length,
-    professionalInvestors: rows.filter((row) => row.investorCategory === 'Profesjonell').length,
-    nonProfessionalInvestors: rows.filter((row) => row.investorCategory === 'Ikke-profesjonell').length,
-    missingIndustryGroup: rows.filter((row) => row.industryGroup === 'Mangler').length,
-    pepReviewOverdue: rows.filter((row) => row.classificationStatus === 'pep-forfalt').length,
+    professionalInvestors: rows.filter(
+      (row) => row.investorCategory === 'Profesjonell',
+    ).length,
+    nonProfessionalInvestors: rows.filter(
+      (row) => row.investorCategory === 'Ikke-profesjonell',
+    ).length,
+    missingIndustryGroup: rows.filter((row) => row.industryGroup === null).length,
+    pepReviewOverdue: rows.filter(
+      (row) => row.classificationStatus === 'pep-forfalt',
+    ).length,
     rows: rows.sort((left, right) => left.investorName.localeCompare(right.investorName, 'nb')),
   };
 }

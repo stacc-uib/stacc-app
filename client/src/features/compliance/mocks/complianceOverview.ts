@@ -11,12 +11,12 @@ export const complianceOverviewMock: ComplianceOverviewContent = {
     {
       id: 'report-2',
       name: 'Skatterapportering',
-      periodLabel: 'Regnskapsår 2025',
+      periodLabel: 'Regnskapsar 2025',
       status: 'ready-for-review',
     },
     {
       id: 'report-3',
-      name: 'Årlig compliance-gjennomgang',
+      name: 'Arlig compliance-gjennomgang',
       periodLabel: '2026',
       status: 'not-started',
     },
@@ -24,14 +24,14 @@ export const complianceOverviewMock: ComplianceOverviewContent = {
   tasks: [
     {
       id: 'task-1',
-      title: 'Gjennomgå forfalte PEP-saker',
+      title: 'Gjennomga forfalte PEP-saker',
       owner: 'CCO',
       dueLabel: 'Denne uken',
       status: 'in-progress',
     },
     {
       id: 'task-2',
-      title: 'Fylle inn manglende næringsgrupper',
+      title: 'Fylle inn missing industry groups',
       owner: 'Drift',
       dueLabel: 'Neste 5 dager',
       status: 'todo',
