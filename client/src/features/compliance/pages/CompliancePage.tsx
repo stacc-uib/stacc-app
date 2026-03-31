@@ -11,27 +11,27 @@ const complianceSubnavItems = [
   {
     id: 'oversikt',
     label: 'Oversikt',
-    description: 'Samlet startside for CCO med nøkkeltall, varsler og oppgaver.',
+    description: '',
   },
   {
     id: 'rapportering',
     label: 'Rapportering',
-    description: 'Status for rapporteringsløp, valideringsfunn og neste steg før innsending.',
+    description: '',
   },
   {
     id: 'aml-pep',
     label: 'AML og PEP',
-    description: 'Oppfølging av risikonivå, dokumentasjon og kommende eller forfalte kontroller.',
+    description: '',
   },
   {
     id: 'klassifisering',
     label: 'Investorstatus',
-    description: 'Kontroll på investorstatus, næringsgrupper og viktige avvik i kunderegisteret.',
+    description: '',
   },
   {
     id: 'brudd-og-avvik',
     label: 'Brudd og avvik',
-    description: 'Arbeidsområde for registrering, eierskap og lukking av avvikssaker.',
+    description: '',
   },
 ] as const;
 
@@ -71,7 +71,7 @@ function CompliancePage() {
       <p className="content-card__eyebrow">Rapporter og compliance</p>
       <h1>Compliance</h1>
       <p className="content-card__description">
-        CCO området for oversikt, rapportering og kontroll.
+        Fokus på kontroll, frister, manglende data og rapportering.
       </p>
 
       <ComplianceSubnav

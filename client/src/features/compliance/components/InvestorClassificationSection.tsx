@@ -62,7 +62,7 @@ function InvestorClassificationSection({
             <p className="feature-section__eyebrow">Investorklassifisering</p>
             <h2 className="feature-section__title">Status for kunderegisteret</h2>
             <p className="feature-section__description">
-              Denne delen viser hvilke investorer som mangler klassifiseringsdata eller har forhold som må vurderes før videre oppfølging.
+              Investorer som mangler klassifiseringsdata eller har forhold som må vurderes før videre oppfølging.
             </p>
           </div>
         </div>
