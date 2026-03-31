@@ -217,7 +217,7 @@ function InvestorClassificationSection({
             <p className="feature-section__eyebrow">Investorregister</p>
             <h2 className="feature-section__title">Investorregister</h2>
             <p className="feature-section__description">
-              Faa oversikt over klassifisering, datamangler og PEP-oppfolging i ett
+              Få oversikt over klassifisering, datamangler og PEP-oppfølging i ett
               arbeidsflate.
             </p>
           </div>
@@ -238,7 +238,7 @@ function InvestorClassificationSection({
           </div>
           <div className="col-12 col-md-6 col-xl-3">
             <article className="summary-card summary-card--warning compliance-registry__summary-card h-100">
-              <p className="summary-card__label">PEP-oppfolging</p>
+              <p className="summary-card__label">PEP-oppfølging</p>
               <p className="summary-card__value">{pepFollowUpCount}</p>
             </article>
           </div>
@@ -260,7 +260,7 @@ function InvestorClassificationSection({
             </div>
 
             <label className="compliance-registry__search">
-              <span>Sok i registeret</span>
+              <span>Søk i registeret</span>
               <input
                 type="search"
                 value={searchQuery}
@@ -367,3 +367,4 @@ function InvestorClassificationSection({
 }
 
 export default InvestorClassificationSection;
+

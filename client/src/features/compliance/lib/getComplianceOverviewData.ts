@@ -27,7 +27,7 @@ export function getComplianceOverviewData(): ComplianceOverviewData {
         status: amlPepOverview.overdueReviews > 0 ? 'critical' : 'ok',
         dueLabel:
           amlPepOverview.overdueReviews > 0
-            ? 'Krever handling na'
+            ? 'Krever handling nå'
             : 'Ingen forfalte kontroller',
       },
       {
@@ -35,7 +35,7 @@ export function getComplianceOverviewData(): ComplianceOverviewData {
         title: 'Missing industry group',
         description: formatInvestorCount(
           investorClassificationOverview.missingIndustryGroup,
-          'investorer mangler fortsatt pafordret industry group.',
+          'investorer mangler fortsatt påfordret industry group.',
         ),
         status:
           investorClassificationOverview.missingIndustryGroup > 0 ? 'warning' : 'ok',
@@ -47,12 +47,13 @@ export function getComplianceOverviewData(): ComplianceOverviewData {
       {
         id: 'alert-3',
         title: 'Avstemming av skattedata',
-        description: 'Markedsverdier ved arsslutt er avstemt for alle tre fond.',
+        description: 'Markedsverdier ved årsslutt er avstemt for alle tre fond.',
         status: 'ok',
-        dueLabel: 'Fullfort denne maneden',
+        dueLabel: 'Fullført denne måneden',
       },
     ],
     reportingRuns: complianceOverviewMock.reportingRuns,
     tasks: complianceOverviewMock.tasks,
   };
 }
+

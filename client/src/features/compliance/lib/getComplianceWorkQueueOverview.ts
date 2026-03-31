@@ -1,4 +1,4 @@
-import type {
+﻿import type {
   CompliancePageData,
   ComplianceWorkQueueItem,
   ComplianceWorkQueueOverview,
@@ -50,12 +50,12 @@ export function getComplianceWorkQueueOverview(
 
     items.push({
       id: `queue-pep-${row.customerId}`,
-      title: `PEP-kontroll ma vurderes for ${row.investorName}`,
+      title: `PEP-kontroll må vurderes for ${row.investorName}`,
       category: 'AML og PEP',
       priority: row.reviewStatus === 'Forfalt' ? 'Kritisk' : 'Høy',
       dueLabel: row.nextReviewLabel,
       owner: 'CCO',
-      actionLabel: 'Gjennomga',
+      actionLabel: 'Gjennomgå',
       actionType: 'gjennomga',
       targetSubpageId: 'aml-pep',
       summary: `Status ${row.reviewStatus.toLowerCase()} med ${row.amlRiskLevel.toLowerCase()} risiko og dokumentasjon: ${row.documentationStatus.toLowerCase()}.`,
@@ -79,7 +79,7 @@ export function getComplianceWorkQueueOverview(
       priority: 'Høy',
       dueLabel: blockedReport.periodLabel,
       owner: blockedReport.owner,
-      actionLabel: 'Fullfor',
+      actionLabel: 'Fullfør',
       actionType: 'fullfor',
       targetSubpageId: 'rapportering',
       summary: blockedReport.nextAction,
@@ -101,7 +101,7 @@ export function getComplianceWorkQueueOverview(
           row.classificationStatus === 'ikke-profesjonell' ? 'Kritisk' : 'Medium',
         dueLabel: row.pepNextReviewLabel,
         owner: 'Drift',
-        actionLabel: 'Apne sak',
+        actionLabel: 'Åpne sak',
         actionType: 'apne-sak',
         targetSubpageId: 'klassifisering',
         summary: `Investor er markert som ${row.investorCategory.toLowerCase()} med status ${formatClassificationStatus(row.classificationStatus)}.`,
@@ -125,12 +125,12 @@ export function getComplianceWorkQueueOverview(
       priority: 'Medium',
       dueLabel: openTask.dueLabel,
       owner: openTask.owner,
-      actionLabel: 'Gjennomga',
+      actionLabel: 'Gjennomgå',
       actionType: 'gjennomga',
       targetSubpageId: getTaskTargetSubpageId(openTask.title),
       summary: `Oppgaven er ${
-        openTask.status === 'in-progress' ? 'pagaende' : 'ikke startet'
-      } og ligger i den operative oppfolgingslisten.`,
+        openTask.status === 'in-progress' ? 'pågående' : 'ikke startet'
+      } og ligger i den operative oppfølgingslisten.`,
       filterTags: ['alle', 'mine-saker'],
     });
   }

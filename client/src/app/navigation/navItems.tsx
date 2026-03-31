@@ -240,7 +240,7 @@ export const navItems: AppNavItem[] = [
   {
     id: 'inntekt',
     label: 'Inntekt',
-    description: 'Oversikt over inntektsutvikling og n?kkeltall.',
+    description: 'Oversikt over inntektsutvikling og nøkkeltall.',
     icon: <IncomeIcon />,
     page: IncomePage,
   },
@@ -254,36 +254,37 @@ export const navItems: AppNavItem[] = [
   {
     id: 'kundeoversikt',
     label: 'Kundeoversikt',
-    description: 'Finn kunder, segmenter og tilh?rende n?kkelinformasjon.',
+    description: 'Finn kunder, segmenter og tilhørende nøkkelinformasjon.',
     icon: <CustomerIcon />,
     page: CustomersPage,
   },
   {
     id: 'transaksjoner',
     label: 'Transaksjoner',
-    description: 'Gjennomg? registrerte transaksjoner og siste bevegelser.',
+    description: 'Gjennomgå registrerte transaksjoner og siste bevegelser.',
     icon: <TransactionIcon />,
     page: TransactionsPage,
   },
   {
     id: 'rapporter',
     label: 'Rapporter',
-    description: 'Generer og eksporter rapporter for oppf?lging og kontroll.',
+    description: 'Generer og eksporter rapporter for oppfølging og kontroll.',
     icon: <ReportIcon />,
     page: CompliancePage,
   },
   {
     id: 'registrer-ny-handel',
     label: 'Registrer ny handel',
-    description: 'Start registrering av en ny handel med n?dvendige felt.',
+    description: 'Start registrering av en ny handel med nødvendige felt.',
     icon: <TradeIcon />,
     page: TradesPage,
   },
   {
     id: 'registrer-utbytte',
     label: 'Registrer utbytte',
-    description: 'F?r inn utbytte og koble det til riktig kunde eller fond.',
+    description: 'Før inn utbytte og koble det til riktig kunde eller fond.',
     icon: <DividendIcon />,
     page: DashboardPage,
   },
 ];
+

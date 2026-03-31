@@ -13,7 +13,7 @@ function ComplianceStatGrid({ stats }: ComplianceStatGridProps) {
             <p className="feature-section__eyebrow">Oversikt</p>
             <h2 className="feature-section__title">Nøkkeltall</h2>
             <p className="feature-section__description">
-              Nøkkeltallene for compliance akkuratt nå
+              Nøkkeltallene for compliance akkurat nå
             </p>
           </div>
         </div>
@@ -35,3 +35,5 @@ function ComplianceStatGrid({ stats }: ComplianceStatGridProps) {
 }
 
 export default ComplianceStatGrid;
+
+

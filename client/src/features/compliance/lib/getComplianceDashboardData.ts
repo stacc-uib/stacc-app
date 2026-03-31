@@ -1,4 +1,4 @@
-import type {
+﻿import type {
   AmlPepFollowUpRow,
   CompliancePageData,
   ComplianceSubpageId,
@@ -165,7 +165,7 @@ export function getComplianceDashboardData(
         id: 'compliant-investors',
         label: 'Etterlevende investorer',
         value: String(compliantInvestors),
-        context: `${compliantInvestors} av ${pageData.overview.totalInvestors} uten apne datamangler`,
+        context: `${compliantInvestors} av ${pageData.overview.totalInvestors} uten åpne datamangler`,
         tone: 'ok',
       },
       {
@@ -179,7 +179,7 @@ export function getComplianceDashboardData(
         id: 'pep-overdue',
         label: 'PEP-kontroller forfalt',
         value: String(pageData.amlPep.overdueReviews),
-        context: 'Krever oppfolging for neste rapporteringssyklus',
+        context: 'Krever oppfølging for neste rapporteringssyklus',
         tone: pageData.amlPep.overdueReviews > 0 ? 'critical' : 'ok',
       },
       {
@@ -193,7 +193,7 @@ export function getComplianceDashboardData(
         id: 'reporting-ready',
         label: 'Klare for rapportering',
         value: String(pageData.reportingWorkspace.readyForSubmission),
-        context: 'Rapporter som kan godkjennes na',
+        context: 'Rapporter som kan godkjennes nå',
         tone: pageData.reportingWorkspace.readyForSubmission > 0 ? 'ok' : 'warning',
       },
     ],

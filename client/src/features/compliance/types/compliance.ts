@@ -1,4 +1,4 @@
-export type ComplianceStatus = 'ok' | 'warning' | 'critical';
+﻿export type ComplianceStatus = 'ok' | 'warning' | 'critical';
 export const industryClassificationOptions = [
   'Banks',
   'Insurance corporations',
