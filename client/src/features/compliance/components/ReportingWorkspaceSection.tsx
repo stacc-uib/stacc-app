@@ -1,4 +1,4 @@
-import type {
+﻿import type {
   ReportingValidationCheck,
   ReportingWorkspaceOverview,
   ReportingWorkspaceRun,
@@ -35,7 +35,8 @@ function ReportingWorkspaceSection({ overview }: ReportingWorkspaceSectionProps)
             <p className="feature-section__eyebrow">Rapportering</p>
             <h2 className="feature-section__title">Status for rapporteringsløp</h2>
             <p className="feature-section__description">
-              Denne delen viser hvilke rapporter som er klare, hvilke som er blokkert, og hvilke kvalitetskontroller som fortsatt må lukkes.
+              Oversikt over rapporter som er klare, rapporter som er blokkert, og
+              kontroller som fortsatt må lukkes.
             </p>
           </div>
         </div>
@@ -84,7 +85,7 @@ function ReportingWorkspaceSection({ overview }: ReportingWorkspaceSectionProps)
           <section className="feature-subsection">
             <div className="feature-subsection__header">
               <p className="feature-subsection__eyebrow">Valideringskontroller</p>
-              <h3 className="feature-subsection__title">Klar for godkjenning?</h3>
+              <h3 className="feature-subsection__title">Klar til godkjenning?</h3>
             </div>
 
             <div className="stack-list">

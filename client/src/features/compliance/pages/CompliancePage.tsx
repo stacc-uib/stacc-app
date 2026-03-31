@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+﻿import { useEffect, useState } from 'react';
 import ComplianceAmlPepView from '../components/ComplianceAmlPepView';
 import ComplianceClassificationView from '../components/ComplianceClassificationView';
 import ComplianceOverviewView from '../components/ComplianceOverviewView';
@@ -65,7 +65,7 @@ function CompliancePage() {
       <p className="content-card__eyebrow">Rapporter og compliance</p>
       <h1>Compliance</h1>
       <p className="content-card__description">
-        Fokus på kontroll, frister, manglende data og rapportering.
+        Oversikt over kontroll, frister, manglende data og rapportering.
       </p>
 
       <ComplianceSubnav

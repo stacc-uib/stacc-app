@@ -1,4 +1,4 @@
-﻿import type {
+import type {
   AmlPepFollowUpRow,
   CompliancePageData,
   ComplianceSubpageId,
@@ -163,23 +163,23 @@ export function getComplianceDashboardData(
     metrics: [
       {
         id: 'compliant-investors',
-        label: 'Etterlevende investorer',
+        label: 'Compliant investorer',
         value: String(compliantInvestors),
-        context: `${compliantInvestors} av ${pageData.overview.totalInvestors} uten åpne datamangler`,
+        context: `${compliantInvestors} av ${pageData.overview.totalInvestors} uten mangler`,
         tone: 'ok',
       },
       {
         id: 'missing-required-data',
         label: 'Manglende opplysninger',
         value: String(missingRequiredDataIds.size),
-        context: 'Mangler industry group eller oppdatert dokumentasjon',
+        context: 'Mangler påkrevd informasjon for AML-kontroller',
         tone: getMetricTone(missingRequiredDataIds.size, 1),
       },
       {
         id: 'pep-overdue',
         label: 'PEP-kontroller forfalt',
         value: String(pageData.amlPep.overdueReviews),
-        context: 'Krever oppfølging for neste rapporteringssyklus',
+        context: 'Krever oppfølging nå',
         tone: pageData.amlPep.overdueReviews > 0 ? 'critical' : 'ok',
       },
       {

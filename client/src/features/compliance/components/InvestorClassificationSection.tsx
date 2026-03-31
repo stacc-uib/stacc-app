@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+﻿import { useMemo, useState } from 'react';
 import type {
   CompliancePageData,
   InvestorClassificationStatus,
@@ -112,7 +112,7 @@ function getRegistryRows(
     const missingFields: string[] = [];
 
     if (!row.industryGroup) {
-      missingFields.push('Industry group');
+      missingFields.push('Næring');
     }
 
     if (amlRow && amlRow.documentationStatus !== 'Komplett') {
@@ -217,7 +217,7 @@ function InvestorClassificationSection({
             <p className="feature-section__eyebrow">Investorregister</p>
             <h2 className="feature-section__title">Investorregister</h2>
             <p className="feature-section__description">
-              Få oversikt over klassifisering, datamangler og PEP-oppfølging i ett
+              Få oversikt over klassifisering, manglende data og PEP-oppfølging i én
               arbeidsflate.
             </p>
           </div>
@@ -255,7 +255,7 @@ function InvestorClassificationSection({
             <div>
               <h3 className="data-table-card__title">Investorregister</h3>
               <p className="data-table-card__description">
-                Oversikt over alle investorer, deres klassifisering og compliance-status
+                Oversikt over investorer, klassifisering og etterlevelsesstatus.
               </p>
             </div>
 
@@ -265,7 +265,7 @@ function InvestorClassificationSection({
                 type="search"
                 value={searchQuery}
                 onChange={(event) => setSearchQuery(event.target.value)}
-                placeholder="Navn, type, klasse eller industry group"
+                placeholder="Navn, type, kategori eller næring"
               />
             </label>
           </div>
@@ -302,7 +302,7 @@ function InvestorClassificationSection({
                   <th>Siste PEP-kontroll</th>
                   <th>Neste PEP-kontroll</th>
                   <th>Næring</th>
-                  <th>Compliance-status</th>
+                  <th>Compliance status</th>
                   <th>Manglende felt</th>
                   <th>Rapporteringsklar</th>
                 </tr>
@@ -353,7 +353,7 @@ function InvestorClassificationSection({
                 {visibleRows.length === 0 ? (
                   <tr>
                     <td colSpan={10} className="compliance-registry__empty">
-                      Ingen investorer matcher søk eller valgt filter.
+                      Ingen investorer matcher søket eller det valgte filteret.
                     </td>
                   </tr>
                 ) : null}
@@ -367,4 +367,3 @@ function InvestorClassificationSection({
 }
 
 export default InvestorClassificationSection;
-

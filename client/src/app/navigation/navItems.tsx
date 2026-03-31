@@ -1,4 +1,4 @@
-import type { ComponentType } from 'react';
+ï»¿import type { ComponentType } from 'react';
 import CompliancePage from '../../features/compliance/pages/CompliancePage';
 import CustomersPage from '../../features/customers/pages/CustomersPage';
 import DashboardPage from '../../features/dashboard/pages/DashboardPage';
@@ -233,14 +233,14 @@ export const navItems: AppNavItem[] = [
   {
     id: 'dashboard',
     label: 'Dashboard',
-    description: 'Startside med oversikt over de viktigste tallene og siste aktivitet.',
+    description: 'Oversikt over de viktigste tallene og siste aktivitet.',
     icon: <DashboardIcon />,
     page: DashboardPage,
   },
   {
     id: 'inntekt',
     label: 'Inntekt',
-    description: 'Oversikt over inntektsutvikling og nøkkeltall.',
+    description: 'Oversikt over inntektsutvikling og nÃ¸kkeltall.',
     icon: <IncomeIcon />,
     page: IncomePage,
   },
@@ -254,37 +254,36 @@ export const navItems: AppNavItem[] = [
   {
     id: 'kundeoversikt',
     label: 'Kundeoversikt',
-    description: 'Finn kunder, segmenter og tilhørende nøkkelinformasjon.',
+    description: 'Finn kunder, segmenter og tilhÃ¸rende nÃ¸kkelinformasjon.',
     icon: <CustomerIcon />,
     page: CustomersPage,
   },
   {
     id: 'transaksjoner',
     label: 'Transaksjoner',
-    description: 'Gjennomgå registrerte transaksjoner og siste bevegelser.',
+    description: 'GjennomgÃ¥ registrerte transaksjoner og siste bevegelser.',
     icon: <TransactionIcon />,
     page: TransactionsPage,
   },
   {
     id: 'rapporter',
     label: 'Rapporter',
-    description: 'Generer og eksporter rapporter for oppfølging og kontroll.',
+    description: 'Generer og eksporter rapporter for oppfÃ¸lging og kontroll.',
     icon: <ReportIcon />,
     page: CompliancePage,
   },
   {
     id: 'registrer-ny-handel',
     label: 'Registrer ny handel',
-    description: 'Start registrering av en ny handel med nødvendige felt.',
+    description: 'Start registrering av en ny handel med nÃ¸dvendige felt.',
     icon: <TradeIcon />,
     page: TradesPage,
   },
   {
     id: 'registrer-utbytte',
     label: 'Registrer utbytte',
-    description: 'Før inn utbytte og koble det til riktig kunde eller fond.',
+    description: 'FÃ¸r inn utbytte og koble det til riktig kunde eller fond.',
     icon: <DividendIcon />,
     page: DashboardPage,
   },
 ];
-

@@ -56,7 +56,7 @@ function getTimelineForRow(row: AmlPepFollowUpRow, isUpdated: boolean): ReviewTi
   const items: ReviewTimelineItem[] = [
     {
       id: `${row.customerId}-current-status`,
-      label: isUpdated ? 'Review oppdatert' : 'Nåværende status',
+      label: isUpdated ? 'Kontroll oppdatert' : 'Nåværende status',
       detail: isUpdated
         ? 'Kontrollen er markert som gjennomført og ny frist er lagt inn.'
         : `Status er ${row.reviewStatus.toLowerCase()} med neste kontroll ${row.nextReviewLabel}.`,
@@ -171,11 +171,8 @@ function AmlPepMonitoringSection({ overview }: AmlPepMonitoringSectionProps) {
         <div className="feature-section__header">
           <div>
             <p className="feature-section__eyebrow">AML og PEP</p>
-            <h2 className="feature-section__title">PEP og review management</h2>
-            <p className="feature-section__description">
-              CCO skal raskt se hvilke kontroller som er forfalt, hvilke som nærmer seg
-              frist, og kunne oppdatere review-status uten å lete i flere flater.
-            </p>
+            <h2 className="feature-section__title">PEP-oppfølging</h2>
+            
           </div>
         </div>
 
@@ -226,8 +223,7 @@ function AmlPepMonitoringSection({ overview }: AmlPepMonitoringSectionProps) {
             <div>
               <h3 className="data-table-card__title">Saker som må vurderes nå</h3>
               <p className="data-table-card__description">
-                Hold over eller fokuser på en investor for å se review-detaljer og historikk
-                uten at siden fylles av en permanent sidepanel.
+                Vis detaljer for mer informasjon om investor
               </p>
             </div>
           </div>
@@ -245,7 +241,7 @@ function AmlPepMonitoringSection({ overview }: AmlPepMonitoringSectionProps) {
                   <div className="stack-card__row">
                     <div>
                       <p className="queue-card__eyebrow">
-                        {row.pepStatus === 'Ja' ? 'PEP-investor' : 'Standard review'}
+                        {row.pepStatus === 'Ja' ? 'PEP-investor' : 'Standardkontroll'}
                       </p>
                       <h3 className="queue-card__title">{row.investorName}</h3>
                     </div>
@@ -295,14 +291,14 @@ function AmlPepMonitoringSection({ overview }: AmlPepMonitoringSectionProps) {
                           handleQuickUpdate(row.customerId);
                         }}
                       >
-                        Marker review oppdatert
+                        Marker kontroll som oppdatert
                       </button>
                     </div>
 
                     <div className="aml-review__detail-grid">
                       <article className="stack-card">
                         <div className="stack-card__row">
-                          <h3 className="stack-card__title">Review-status</h3>
+                          <h3 className="stack-card__title">Kontrollstatus</h3>
                           <span className={getBadgeClassName(row.reviewStatus)}>
                             {row.reviewStatus}
                           </span>
@@ -370,8 +366,7 @@ function AmlPepMonitoringSection({ overview }: AmlPepMonitoringSectionProps) {
             <div>
               <h3 className="data-table-card__title">Alle PEP-kontroller</h3>
               <p className="data-table-card__description">
-                Full oversikt for kontroll og revisjon, med tydelige badges for forfalt,
-                snart forfall og dokumentasjonsmangler.
+                Full oversikt for kontroll og revisjon
               </p>
             </div>
           </div>
@@ -395,7 +390,7 @@ function AmlPepMonitoringSection({ overview }: AmlPepMonitoringSectionProps) {
                     <td>
                       <div className="table-primary-cell">
                         <strong>{row.investorName}</strong>
-                        <span>{updatedIds.includes(row.customerId) ? 'Review oppdatert nå' : 'Operativ oppfølging'}</span>
+                        <span>{updatedIds.includes(row.customerId) ? 'Kontroll oppdatert nå' : 'Operativ oppfølging'}</span>
                       </div>
                     </td>
                     <td>{row.pepStatus}</td>

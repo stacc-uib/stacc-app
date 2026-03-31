@@ -1,4 +1,4 @@
-import ComplianceOverviewCalendarPanel from './ComplianceOverviewCalendarPanel';
+﻿import ComplianceOverviewCalendarPanel from './ComplianceOverviewCalendarPanel';
 import { getComplianceDashboardData } from '../lib/getComplianceDashboardData';
 import type { CompliancePageData, ComplianceSubpageId } from '../types/compliance';
 
@@ -37,7 +37,7 @@ function ComplianceDashboardSection({
         <div className="compliance-dashboard__hero">
           <div>
             <p className="feature-section__eyebrow compliance-dashboard__eyebrow">
-              Compliance dashboard
+              Complianceoversikt
             </p>
             <h2 className="compliance-dashboard__title">Hva trenger oppmerksomhet nå?</h2>
           </div>
@@ -69,7 +69,7 @@ function ComplianceDashboardSection({
             <div className="feature-subsection__header compliance-dashboard__panel-header">
               <div>
                 <p className="feature-subsection__eyebrow">AML og PEP</p>
-                <h3 className="feature-subsection__title">PEP-kontroller som må tas nå</h3>
+                <h3 className="feature-subsection__title">PEP-kontroller som må følges opp nå</h3>
               </div>
               <button
                 type="button"
@@ -100,7 +100,7 @@ function ComplianceDashboardSection({
             <div className="feature-subsection__header compliance-dashboard__panel-header">
               <div>
                 <p className="feature-subsection__eyebrow">Klassifisering</p>
-                <h3 className="feature-subsection__title">Investorer som mangler data</h3>
+                <h3 className="feature-subsection__title">Investorer med manglende data</h3>
               </div>
               <button
                 type="button"
@@ -129,7 +129,7 @@ function ComplianceDashboardSection({
             <div className="feature-subsection__header compliance-dashboard__panel-header">
               <div>
                 <p className="feature-subsection__eyebrow">Rapportering</p>
-                <h3 className="feature-subsection__title">Klarhet før innsending</h3>
+                <h3 className="feature-subsection__title">Status før innsending</h3>
               </div>
               <button
                 type="button"
@@ -228,4 +228,3 @@ function ComplianceDashboardSection({
 }
 
 export default ComplianceDashboardSection;
-

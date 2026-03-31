@@ -1,4 +1,4 @@
-﻿import type {
+import type {
   CompliancePageData,
   ComplianceWorkQueueItem,
   ComplianceWorkQueueOverview,
@@ -26,7 +26,7 @@ function getTaskTargetSubpageId(title: string) {
     return 'aml-pep' as const;
   }
 
-  if (normalizedTitle.includes('industry group')) {
+  if (normalizedTitle.includes('næring')) {
     return 'klassifisering' as const;
   }
 
