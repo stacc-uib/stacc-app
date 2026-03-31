@@ -58,7 +58,7 @@ button {
 
 .workspace {
   display: grid;
-  grid-template-columns: auto 1fr;
+  grid-template-columns: auto minmax(0, 1fr);
   min-height: calc(100vh - 72px);
 }
 
@@ -184,10 +184,13 @@ button {
 
 .content-panel {
   padding: 1.5rem;
+  min-width: 0;
 }
 
 .content-card {
   min-height: 100%;
+  min-width: 0;
+  max-width: 100%;
   padding: 2rem;
   border: 1px solid rgba(17, 24, 39, 0.08);
   border-radius: 1.75rem;
@@ -290,6 +293,7 @@ button {
 }
 
 .feature-section__surface {
+  min-width: 0;
   padding: 1.5rem;
   border: 1px solid rgba(17, 24, 39, 0.08);
   border-radius: 1.5rem;
@@ -482,6 +486,7 @@ button {
 
 .data-table-card {
   margin-top: 1.25rem;
+  min-width: 0;
   padding: 1.25rem;
   border: 1px solid rgba(17, 24, 39, 0.08);
   border-radius: 1.2rem;
@@ -509,7 +514,10 @@ button {
 }
 
 .table-scroll {
+  max-width: 100%;
   overflow-x: auto;
+  overflow-y: hidden;
+  -webkit-overflow-scrolling: touch;
 }
 
 .data-table {
@@ -934,6 +942,50 @@ button {
   color: #fff;
 }
 
+.compliance-registry__header {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.compliance-registry__search {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+  min-width: min(100%, 320px);
+  color: #374151;
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.compliance-registry__search input {
+  min-height: 42px;
+  padding: 0.7rem 0.85rem;
+  border: 1px solid rgba(17, 24, 39, 0.12);
+  border-radius: 0.9rem;
+  background: #fff;
+  color: #111827;
+  font: inherit;
+}
+
+.compliance-registry__search input:focus {
+  outline: 2px solid rgba(17, 24, 39, 0.12);
+  outline-offset: 2px;
+}
+
+.compliance-registry__tag-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+}
+
+.compliance-registry__empty {
+  padding: 1.2rem 0.85rem;
+  color: #6b7280;
+  text-align: center;
+}
+
 @media (max-width: 900px) {
   .workspace {
     grid-template-columns: 1fr;
@@ -988,6 +1040,11 @@ button {
 
   .queue-card__actions {
     min-width: 0;
+  }
+
+  .compliance-registry__header {
+    flex-direction: column;
+    align-items: stretch;
   }
 }
 

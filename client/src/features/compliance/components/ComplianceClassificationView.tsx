@@ -8,9 +8,7 @@ type ComplianceClassificationViewProps = {
 function ComplianceClassificationView({
   pageData,
 }: ComplianceClassificationViewProps) {
-  return (
-    <InvestorClassificationSection overview={pageData.investorClassification} />
-  );
+  return <InvestorClassificationSection pageData={pageData} />;
 }
 
 export default ComplianceClassificationView;

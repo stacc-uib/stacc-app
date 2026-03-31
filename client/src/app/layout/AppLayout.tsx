@@ -105,7 +105,7 @@ function AppLayout() {
           </div>
         </aside>
 
-        <main className="content-panel">
+        <main className="content-panel container-fluid">
           <ActivePage />
         </main>
       </div>
