@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import type {
+  ComplianceSubpageId,
   ComplianceWorkQueueFilter,
   ComplianceWorkQueueItem,
   ComplianceWorkQueueOverview,
@@ -7,6 +8,7 @@ import type {
 
 type ComplianceWorkQueueSectionProps = {
   overview: ComplianceWorkQueueOverview;
+  onOpenSubpage: (subpageId: ComplianceSubpageId) => void;
 };
 
 const filterOptions: { id: ComplianceWorkQueueFilter; label: string }[] = [
@@ -30,6 +32,7 @@ function getPriorityClassName(priority: ComplianceWorkQueueItem['priority']) {
 
 function ComplianceWorkQueueSection({
   overview,
+  onOpenSubpage,
 }: ComplianceWorkQueueSectionProps) {
   const [activeFilter, setActiveFilter] = useState<ComplianceWorkQueueFilter>('alle');
   const [completedIds, setCompletedIds] = useState<string[]>([]);
@@ -44,19 +47,16 @@ function ComplianceWorkQueueSection({
   });
 
   function handlePrimaryAction(item: ComplianceWorkQueueItem) {
-    if (item.actionType === 'fullfor') {
-      setCompletedIds((current) => [...current, item.id]);
+    onOpenSubpage(item.targetSubpageId);
+
+    if (item.actionType === 'apne-sak') {
+      setAssignedIds((current) =>
+        current.includes(item.id) ? current : [...current, item.id],
+      );
       return;
     }
 
-    if (item.actionType === 'gjennomga') {
-      setCompletedIds((current) => [...current, item.id]);
-      return;
-    }
-
-    setAssignedIds((current) =>
-      current.includes(item.id) ? current : [...current, item.id],
-    );
+    setCompletedIds((current) => [...current, item.id]);
   }
 
   return (

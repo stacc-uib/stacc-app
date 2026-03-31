@@ -81,7 +81,10 @@ function CompliancePage() {
       />
 
       {activeSubpageId === 'oversikt' ? (
-        <ComplianceOverviewView pageData={pageData} />
+        <ComplianceOverviewView
+          pageData={pageData}
+          onOpenSubpage={handleSubpageSelect}
+        />
       ) : null}
 
       {activeSubpageId === 'rapportering' ? (

@@ -1,4 +1,10 @@
 export type ComplianceStatus = 'ok' | 'warning' | 'critical';
+export type ComplianceSubpageId =
+  | 'oversikt'
+  | 'rapportering'
+  | 'aml-pep'
+  | 'klassifisering'
+  | 'brudd-og-avvik';
 
 export type ComplianceAlert = {
   id: string;
@@ -162,6 +168,7 @@ export type ComplianceWorkQueueItem = {
   owner: string;
   actionLabel: string;
   actionType: 'apne-sak' | 'gjennomga' | 'fullfor';
+  targetSubpageId: ComplianceSubpageId;
   summary: string;
   filterTags: ComplianceWorkQueueFilter[];
 };

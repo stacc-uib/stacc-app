@@ -19,6 +19,24 @@ function formatClassificationStatus(status: string) {
   return status.split('-').join(' ');
 }
 
+function getTaskTargetSubpageId(title: string) {
+  const normalizedTitle = title.toLowerCase();
+
+  if (normalizedTitle.includes('pep')) {
+    return 'aml-pep' as const;
+  }
+
+  if (normalizedTitle.includes('næringsgrupper')) {
+    return 'klassifisering' as const;
+  }
+
+  if (normalizedTitle.includes('skatteeksport')) {
+    return 'rapportering' as const;
+  }
+
+  return 'oversikt' as const;
+}
+
 export function getComplianceWorkQueueOverview(
   source: Pick<
     CompliancePageData,
@@ -29,6 +47,7 @@ export function getComplianceWorkQueueOverview(
 
   if (source.amlPep.rows[0]) {
     const row = source.amlPep.rows[0];
+
     items.push({
       id: `queue-pep-${row.customerId}`,
       title: `PEP-kontroll må vurderes for ${row.investorName}`,
@@ -38,8 +57,13 @@ export function getComplianceWorkQueueOverview(
       owner: 'CCO',
       actionLabel: 'Gjennomgå',
       actionType: 'gjennomga',
+      targetSubpageId: 'aml-pep',
       summary: `Status ${row.reviewStatus.toLowerCase()} med ${row.amlRiskLevel.toLowerCase()} risiko og dokumentasjon: ${row.documentationStatus.toLowerCase()}.`,
-      filterTags: ['alle', row.reviewStatus === 'Forfalt' ? 'kritiske' : 'denne-uken', 'mine-saker'],
+      filterTags: [
+        'alle',
+        row.reviewStatus === 'Forfalt' ? 'kritiske' : 'denne-uken',
+        'mine-saker',
+      ],
     });
   }
 
@@ -57,6 +81,7 @@ export function getComplianceWorkQueueOverview(
       owner: blockedReport.owner,
       actionLabel: 'Fullfør',
       actionType: 'fullfor',
+      targetSubpageId: 'rapportering',
       summary: blockedReport.nextAction,
       filterTags: ['alle', 'denne-uken', 'mine-saker'],
     });
@@ -72,21 +97,27 @@ export function getComplianceWorkQueueOverview(
         id: `queue-classification-${row.customerId}`,
         title: `Oppdater investorstatus for ${row.investorName}`,
         category: 'Klassifisering',
-        priority: row.classificationStatus === 'ikke-profesjonell' ? 'Kritisk' : 'Medium',
+        priority:
+          row.classificationStatus === 'ikke-profesjonell' ? 'Kritisk' : 'Medium',
         dueLabel: row.pepNextReviewLabel,
         owner: 'Drift',
         actionLabel: 'Åpne sak',
         actionType: 'apne-sak',
+        targetSubpageId: 'klassifisering',
         summary: `Investor er markert som ${row.investorCategory.toLowerCase()} med status ${formatClassificationStatus(row.classificationStatus)}.`,
         filterTags: [
           'alle',
-          row.classificationStatus === 'ikke-profesjonell' ? 'kritiske' : 'denne-uken',
+          row.classificationStatus === 'ikke-profesjonell'
+            ? 'kritiske'
+            : 'denne-uken',
         ],
       });
     }
   }
 
-  const openIncident = source.incidents.incidents.find((incident) => incident.status !== 'Lukket');
+  const openIncident = source.incidents.incidents.find(
+    (incident) => incident.status !== 'Lukket',
+  );
 
   if (openIncident) {
     items.push({
@@ -98,6 +129,7 @@ export function getComplianceWorkQueueOverview(
       owner: openIncident.owner,
       actionLabel: 'Åpne sak',
       actionType: 'apne-sak',
+      targetSubpageId: 'brudd-og-avvik',
       summary: openIncident.summary,
       filterTags: ['alle', 'kritiske', 'denne-uken', 'mine-saker'],
     });
@@ -115,12 +147,17 @@ export function getComplianceWorkQueueOverview(
       owner: openTask.owner,
       actionLabel: 'Gjennomgå',
       actionType: 'gjennomga',
-      summary: `Oppgaven er ${openTask.status === 'in-progress' ? 'pågående' : 'ikke startet'} og ligger i den operative oppfølgingslisten.`,
+      targetSubpageId: getTaskTargetSubpageId(openTask.title),
+      summary: `Oppgaven er ${
+        openTask.status === 'in-progress' ? 'pågående' : 'ikke startet'
+      } og ligger i den operative oppfølgingslisten.`,
       filterTags: ['alle', 'mine-saker'],
     });
   }
 
   return {
-    items: items.sort((left, right) => toPriorityRank(left.priority) - toPriorityRank(right.priority)),
+    items: items.sort(
+      (left, right) => toPriorityRank(left.priority) - toPriorityRank(right.priority),
+    ),
   };
 }
