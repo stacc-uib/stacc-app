@@ -1,6 +1,7 @@
 import { getAmlPepOverview } from './getAmlPepOverview';
 import { getComplianceCalendarOverview } from './getComplianceCalendarOverview';
 import { getComplianceOverviewData } from './getComplianceOverviewData';
+import { getComplianceWorkQueueOverview } from './getComplianceWorkQueueOverview';
 import { getInvestorClassificationOverview } from './getInvestorClassificationOverview';
 import { incidentsMock } from '../mocks/incidents';
 import { reportingWorkspaceMock } from '../mocks/reportingWorkspace';
@@ -11,12 +12,17 @@ export function getCompliancePageData(): CompliancePageData {
   const amlPep = getAmlPepOverview();
   const overview = getComplianceOverviewData();
 
-  return {
+  const baseData = {
     overview,
     investorClassification,
     amlPep,
     reportingWorkspace: reportingWorkspaceMock,
     incidents: incidentsMock,
+  };
+
+  return {
+    ...baseData,
     calendar: getComplianceCalendarOverview(),
+    workQueue: getComplianceWorkQueueOverview(baseData),
   };
 }

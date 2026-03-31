@@ -594,6 +594,10 @@ button {
   border-top: 4px solid #0f766e;
 }
 
+.feature-section--queue .feature-section__surface {
+  border-top: 4px solid #7c2d12;
+}
+
 .calendar-card {
   padding: 1.25rem;
   border: 1px solid rgba(17, 24, 39, 0.08);
@@ -720,6 +724,103 @@ button {
   background: #eab308;
 }
 
+.queue-filter-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+  margin-bottom: 1rem;
+}
+
+.queue-filter {
+  min-height: 38px;
+  padding: 0.5rem 0.9rem;
+  border: 1px solid rgba(17, 24, 39, 0.12);
+  border-radius: 999px;
+  background: #fff;
+  color: #374151;
+  cursor: pointer;
+}
+
+.queue-filter--active {
+  border-color: #111827;
+  background: #111827;
+  color: #fff;
+}
+
+.queue-card {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 1rem;
+  padding: 1rem 1.1rem;
+  border: 1px solid rgba(17, 24, 39, 0.08);
+  border-radius: 1rem;
+  background: rgba(255, 255, 255, 0.96);
+}
+
+.queue-card--empty {
+  display: block;
+  color: #4b5563;
+}
+
+.queue-card__main {
+  min-width: 0;
+}
+
+.queue-card__eyebrow {
+  margin: 0 0 0.3rem;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: #6b7280;
+}
+
+.queue-card__title {
+  margin: 0;
+  font-size: 1rem;
+  color: #111827;
+}
+
+.queue-card__summary {
+  margin: 0.75rem 0 0;
+  color: #4b5563;
+  line-height: 1.55;
+}
+
+.queue-card__meta-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-top: 0.75rem;
+  color: #6b7280;
+  font-size: 0.9rem;
+}
+
+.queue-card__actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+  align-items: stretch;
+  min-width: 180px;
+}
+
+.queue-action {
+  min-height: 38px;
+  padding: 0.55rem 0.9rem;
+  border: 1px solid rgba(17, 24, 39, 0.12);
+  border-radius: 0.8rem;
+  background: #fff;
+  color: #111827;
+  cursor: pointer;
+  text-align: center;
+}
+
+.queue-action--primary {
+  border-color: transparent;
+  background: #111827;
+  color: #fff;
+}
+
 @media (max-width: 900px) {
   .workspace {
     grid-template-columns: 1fr;
@@ -753,6 +854,14 @@ button {
   .summary-grid,
   .feature-panel-grid {
     grid-template-columns: 1fr;
+  }
+
+  .queue-card {
+    grid-template-columns: 1fr;
+  }
+
+  .queue-card__actions {
+    min-width: 0;
   }
 }
 

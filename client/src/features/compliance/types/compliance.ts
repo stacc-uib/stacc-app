@@ -147,6 +147,29 @@ export type ComplianceCalendarOverview = {
   events: ComplianceCalendarEvent[];
 };
 
+export type ComplianceWorkQueueFilter =
+  | 'alle'
+  | 'kritiske'
+  | 'denne-uken'
+  | 'mine-saker';
+
+export type ComplianceWorkQueueItem = {
+  id: string;
+  title: string;
+  category: string;
+  priority: 'Kritisk' | 'Høy' | 'Medium';
+  dueLabel: string;
+  owner: string;
+  actionLabel: string;
+  actionType: 'apne-sak' | 'gjennomga' | 'fullfor';
+  summary: string;
+  filterTags: ComplianceWorkQueueFilter[];
+};
+
+export type ComplianceWorkQueueOverview = {
+  items: ComplianceWorkQueueItem[];
+};
+
 export type CompliancePageData = {
   overview: ComplianceOverviewData;
   investorClassification: InvestorClassificationOverview;
@@ -154,4 +177,5 @@ export type CompliancePageData = {
   reportingWorkspace: ReportingWorkspaceOverview;
   incidents: IncidentOverview;
   calendar: ComplianceCalendarOverview;
+  workQueue: ComplianceWorkQueueOverview;
 };

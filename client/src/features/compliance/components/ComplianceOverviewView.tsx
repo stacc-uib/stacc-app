@@ -1,6 +1,6 @@
-import ComplianceActivityPanel from './ComplianceActivityPanel';
 import ComplianceCalendarSection from './ComplianceCalendarSection';
 import ComplianceStatGrid from './ComplianceStatGrid';
+import ComplianceWorkQueueSection from './ComplianceWorkQueueSection';
 import type { CompliancePageData } from '../types/compliance';
 import { getComplianceOverviewStats } from '../lib/getComplianceOverviewStats';
 
@@ -15,11 +15,7 @@ function ComplianceOverviewView({ pageData }: ComplianceOverviewViewProps) {
     <>
       <ComplianceStatGrid stats={stats} />
       <ComplianceCalendarSection overview={pageData.calendar} />
-      <ComplianceActivityPanel
-        alerts={pageData.overview.alerts}
-        reportingRuns={pageData.overview.reportingRuns}
-        tasks={pageData.overview.tasks}
-      />
+      <ComplianceWorkQueueSection overview={pageData.workQueue} />
     </>
   );
 }
