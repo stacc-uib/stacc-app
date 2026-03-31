@@ -299,9 +299,7 @@ function TradesPage() {
     <div className="content-card">
       <p className="content-card__eyebrow">Handler og andelseierregister</p>
       <h1>Registrer ny handel</h1>
-      <p className="content-card__description">
-        En enklere arbeidsflate for å velge investor og registrere kjøp eller salg i fondene.
-      </p>
+      
 
       <section className="feature-section feature-section--trade-registration">
         <div className="feature-section__surface trade-registration">
@@ -314,17 +312,14 @@ function TradesPage() {
           <section className="data-table-card trade-card trade-card--compact">
             <div className="trade-card__header">
               <div>
-                <p className="feature-section__eyebrow">Investorvalg</p>
                 <h2 className="data-table-card__title">Velg investor</h2>
-                <p className="data-table-card__description">
-                  Klikk i feltet for å åpne listen, eller skriv for å søke.
-                </p>
+      
               </div>
             </div>
 
             <div className="trade-selector-grid">
               <label className="trade-field">
-                <span>Investor</span>
+                <span></span>
                 <div className="trade-picker" ref={investorPickerRef}>
                   <input
                     type="search"
@@ -338,7 +333,7 @@ function TradesPage() {
                       setSelectedInvestorId('');
                       setIsInvestorPickerOpen(true);
                     }}
-                    placeholder="Søk investor"
+                    placeholder="Søk etter investor"
                   />
                   <span className="trade-picker__arrow" aria-hidden="true">
                     ▾
