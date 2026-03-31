@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+﻿import { useMemo, useState } from 'react';
 import type { AmlPepFollowUpRow, AmlPepOverview } from '../types/compliance';
 
 type AmlPepMonitoringSectionProps = {
@@ -45,33 +45,30 @@ function getBadgeClassName(
     return 'status-badge status-badge--warning';
   }
 
-  if (value === 'Oppdatert') {
-    return 'status-badge status-badge--ok';
-  }
-
   return 'status-badge status-badge--ok';
 }
 
 function getTimelineForRow(row: AmlPepFollowUpRow, isUpdated: boolean): ReviewTimelineItem[] {
   const items: ReviewTimelineItem[] = [
     {
-      id: `${row.customerId}-current-status`,
-      label: isUpdated ? 'Kontroll oppdatert' : 'Nåværende status',
+      id: `${row.customerId}-status`,
+      label: isUpdated ? 'Kontroll oppdatert' : 'Kontrollstatus',
       detail: isUpdated
         ? 'Kontrollen er markert som gjennomført og ny frist er lagt inn.'
         : `Status er ${row.reviewStatus.toLowerCase()} med neste kontroll ${row.nextReviewLabel}.`,
-      tone: isUpdated ? 'ok' : row.reviewStatus === 'Forfalt' ? 'critical' : row.reviewStatus === 'Forfaller snart' ? 'warning' : 'neutral',
-    },
-    {
-      id: `${row.customerId}-last-review`,
-      label: 'Siste PEP-kontroll',
-      detail: `Sist gjennomført ${row.lastReviewLabel}.`,
-      tone: 'neutral',
+      tone:
+        isUpdated
+          ? 'ok'
+          : row.reviewStatus === 'Forfalt'
+            ? 'critical'
+            : row.reviewStatus === 'Forfaller snart'
+              ? 'warning'
+              : 'neutral',
     },
     {
       id: `${row.customerId}-documentation`,
       label: 'Dokumentasjon',
-      detail: `Dokumentasjonsstatus: ${row.documentationStatus.toLowerCase()}.`,
+      detail: `Dokumentasjonsstatus er ${row.documentationStatus.toLowerCase()}.`,
       tone:
         row.documentationStatus === 'Mangler dokumentasjon'
           ? 'critical'
@@ -83,7 +80,7 @@ function getTimelineForRow(row: AmlPepFollowUpRow, isUpdated: boolean): ReviewTi
 
   if (row.pepStatus === 'Ja') {
     items.push({
-      id: `${row.customerId}-pep-flag`,
+      id: `${row.customerId}-pep`,
       label: 'PEP-flagg',
       detail: 'Investor er registrert som politisk eksponert person og krever tett oppfølging.',
       tone: 'critical',
@@ -93,34 +90,39 @@ function getTimelineForRow(row: AmlPepFollowUpRow, isUpdated: boolean): ReviewTi
   return items;
 }
 
+function getVisibleRows(rows: AmlPepFollowUpRow[], activeFilter: ReviewFilter) {
+  return rows.filter((row) => {
+    if (activeFilter === 'forfalt') {
+      return row.reviewStatus === 'Forfalt';
+    }
+
+    if (activeFilter === 'snart') {
+      return row.reviewStatus === 'Forfaller snart';
+    }
+
+    if (activeFilter === 'hoy-risiko') {
+      return row.amlRiskLevel === 'Høy';
+    }
+
+    if (activeFilter === 'mangler-dokumentasjon') {
+      return row.documentationStatus !== 'Komplett';
+    }
+
+    return true;
+  });
+}
+
 function AmlPepMonitoringSection({ overview }: AmlPepMonitoringSectionProps) {
   const [activeFilter, setActiveFilter] = useState<ReviewFilter>('alle');
   const [rows, setRows] = useState<AmlPepFollowUpRow[]>(overview.rows);
   const [selectedCustomerId, setSelectedCustomerId] = useState('');
   const [updatedIds, setUpdatedIds] = useState<string[]>([]);
 
-  const visibleRows = useMemo(
-    () =>
-      rows.filter((row) => {
-        if (activeFilter === 'forfalt') {
-          return row.reviewStatus === 'Forfalt';
-        }
+  const visibleRows = useMemo(() => getVisibleRows(rows, activeFilter), [activeFilter, rows]);
 
-        if (activeFilter === 'snart') {
-          return row.reviewStatus === 'Forfaller snart';
-        }
-
-        if (activeFilter === 'hoy-risiko') {
-          return row.amlRiskLevel === 'Høy';
-        }
-
-        if (activeFilter === 'mangler-dokumentasjon') {
-          return row.documentationStatus !== 'Komplett';
-        }
-
-        return true;
-      }),
-    [activeFilter, rows],
+  const selectedRow = useMemo(
+    () => visibleRows.find((row) => row.customerId === selectedCustomerId) ?? null,
+    [selectedCustomerId, visibleRows],
   );
 
   function handleSelectRow(customerId: string) {
@@ -152,9 +154,7 @@ function AmlPepMonitoringSection({ overview }: AmlPepMonitoringSectionProps) {
     );
 
     setUpdatedIds((current) =>
-      current.includes(customerId)
-        ? current
-        : [...current, customerId],
+      current.includes(customerId) ? current : [...current, customerId],
     );
   }
 
@@ -172,7 +172,10 @@ function AmlPepMonitoringSection({ overview }: AmlPepMonitoringSectionProps) {
           <div>
             <p className="feature-section__eyebrow">AML og PEP</p>
             <h2 className="feature-section__title">PEP-oppfølging</h2>
-            
+            <p className="feature-section__description">
+              Se hvilke kontroller som må tas nå, åpne en investor og oppdater status uten å
+              bla mellom flere visninger.
+            </p>
           </div>
         </div>
 
@@ -221,9 +224,9 @@ function AmlPepMonitoringSection({ overview }: AmlPepMonitoringSectionProps) {
         <section className="data-table-card">
           <div className="data-table-card__header">
             <div>
-              <h3 className="data-table-card__title">Saker som må vurderes nå</h3>
+              <h3 className="data-table-card__title">Kontroller som krever oppfølging</h3>
               <p className="data-table-card__description">
-                Vis detaljer for mer informasjon om investor
+                Velg en investor for å se detaljer og oppdatere kontrollen.
               </p>
             </div>
           </div>
@@ -239,13 +242,16 @@ function AmlPepMonitoringSection({ overview }: AmlPepMonitoringSectionProps) {
                   className={`aml-review-card${isSelected ? ' aml-review-card--selected' : ''}`}
                 >
                   <div className="stack-card__row">
-                    <div>
+                    <div className="aml-review-card__main">
                       <p className="queue-card__eyebrow">
-                        {row.pepStatus === 'Ja' ? 'PEP-investor' : 'Standardkontroll'}
+                        {row.pepStatus === 'Ja' ? 'PEP-investor' : 'Ordinær kontroll'}
                       </p>
                       <h3 className="queue-card__title">{row.investorName}</h3>
                     </div>
+
                     <div className="aml-review-card__badges">
+                      <span className={getBadgeClassName(row.reviewStatus)}>{row.reviewStatus}</span>
+                      <span className={getBadgeClassName(row.amlRiskLevel)}>{row.amlRiskLevel}</span>
                       <button
                         type="button"
                         className="aml-review-card__toggle"
@@ -254,106 +260,88 @@ function AmlPepMonitoringSection({ overview }: AmlPepMonitoringSectionProps) {
                       >
                         {isSelected ? 'Skjul detaljer' : 'Vis detaljer'}
                       </button>
-                      {isUpdated ? (
-                        <span className={getBadgeClassName('Oppdatert')}>Oppdatert</span>
-                      ) : null}
-                      <span className={getBadgeClassName(row.reviewStatus)}>
-                        {row.reviewStatus}
-                      </span>
                     </div>
                   </div>
 
-                  <p className="queue-card__summary">
-                    AML-risiko {row.amlRiskLevel.toLowerCase()} og dokumentasjon{' '}
-                    {row.documentationStatus.toLowerCase()}.
-                  </p>
-
-                  <div className="queue-card__meta-row">
+                  <div className="queue-card__meta-row aml-review-card__meta-row">
                     <span>Siste kontroll: {row.lastReviewLabel}</span>
                     <span>Neste kontroll: {row.nextReviewLabel}</span>
+                    <span>Dokumentasjon: {row.documentationStatus}</span>
+                    {isUpdated ? <span>Kontroll oppdatert</span> : null}
                   </div>
 
                   {isSelected ? (
-                  <div className="aml-review-popover">
-                    <div className="aml-review-popover__header">
-                      <div>
-                        <h3 className="data-table-card__title">{row.investorName}</h3>
-                        <p className="data-table-card__description">
-                          PEP-status {row.pepStatus}, neste kontroll {row.nextReviewLabel}.
-                        </p>
+                    <div className="aml-review-popover" role="region" aria-label={`Detaljer for ${row.investorName}`}>
+                      <div className="aml-review-popover__header">
+                        <div>
+                          <p className="aml-review-popover__eyebrow">Valgt investor</p>
+                          <h3 className="data-table-card__title">{row.investorName}</h3>
+                          <p className="data-table-card__description">
+                            PEP-status {row.pepStatus}. Neste kontroll {row.nextReviewLabel}.
+                          </p>
+                        </div>
+
+                        <button
+                          type="button"
+                          className="queue-action queue-action--primary"
+                          onClick={(event) => {
+                            event.stopPropagation();
+                            handleQuickUpdate(row.customerId);
+                          }}
+                        >
+                          Marker kontroll som oppdatert
+                        </button>
                       </div>
 
-                      <button
-                        type="button"
-                        className="queue-action queue-action--primary"
-                        onClick={(event) => {
-                          event.stopPropagation();
-                          handleQuickUpdate(row.customerId);
-                        }}
-                      >
-                        Marker kontroll som oppdatert
-                      </button>
-                    </div>
+                      <div className="aml-review__detail-grid">
+                        <article className="stack-card aml-review-popover__panel">
+                          <h3 className="stack-card__title">Status nå</h3>
+                          <div className="aml-review-popover__status-row">
+                            <span className={getBadgeClassName(row.reviewStatus)}>{row.reviewStatus}</span>
+                            <span className={getBadgeClassName(row.documentationStatus)}>
+                              {row.documentationStatus}
+                            </span>
+                            <span className={getBadgeClassName(row.amlRiskLevel)}>{row.amlRiskLevel}</span>
+                          </div>
+                          <p className="stack-card__body">
+                            Siste kontroll ble gjennomført {row.lastReviewLabel}, og neste kontroll er satt til {row.nextReviewLabel}.
+                          </p>
+                        </article>
 
-                    <div className="aml-review__detail-grid">
-                      <article className="stack-card">
-                        <div className="stack-card__row">
-                          <h3 className="stack-card__title">Kontrollstatus</h3>
-                          <span className={getBadgeClassName(row.reviewStatus)}>
-                            {row.reviewStatus}
-                          </span>
-                        </div>
-                        <p className="stack-card__body">
-                          Siste kontroll {row.lastReviewLabel}. Neste kontroll {row.nextReviewLabel}.
-                        </p>
-                      </article>
-
-                      <article className="stack-card">
-                        <div className="stack-card__row">
-                          <h3 className="stack-card__title">Dokumentasjon</h3>
-                          <span className={getBadgeClassName(row.documentationStatus)}>
-                            {row.documentationStatus}
-                          </span>
-                        </div>
-                        <p className="stack-card__body">
-                          Risikonivå {row.amlRiskLevel.toLowerCase()} og PEP-status{' '}
-                          {row.pepStatus.toLowerCase()}.
-                        </p>
-                      </article>
-                    </div>
-
-                    <div className="aml-review__timeline">
-                      <div className="stack-list">
-                        {getTimelineForRow(row, isUpdated).map((item) => (
-                          <article key={item.id} className="stack-card">
-                            <div className="stack-card__row">
-                              <h3 className="stack-card__title">{item.label}</h3>
-                              <span
-                                className={getBadgeClassName(
-                                  item.tone === 'neutral'
-                                    ? 'Planlagt'
-                                    : item.tone === 'critical'
-                                      ? 'Forfalt'
+                        <article className="stack-card aml-review-popover__panel">
+                          <h3 className="stack-card__title">Hva må følges opp?</h3>
+                          <div className="stack-list">
+                            {getTimelineForRow(row, isUpdated).map((item) => (
+                              <article key={item.id} className="aml-review-popover__timeline-item">
+                                <div className="stack-card__row stack-card__row--dense">
+                                  <h4 className="stack-card__title">{item.label}</h4>
+                                  <span
+                                    className={getBadgeClassName(
+                                      item.tone === 'neutral'
+                                        ? 'Planlagt'
+                                        : item.tone === 'critical'
+                                          ? 'Forfalt'
+                                          : item.tone === 'warning'
+                                            ? 'Forfaller snart'
+                                            : 'Oppdatert',
+                                    )}
+                                  >
+                                    {item.tone === 'critical'
+                                      ? 'Krever tiltak'
                                       : item.tone === 'warning'
-                                        ? 'Forfaller snart'
-                                        : 'Oppdatert',
-                                )}
-                              >
-                                {item.tone === 'critical'
-                                  ? 'Krever tiltak'
-                                  : item.tone === 'warning'
-                                    ? 'Følg opp'
-                                    : item.tone === 'ok'
-                                      ? 'OK'
-                                      : 'Info'}
-                              </span>
-                            </div>
-                            <p className="stack-card__body">{item.detail}</p>
-                          </article>
-                        ))}
+                                        ? 'Følg opp'
+                                        : item.tone === 'ok'
+                                          ? 'Oppdatert'
+                                          : 'Til info'}
+                                  </span>
+                                </div>
+                                <p className="stack-card__body">{item.detail}</p>
+                              </article>
+                            ))}
+                          </div>
+                        </article>
                       </div>
                     </div>
-                  </div>
                   ) : null}
                 </article>
               );
@@ -366,7 +354,7 @@ function AmlPepMonitoringSection({ overview }: AmlPepMonitoringSectionProps) {
             <div>
               <h3 className="data-table-card__title">Alle PEP-kontroller</h3>
               <p className="data-table-card__description">
-                Full oversikt for kontroll og revisjon
+                Full oversikt for kontroll og revisjon.
               </p>
             </div>
           </div>
@@ -390,14 +378,16 @@ function AmlPepMonitoringSection({ overview }: AmlPepMonitoringSectionProps) {
                     <td>
                       <div className="table-primary-cell">
                         <strong>{row.investorName}</strong>
-                        <span>{updatedIds.includes(row.customerId) ? 'Kontroll oppdatert nå' : 'Operativ oppfølging'}</span>
+                        <span>
+                          {updatedIds.includes(row.customerId)
+                            ? 'Kontroll oppdatert'
+                            : 'Operativ oppfølging'}
+                        </span>
                       </div>
                     </td>
                     <td>{row.pepStatus}</td>
                     <td>
-                      <span className={getBadgeClassName(row.amlRiskLevel)}>
-                        {row.amlRiskLevel}
-                      </span>
+                      <span className={getBadgeClassName(row.amlRiskLevel)}>{row.amlRiskLevel}</span>
                     </td>
                     <td>
                       <span className={getBadgeClassName(row.documentationStatus)}>
@@ -407,9 +397,7 @@ function AmlPepMonitoringSection({ overview }: AmlPepMonitoringSectionProps) {
                     <td>{row.lastReviewLabel}</td>
                     <td>{row.nextReviewLabel}</td>
                     <td>
-                      <span className={getBadgeClassName(row.reviewStatus)}>
-                        {row.reviewStatus}
-                      </span>
+                      <span className={getBadgeClassName(row.reviewStatus)}>{row.reviewStatus}</span>
                     </td>
                   </tr>
                 ))}
@@ -423,4 +411,3 @@ function AmlPepMonitoringSection({ overview }: AmlPepMonitoringSectionProps) {
 }
 
 export default AmlPepMonitoringSection;
-
