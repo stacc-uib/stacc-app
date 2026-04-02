@@ -13,9 +13,7 @@ body {
   min-width: 320px;
   min-height: 100vh;
   color: #111827;
-  background:
-    radial-gradient(circle at top right, rgba(218, 30, 36, 0.04), transparent 18%),
-    linear-gradient(180deg, #f6f8fa 0%, #edf1f4 100%);
+  background: #f4f6f8;
 }
 
 img,
@@ -90,21 +88,16 @@ textarea {
   width: 40px;
   height: 40px;
   border: 1px solid rgba(255, 255, 255, 0.16);
-  border-radius: 0.75rem;
+  border-radius: 0.4rem;
   background: rgba(255, 255, 255, 0.05);
   color: #fff;
   cursor: pointer;
   flex: 0 0 auto;
-  transition:
-    background-color 0.2s ease,
-    transform 0.2s ease,
-    border-color 0.2s ease;
+  transition: background-color 0.2s ease;
 }
 
 .sidebar-toggle:hover {
   background: rgba(255, 255, 255, 0.12);
-  border-color: rgba(255, 255, 255, 0.28);
-  transform: translateY(-1px);
 }
 
 .sidebar-footer {
@@ -117,7 +110,7 @@ textarea {
   min-height: 48px;
   justify-content: center;
   gap: 0.55rem;
-  border-radius: 1rem;
+  border-radius: 0.4rem;
 }
 
 .sidebar-toggle--bottom span {
@@ -147,27 +140,21 @@ textarea {
   min-height: 52px;
   padding: 0.85rem 1rem;
   border: 0;
-  border-radius: 1rem;
+  border-radius: 0.4rem;
   background: transparent;
   color: rgba(255, 255, 255, 0.82);
   text-align: left;
   cursor: pointer;
-  transition:
-    background-color 0.2s ease,
-    color 0.2s ease,
-    transform 0.2s ease,
-    box-shadow 0.2s ease;
+  transition: background-color 0.2s ease, color 0.2s ease;
 }
 
 .sidebar-item:hover {
   background: rgba(255, 255, 255, 0.05);
   color: #fff;
-  transform: translateX(1px);
-  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.06);
 }
 
 .sidebar-item--active {
-  background: linear-gradient(135deg, #da1e24, #8b0b14);
+  background: #da1e24;
   color: #fff;
 }
 
@@ -205,8 +192,8 @@ textarea {
   max-width: 100%;
   padding: 2rem;
   border: 1px solid rgba(17, 24, 39, 0.08);
-  border-radius: 1rem;
-  background: rgba(255, 255, 255, 0.92);
+  border-radius: 0.5rem;
+  background: #fff;
 }
 
 .content-card h1 {
@@ -239,8 +226,8 @@ textarea {
   min-height: 220px;
   padding: 1.5rem;
   border: 1px dashed rgba(17, 24, 39, 0.16);
-  border-radius: 1.25rem;
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.95), rgba(245, 247, 250, 0.82));
+  border-radius: 0.4rem;
+  background: #f9fafb;
   color: #374151;
   font-weight: 500;
 }
@@ -308,8 +295,8 @@ textarea {
   min-width: 0;
   padding: 1.5rem;
   border: 1px solid rgba(17, 24, 39, 0.08);
-  border-radius: 1rem;
-  background: rgba(255, 255, 255, 0.96);
+  border-radius: 0.5rem;
+  background: #fff;
 }
 
 
@@ -363,7 +350,7 @@ textarea {
 .summary-card {
   padding: 1.25rem;
   border: 1px solid rgba(17, 24, 39, 0.08);
-  border-radius: 0.8rem;
+  border-radius: 0.4rem;
   background: #fff;
 }
 
@@ -410,8 +397,8 @@ textarea {
 .feature-subsection {
   padding: 1rem;
   border: 1px solid rgba(17, 24, 39, 0.06);
-  border-radius: 0.85rem;
-  background: rgba(255, 255, 255, 0.92);
+  border-radius: 0.4rem;
+  background: #fff;
 }
 
 .feature-subsection__header {
@@ -442,8 +429,8 @@ textarea {
 .stack-card {
   padding: 1rem;
   border: 1px solid rgba(17, 24, 39, 0.08);
-  border-radius: 0.85rem;
-  background: rgba(255, 255, 255, 0.92);
+  border-radius: 0.4rem;
+  background: #fff;
 }
 
 .stack-card--warning {
@@ -506,8 +493,8 @@ textarea {
   min-width: 0;
   padding: 1.25rem;
   border: 1px solid rgba(17, 24, 39, 0.08);
-  border-radius: 0.9rem;
-  background: rgba(255, 255, 255, 0.95);
+  border-radius: 0.4rem;
+  background: #fff;
 }
 
 .data-table-card--tight {
@@ -599,11 +586,11 @@ textarea {
 .status-badge {
   display: inline-flex;
   align-items: center;
-  padding: 0.28rem 0.6rem;
+  padding: 0.25rem 0.55rem;
   max-width: 100%;
-  border-radius: 0.5rem;
+  border-radius: 0.25rem;
   font-size: 0.8rem;
-  font-weight: 700;
+  font-weight: 600;
   line-height: 1.3;
   white-space: normal;
 }
@@ -629,26 +616,26 @@ textarea {
 }
 
 .feature-section--calendar .feature-section__surface {
-  border-top: 3px solid #0f766e;
+  border-top-color: rgba(17, 24, 39, 0.08);
 }
 
 .feature-section--queue .feature-section__surface {
-  border-top: 3px solid #7c2d12;
+  border-top-color: rgba(17, 24, 39, 0.08);
 }
 
 .feature-section--dashboard .feature-section__surface {
   border: 1px solid rgba(15, 23, 42, 0.08);
-  background: rgba(255, 255, 255, 0.96);
+  background: #fff;
 }
 
 .feature-section--classification .feature-section__surface {
-  border-top: 3px solid #1d4ed8;
-  background: rgba(255, 255, 255, 0.96);
+  border-top-color: rgba(17, 24, 39, 0.08);
+  background: #fff;
 }
 
 .feature-section--trade-registration .feature-section__surface {
-  border-top: 3px solid #0f766e;
-  background: rgba(255, 255, 255, 0.96);
+  border-top-color: rgba(17, 24, 39, 0.08);
+  background: #fff;
 }
 
 .compliance-registry__summary-grid {
@@ -784,8 +771,8 @@ textarea {
 .calendar-card {
   padding: 1.25rem;
   border: 1px solid rgba(17, 24, 39, 0.08);
-  border-radius: 0.9rem;
-  background: rgba(255, 255, 255, 0.95);
+  border-radius: 0.4rem;
+  background: #fff;
 }
 
 .calendar-card__header {
@@ -810,7 +797,7 @@ textarea {
   width: 40px;
   height: 40px;
   border: 1px solid rgba(17, 24, 39, 0.12);
-  border-radius: 0.65rem;
+  border-radius: 0.3rem;
   background: #fff;
   color: #111827;
   cursor: pointer;
@@ -853,26 +840,29 @@ textarea {
   min-width: 40px;
   min-height: 34px;
   padding: 0.35rem 0.7rem;
-  border-radius: 0.5rem;
+  border-radius: 0.25rem;
   color: #111827;
 }
 
 .calendar-day--finanstilsynet {
-  background: #dbeafe;
+  border-left: 3px solid #2563eb;
+  background: #f0f5ff;
   color: #1d4ed8;
-  font-weight: 700;
+  font-weight: 600;
 }
 
 .calendar-day--skatt {
-  background: #dcfce7;
+  border-left: 3px solid #16a34a;
+  background: #f0fdf4;
   color: #15803d;
-  font-weight: 700;
+  font-weight: 600;
 }
 
 .calendar-day--pep {
-  background: #fef3c7;
+  border-left: 3px solid #ca8a04;
+  background: #fefce8;
   color: #b45309;
-  font-weight: 700;
+  font-weight: 600;
 }
 
 .calendar-legend {
@@ -890,9 +880,9 @@ textarea {
 }
 
 .calendar-legend__dot {
-  width: 12px;
-  height: 12px;
-  border-radius: 999px;
+  width: 10px;
+  height: 10px;
+  border-radius: 2px;
 }
 
 .calendar-legend__dot--finanstilsynet {
@@ -918,7 +908,7 @@ textarea {
   min-height: 38px;
   padding: 0.5rem 0.9rem;
   border: 1px solid rgba(17, 24, 39, 0.12);
-  border-radius: 0.55rem;
+  border-radius: 0.3rem;
   background: #fff;
   color: #374151;
   cursor: pointer;
@@ -936,8 +926,8 @@ textarea {
   gap: 1rem;
   padding: 1rem 1.1rem;
   border: 1px solid rgba(17, 24, 39, 0.08);
-  border-radius: 0.85rem;
-  background: rgba(255, 255, 255, 0.96);
+  border-radius: 0.4rem;
+  background: #fff;
 }
 
 .queue-card--empty {
@@ -994,7 +984,7 @@ textarea {
   min-height: 38px;
   padding: 0.55rem 0.9rem;
   border: 1px solid rgba(17, 24, 39, 0.12);
-  border-radius: 0.65rem;
+  border-radius: 0.3rem;
   background: #fff;
   color: #111827;
   cursor: pointer;
@@ -1029,20 +1019,16 @@ textarea {
   min-height: 42px;
   padding: 0.7rem 0.85rem;
   border: 1px solid rgba(17, 24, 39, 0.12);
-  border-radius: 0.65rem;
+  border-radius: 0.3rem;
   background: #fff;
   color: #111827;
   font: inherit;
-  transition:
-    border-color 0.2s ease,
-    box-shadow 0.2s ease,
-    background-color 0.2s ease;
+  transition: border-color 0.2s ease;
 }
 
 .compliance-registry__search input:focus {
   outline: none;
   border-color: rgba(17, 24, 39, 0.28);
-  box-shadow: 0 0 0 3px rgba(17, 24, 39, 0.08);
   background: #fff;
 }
 
@@ -1053,8 +1039,8 @@ textarea {
   gap: 1rem;
   margin-bottom: 1rem;
   padding: 0.9rem 1rem;
-  border: 1px solid rgba(148, 163, 184, 0.18);
-  border-radius: 0.75rem;
+  border: 1px solid rgba(17, 24, 39, 0.08);
+  border-radius: 0.3rem;
   background: #f9fafb;
 }
 
@@ -1062,14 +1048,7 @@ textarea {
   margin-bottom: 0;
 }
 
-.compliance-registry__filter {
-  transition:
-    transform 0.2s ease,
-    border-color 0.2s ease;
-}
-
 .compliance-registry__filter:hover {
-  transform: translateY(-1px);
   border-color: rgba(17, 24, 39, 0.22);
 }
 
@@ -1146,7 +1125,7 @@ textarea {
 .trade-banner {
   padding: 0.95rem 1rem;
   border: 1px solid rgba(15, 118, 110, 0.18);
-  border-radius: 0.8rem;
+  border-radius: 0.3rem;
   background: #ecfdf5;
   color: #115e59;
   font-weight: 600;
@@ -1197,13 +1176,10 @@ textarea {
   min-height: 44px;
   padding: 0.75rem 0.85rem;
   border: 1px solid rgba(17, 24, 39, 0.12);
-  border-radius: 0.7rem;
+  border-radius: 0.3rem;
   background: #fff;
   color: #111827;
-  transition:
-    border-color 0.2s ease,
-    box-shadow 0.2s ease,
-    background-color 0.2s ease;
+  transition: border-color 0.2s ease;
 }
 
 .trade-field textarea {
@@ -1216,7 +1192,6 @@ textarea {
 .trade-field textarea:focus {
   outline: none;
   border-color: rgba(15, 118, 110, 0.45);
-  box-shadow: 0 0 0 3px rgba(15, 118, 110, 0.12);
 }
 
 .trade-field--search input {
@@ -1259,9 +1234,9 @@ textarea {
   max-height: 260px;
   overflow-y: auto;
   border: 1px solid rgba(17, 24, 39, 0.12);
-  border-radius: 0.7rem;
+  border-radius: 0.3rem;
   background: #fff;
-  box-shadow: 0 8px 18px rgba(15, 23, 42, 0.08);
+  box-shadow: 0 4px 10px rgba(15, 23, 42, 0.08);
 }
 
 .trade-picker__option {
@@ -1302,7 +1277,7 @@ textarea {
   gap: 0.65rem;
   padding: 0.35rem;
   border: 1px solid rgba(17, 24, 39, 0.08);
-  border-radius: 0.85rem;
+  border-radius: 0.3rem;
   background: #f8fafc;
 }
 
@@ -1311,7 +1286,7 @@ textarea {
   min-height: 42px;
   padding: 0.65rem 1rem;
   border: 0;
-  border-radius: 0.7rem;
+  border-radius: 0.25rem;
   background: transparent;
   color: #374151;
   font-weight: 700;
@@ -1343,7 +1318,7 @@ textarea {
   gap: 0.35rem;
   padding: 0.9rem 1rem;
   border: 1px solid rgba(17, 24, 39, 0.08);
-  border-radius: 0.8rem;
+  border-radius: 0.3rem;
   background: #f8fafc;
 }
 
@@ -1364,7 +1339,7 @@ textarea {
   margin-top: 1rem;
   padding: 1rem;
   border: 1px solid rgba(15, 118, 110, 0.14);
-  border-radius: 0.85rem;
+  border-radius: 0.3rem;
   background: #f0fdfa;
 }
 
@@ -1389,7 +1364,7 @@ textarea {
   margin-top: 1rem;
   padding: 1rem;
   border: 1px solid rgba(17, 24, 39, 0.08);
-  border-radius: 0.85rem;
+  border-radius: 0.3rem;
   background: #f9fafb;
 }
 
@@ -1481,7 +1456,7 @@ textarea {
 .trade-mini-card {
   padding: 0.95rem 1rem;
   border: 1px solid rgba(17, 24, 39, 0.08);
-  border-radius: 0.8rem;
+  border-radius: 0.3rem;
   background: #fff;
 }
 
@@ -1498,8 +1473,8 @@ textarea {
   width: 100%;
   padding: 1rem 1.1rem;
   border: 1px solid rgba(17, 24, 39, 0.08);
-  border-radius: 0.85rem;
-  background: rgba(255, 255, 255, 0.96);
+  border-radius: 0.4rem;
+  background: #fff;
   color: inherit;
   text-align: left;
 }
@@ -1511,9 +1486,6 @@ textarea {
 .aml-review-card--selected {
   border-color: rgba(17, 24, 39, 0.28);
   background: #fcfcfd;
-  box-shadow:
-    inset 0 0 0 1px rgba(17, 24, 39, 0.08),
-    0 12px 28px rgba(15, 23, 42, 0.08);
 }
 
 .aml-review-card__badges {
@@ -1533,7 +1505,7 @@ textarea {
   min-height: 34px;
   padding: 0.45rem 0.75rem;
   border: 1px solid rgba(17, 24, 39, 0.12);
-  border-radius: 0.55rem;
+  border-radius: 0.3rem;
   background: #fff;
   color: #111827;
   cursor: pointer;
@@ -1543,10 +1515,9 @@ textarea {
   width: 100%;
   margin-top: 0.5rem;
   padding: 1.1rem;
-  border: 1px solid rgba(17, 24, 39, 0.18);
-  border-radius: 0.85rem;
-  background: #e3e1e1;
-  box-shadow: 0 18px 34px rgba(15, 23, 42, 0.1);
+  border: 1px solid rgba(17, 24, 39, 0.12);
+  border-radius: 0.4rem;
+  background: #f3f4f6;
 }
 
 .aml-review-popover__eyebrow {
@@ -1599,8 +1570,8 @@ textarea {
 .calendar-mini {
   padding: 0.9rem;
   border: 1px solid rgba(17, 24, 39, 0.08);
-  border-radius: 0.85rem;
-  background: rgba(255, 255, 255, 0.92);
+  border-radius: 0.4rem;
+  background: #fff;
 }
 
 .calendar-mini__header {
@@ -1621,7 +1592,7 @@ textarea {
   width: 36px;
   height: 36px;
   border: 1px solid rgba(17, 24, 39, 0.12);
-  border-radius: 0.65rem;
+  border-radius: 0.3rem;
   background: #fff;
   color: #111827;
   cursor: pointer;
@@ -1663,7 +1634,7 @@ textarea {
   justify-content: center;
   width: 100%;
   min-height: 34px;
-  border-radius: 0.5rem;
+  border-radius: 0.25rem;
   color: #111827;
 }
 
@@ -1675,37 +1646,41 @@ textarea {
 }
 
 .calendar-mini__day--finanstilsynet {
-  background: #dbeafe;
+  border-left: 3px solid #2563eb;
+  background: #f0f5ff;
   color: #1d4ed8;
-  font-weight: 700;
+  font-weight: 600;
 }
 
 .calendar-mini__day--skatt {
-  background: #dcfce7;
+  border-left: 3px solid #16a34a;
+  background: #f0fdf4;
   color: #15803d;
-  font-weight: 700;
+  font-weight: 600;
 }
 
 .calendar-mini__day--pep {
-  background: #fef3c7;
+  border-left: 3px solid #ca8a04;
+  background: #fefce8;
   color: #b45309;
-  font-weight: 700;
+  font-weight: 600;
 }
 
 .calendar-mini__tooltip {
   position: absolute;
-  bottom: calc(100% + 0.55rem);
+  bottom: calc(100% + 0.4rem);
   left: 50%;
   z-index: 6;
   display: none;
-  width: 220px;
-  padding: 0.75rem;
+  width: 200px;
+  padding: 0.6rem 0.75rem;
   border: 1px solid rgba(17, 24, 39, 0.12);
-  border-radius: 0.65rem;
-  background: rgba(17, 24, 39, 0.96);
-  color: #f8fafc;
+  border-radius: 0.3rem;
+  background: #fff;
+  color: #111827;
   text-align: left;
   transform: translateX(-50%);
+  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.08);
 }
 
 .calendar-mini__tooltip strong,
@@ -1715,7 +1690,9 @@ textarea {
 }
 
 .calendar-mini__tooltip span + span {
-  margin-top: 0.3rem;
+  margin-top: 0.25rem;
+  color: #6b7280;
+  font-size: 0.85rem;
 }
 
 .calendar-mini__day:hover .calendar-mini__tooltip,
@@ -1837,12 +1814,12 @@ textarea {
 
   .content-card {
     padding: 1.5rem;
-    border-radius: 0.85rem;
+    border-radius: 0.4rem;
   }
 
   .feature-section__surface {
     padding: 1.1rem;
-    border-radius: 0.85rem;
+    border-radius: 0.4rem;
   }
 
   .compliance-subnav {
