@@ -1,6 +1,5 @@
 ﻿import { useEffect, useState } from 'react';
-import ComplianceAmlPepView from '../components/ComplianceAmlPepView';
-import ComplianceClassificationView from '../components/ComplianceClassificationView';
+import ComplianceInvestorsView from '../components/ComplianceInvestorsView';
 import ComplianceOverviewView from '../components/ComplianceOverviewView';
 import ComplianceReportingView from '../components/ComplianceReportingView';
 import ComplianceSubnav from '../components/ComplianceSubnav';
@@ -18,13 +17,8 @@ const complianceSubnavItems = [
     description: '',
   },
   {
-    id: 'aml-pep',
-    label: 'AML og PEP',
-    description: '',
-  },
-  {
-    id: 'klassifisering',
-    label: 'Investorstatus',
+    id: 'investorer',
+    label: 'Investorer',
     description: '',
   },
 ] as const;
@@ -85,12 +79,8 @@ function CompliancePage() {
         <ComplianceReportingView pageData={pageData} />
       ) : null}
 
-      {activeSubpageId === 'aml-pep' ? (
-        <ComplianceAmlPepView pageData={pageData} />
-      ) : null}
-
-      {activeSubpageId === 'klassifisering' ? (
-        <ComplianceClassificationView pageData={pageData} />
+      {activeSubpageId === 'investorer' ? (
+        <ComplianceInvestorsView pageData={pageData} />
       ) : null}
     </div>
   );

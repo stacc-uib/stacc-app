@@ -15,8 +15,7 @@ export type IndustryClassificationOption =
 export type ComplianceSubpageId =
   | 'oversikt'
   | 'rapportering'
-  | 'aml-pep'
-  | 'klassifisering';
+  | 'investorer';
 
 export type ComplianceAlert = {
   id: string;

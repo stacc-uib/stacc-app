@@ -23,11 +23,11 @@ function getTaskTargetSubpageId(title: string) {
   const normalizedTitle = title.toLowerCase();
 
   if (normalizedTitle.includes('pep')) {
-    return 'aml-pep' as const;
+    return 'investorer' as const;
   }
 
   if (normalizedTitle.includes('næring')) {
-    return 'klassifisering' as const;
+    return 'investorer' as const;
   }
 
   if (normalizedTitle.includes('skatteeksport')) {
@@ -57,7 +57,7 @@ export function getComplianceWorkQueueOverview(
       owner: 'CCO',
       actionLabel: 'Gjennomgå',
       actionType: 'gjennomga',
-      targetSubpageId: 'aml-pep',
+      targetSubpageId: 'investorer',
       summary: `Status ${row.reviewStatus.toLowerCase()} med ${row.amlRiskLevel.toLowerCase()} risiko og dokumentasjon: ${row.documentationStatus.toLowerCase()}.`,
       filterTags: [
         'alle',
@@ -103,7 +103,7 @@ export function getComplianceWorkQueueOverview(
         owner: 'Drift',
         actionLabel: 'Åpne sak',
         actionType: 'apne-sak',
-        targetSubpageId: 'klassifisering',
+        targetSubpageId: 'investorer',
         summary: `Investor er markert som ${row.investorCategory.toLowerCase()} med status ${formatClassificationStatus(row.classificationStatus)}.`,
         filterTags: [
           'alle',

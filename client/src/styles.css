@@ -655,6 +655,65 @@ textarea {
   border-color: rgba(17, 24, 39, 0.08);
 }
 
+.investors-view {
+  margin-top: 1.5rem;
+}
+
+.investors-view__tabs {
+  display: flex;
+  gap: 0;
+  border-bottom: 1px solid rgba(17, 24, 39, 0.1);
+  margin-bottom: 0;
+}
+
+.investors-view__tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-height: 42px;
+  padding: 0.6rem 1rem;
+  border: 0;
+  border-bottom: 2px solid transparent;
+  background: transparent;
+  color: #4b5563;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: border-color 0.15s ease, color 0.15s ease;
+}
+
+.investors-view__tab:hover {
+  color: #111827;
+  border-bottom-color: rgba(17, 24, 39, 0.18);
+}
+
+.investors-view__tab--active {
+  color: #111827;
+  border-bottom-color: #111827;
+}
+
+.investors-view__tab-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 0.35rem;
+  border-radius: 0.25rem;
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+
+.investors-view__tab-badge--critical {
+  background: #fef2f2;
+  color: #b91c1c;
+}
+
+.investors-view__tab-badge--warning {
+  background: #fff7ed;
+  color: #b45309;
+}
+
 .compliance-overview {
   display: flex;
   flex-direction: column;
