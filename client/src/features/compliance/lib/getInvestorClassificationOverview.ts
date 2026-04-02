@@ -1,5 +1,6 @@
 import investors from '../../../mocks/investors.json';
 import { investorComplianceDetails } from '../mocks/investorComplianceDetails';
+import { formatDateLabel } from '../../../shared/utils/formatDateLabel';
 import type {
   InvestorClassificationOverview,
   InvestorClassificationRow,
@@ -12,11 +13,6 @@ type InvestorRecord = {
   customerType: string;
   category: 'Professional' | 'Retail';
 };
-
-function formatDateLabel(dateString: string) {
-  const [year, month, day] = dateString.split('-');
-  return `${day}.${month}.${year}`;
-}
 
 function getClassificationStatus(
   investorCategory: InvestorRecord['category'],

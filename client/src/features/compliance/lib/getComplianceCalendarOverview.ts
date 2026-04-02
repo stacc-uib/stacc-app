@@ -26,7 +26,7 @@ const monthLabels = [
   'des',
 ];
 
-function formatDateLabel(dateString: string) {
+function formatCalendarDateLabel(dateString: string) {
   const [year, month, day] = dateString.split('-').map(Number);
   return `${String(day).padStart(2, '0')}. ${monthLabels[month - 1]} ${year}`;
 }
@@ -60,7 +60,7 @@ function getUpcomingPepEvents(): ComplianceCalendarEvent[] {
       title: `PEP-kontroll for ${investor.name}`,
       category: 'pep',
       date: detail.pepNextReviewDate,
-      dateLabel: formatDateLabel(detail.pepNextReviewDate),
+      dateLabel: formatCalendarDateLabel(detail.pepNextReviewDate),
       summary: detail.pepStatus
         ? 'PEP-kontrollen må fornyes og vurderes av compliance.'
         : 'Neste ordinære PEP-kontroll nærmer seg og må følges opp.',

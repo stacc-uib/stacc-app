@@ -275,7 +275,7 @@ function TradesPage() {
 
     setLastActionMessage(
       `${prefix}: ${selectedInvestor.investorName}, ${
-        direction === 'kjop' ? 'kjop' : 'salg'
+        direction === 'kjop' ? 'kjøp' : 'salg'
       } ${formatNumber(unitsValue)} andeler i ${selectedFund.shortName} ${selectedClass.label.toLowerCase()}.`,
     );
   }
@@ -625,14 +625,14 @@ function TradesPage() {
                         </span>
                         <span
                           className={`status-badge ${
-                            selectedInvestor.amlRiskLevel === 'Hoy'
+                            selectedInvestor.amlRiskLevel === 'Høy'
                               ? 'status-badge--critical'
                               : selectedInvestor.amlRiskLevel === 'Medium'
                                 ? 'status-badge--warning'
                                 : 'status-badge--ok'
                           }`}
                         >
-                          AML {selectedInvestor.amlRiskLevel === 'Hoy' ? 'Høy' : selectedInvestor.amlRiskLevel}
+                          AML {selectedInvestor.amlRiskLevel}
                         </span>
                       </div>
                     </div>

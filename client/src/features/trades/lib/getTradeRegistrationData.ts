@@ -1,6 +1,7 @@
 import investors from '../../../mocks/investors.json';
 import tradeRecords from '../../../mocks/trades.json';
 import { investorComplianceDetails } from '../../compliance/mocks/investorComplianceDetails';
+import { formatDateLabel } from '../../../shared/utils/formatDateLabel';
 import type {
   TradeClassOption,
   TradeFundOption,
@@ -58,12 +59,7 @@ const classBlueprints = [
   },
 ] as const;
 
-function formatDateLabel(dateString: string) {
-  const [year, month, day] = dateString.split('-');
-  return `${day}.${month}.${year}`;
-}
-
-function normalizeTransactionType(value: string | null): 'Kjop' | 'Salg' | 'Utbytte' | null {
+function normalizeTransactionType(value: string | null): 'Kjøp' | 'Salg' | 'Utbytte' | null {
   if (!value) {
     return null;
   }
@@ -76,7 +72,7 @@ function normalizeTransactionType(value: string | null): 'Kjop' | 'Salg' | 'Utby
     return 'Utbytte';
   }
 
-  return 'Kjop';
+  return 'Kjøp';
 }
 
 function getFundIdFromName(fundName: string | null) {
@@ -297,10 +293,7 @@ export function getTradeRegistrationData(): TradeRegistrationData {
         investorCategory:
           investor.category === 'Professional' ? 'Profesjonell' : 'Ikke-profesjonell',
         pepStatus: complianceDetail?.pepStatus ? 'Ja' : 'Nei',
-        amlRiskLevel:
-          complianceDetail?.amlRiskLevel === 'Høy'
-            ? 'Hoy'
-            : complianceDetail?.amlRiskLevel ?? 'Lav',
+        amlRiskLevel: complianceDetail?.amlRiskLevel ?? 'Lav',
         documentationStatus: complianceDetail?.documentationStatus ?? 'Komplett',
         holdings,
         recentTrades: recentTradesByInvestor.get(investor.customerId) ?? [],

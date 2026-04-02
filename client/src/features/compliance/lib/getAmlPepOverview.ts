@@ -1,17 +1,12 @@
 import investors from '../../../mocks/investors.json';
 import { investorComplianceDetails } from '../mocks/investorComplianceDetails';
+import { formatDateLabel } from '../../../shared/utils/formatDateLabel';
 import type { AmlPepFollowUpRow, AmlPepOverview } from '../types/compliance';
 
 type InvestorRecord = {
   customerId: string;
   name: string;
 };
-
-function formatDateLabel(dateString: string) {
-  const [year, month, day] = dateString.split('-');
-  return `${day}.${month}.${year}`;
-}
-
 function getReviewStatus(nextReviewDate: string): AmlPepFollowUpRow['reviewStatus'] {
   const today = new Date('2026-03-30');
   const reviewDate = new Date(nextReviewDate);

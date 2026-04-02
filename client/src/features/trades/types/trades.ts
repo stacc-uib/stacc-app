@@ -36,7 +36,7 @@ export type TradeInvestorRecentTrade = {
   tradeId: string;
   tradeDate: string;
   tradeDateLabel: string;
-  transactionType: 'Kjop' | 'Salg';
+  transactionType: 'Kjøp' | 'Salg';
   fundName: string;
   shareClassLabel: string;
   amount: number;
@@ -49,7 +49,7 @@ export type TradeInvestorOption = {
   investorType: string;
   investorCategory: 'Profesjonell' | 'Ikke-profesjonell';
   pepStatus: 'Ja' | 'Nei';
-  amlRiskLevel: 'Lav' | 'Medium' | 'Hoy';
+  amlRiskLevel: 'Lav' | 'Medium' | 'Høy';
   documentationStatus: 'Komplett' | 'Mangler oppdatering' | 'Mangler dokumentasjon';
   holdings: TradeInvestorHolding[];
   recentTrades: TradeInvestorRecentTrade[];
