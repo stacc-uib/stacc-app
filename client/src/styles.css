@@ -942,6 +942,7 @@ textarea {
 }
 
 .calendar-day {
+  position: relative;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -953,24 +954,116 @@ textarea {
 }
 
 .calendar-day--finanstilsynet {
-  border-left: 3px solid #2563eb;
-  background: #f0f5ff;
-  color: #1d4ed8;
-  font-weight: 600;
+  background: transparent;
+  color: #2563eb;
+  font-weight: 700;
+  font-size: 1.05rem;
+}
+
+.calendar-day--finanstilsynet::before {
+  content: '';
+  position: absolute;
+  bottom: 3px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: #2563eb;
 }
 
 .calendar-day--skatt {
-  border-left: 3px solid #16a34a;
-  background: #f0fdf4;
-  color: #15803d;
-  font-weight: 600;
+  background: transparent;
+  color: #16a34a;
+  font-weight: 700;
+  font-size: 1.05rem;
+}
+
+.calendar-day--skatt::before {
+  content: '';
+  position: absolute;
+  bottom: 3px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: #16a34a;
 }
 
 .calendar-day--pep {
-  border-left: 3px solid #ca8a04;
-  background: #fefce8;
+  background: transparent;
   color: #b45309;
+  font-weight: 700;
+  font-size: 1.05rem;
+}
+
+.calendar-day--pep::before {
+  content: '';
+  position: absolute;
+  bottom: 3px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: #ca8a04;
+}
+
+.calendar-day--finanstilsynet,
+.calendar-day--skatt,
+.calendar-day--pep {
+  border: 0;
+  outline: none;
+  cursor: pointer;
+}
+
+.calendar-day--finanstilsynet:focus-visible,
+.calendar-day--skatt:focus-visible,
+.calendar-day--pep:focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: 2px;
+}
+
+.calendar-day__tooltip {
+  position: absolute;
+  bottom: calc(100% + 0.4rem);
+  left: 50%;
+  z-index: 6;
+  display: none;
+  width: 220px;
+  padding: 0.6rem 0.75rem;
+  border: 1px solid rgba(17, 24, 39, 0.12);
+  border-radius: 0.3rem;
+  background: #fff;
+  color: #111827;
+  text-align: left;
+  transform: translateX(-50%);
+  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.08);
+  font-weight: 400;
+}
+
+.calendar-day__tooltip strong {
+  display: block;
   font-weight: 600;
+  margin-bottom: 0.25rem;
+  overflow-wrap: anywhere;
+}
+
+.calendar-day__tooltip span {
+  display: block;
+  color: #6b7280;
+  font-size: 0.85rem;
+  overflow-wrap: anywhere;
+}
+
+.calendar-day__tooltip span + span {
+  margin-top: 0.2rem;
+}
+
+.calendar-day:hover .calendar-day__tooltip,
+.calendar-day:focus-visible .calendar-day__tooltip {
+  display: block;
 }
 
 .calendar-legend {
@@ -1754,24 +1847,72 @@ textarea {
 }
 
 .calendar-mini__day--finanstilsynet {
-  border-left: 3px solid #2563eb;
-  background: #f0f5ff;
-  color: #1d4ed8;
-  font-weight: 600;
+  background: transparent;
+  color: #2563eb;
+  font-weight: 700;
+}
+
+.calendar-mini__day--finanstilsynet::before {
+  content: '';
+  position: absolute;
+  bottom: 3px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: #2563eb;
 }
 
 .calendar-mini__day--skatt {
-  border-left: 3px solid #16a34a;
-  background: #f0fdf4;
-  color: #15803d;
-  font-weight: 600;
+  background: transparent;
+  color: #16a34a;
+  font-weight: 700;
+}
+
+.calendar-mini__day--skatt::before {
+  content: '';
+  position: absolute;
+  bottom: 3px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: #16a34a;
 }
 
 .calendar-mini__day--pep {
-  border-left: 3px solid #ca8a04;
-  background: #fefce8;
+  background: transparent;
   color: #b45309;
-  font-weight: 600;
+  font-weight: 700;
+}
+
+.calendar-mini__day--pep::before {
+  content: '';
+  position: absolute;
+  bottom: 3px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: #ca8a04;
+}
+
+.calendar-mini__day--finanstilsynet,
+.calendar-mini__day--skatt,
+.calendar-mini__day--pep {
+  border: 0;
+  outline: none;
+  cursor: pointer;
+}
+
+.calendar-mini__day--finanstilsynet:focus-visible,
+.calendar-mini__day--skatt:focus-visible,
+.calendar-mini__day--pep:focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: 2px;
 }
 
 .calendar-mini__tooltip {

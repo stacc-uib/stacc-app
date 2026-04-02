@@ -6,7 +6,12 @@ type ComplianceReportingViewProps = {
 };
 
 function ComplianceReportingView({ pageData }: ComplianceReportingViewProps) {
-  return <ReportingWorkspaceSection overview={pageData.reportingWorkspace} />;
+  return (
+    <ReportingWorkspaceSection
+      overview={pageData.reportingWorkspace}
+      calendar={pageData.calendar}
+    />
+  );
 }
 
 export default ComplianceReportingView;
