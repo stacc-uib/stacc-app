@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import Navbar from './Navbar';
 import { navItems } from '../navigation/navItems';
 
@@ -32,12 +32,36 @@ function ChevronRightIcon() {
   );
 }
 
+function getMainPageIdFromHash() {
+  const hash = window.location.hash.replace(/^#/, '');
+  const [mainPageId] = hash.split('/');
+
+  return navItems.some((item) => item.id === mainPageId) ? mainPageId : navItems[0].id;
+}
+
 function AppLayout() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
-  const [activeItemId, setActiveItemId] = useState(navItems[0].id);
+  const [activeItemId, setActiveItemId] = useState(getMainPageIdFromHash);
+
+  useEffect(() => {
+    const handleHashChange = () => {
+      setActiveItemId(getMainPageIdFromHash());
+    };
+
+    window.addEventListener('hashchange', handleHashChange);
+
+    return () => {
+      window.removeEventListener('hashchange', handleHashChange);
+    };
+  }, []);
 
   const activeItem = navItems.find((item) => item.id === activeItemId) ?? navItems[0];
   const ActivePage = activeItem.page;
+
+  function handleMainNavigation(nextItemId: string) {
+    const nextHash = nextItemId === 'rapporter' ? '#rapporter/oversikt' : `#${nextItemId}`;
+    window.location.hash = nextHash;
+  }
 
   return (
     <div className="app-layout">
@@ -54,7 +78,7 @@ function AppLayout() {
                   key={item.id}
                   type="button"
                   className={`sidebar-item ${isActive ? 'sidebar-item--active' : ''}`}
-                  onClick={() => setActiveItemId(item.id)}
+                  onClick={() => handleMainNavigation(item.id)}
                   title={isSidebarOpen ? undefined : item.label}
                 >
                   <span className="sidebar-item__icon">{item.icon}</span>
@@ -69,19 +93,19 @@ function AppLayout() {
           <div className="sidebar-footer">
             <button
               type="button"
-              className="sidebar-toggle sidebar-toggle--bottom"
+              className="sidebar-toggle"
               onClick={() => setIsSidebarOpen((current) => !current)}
               aria-label={isSidebarOpen ? 'Skjul menyen' : 'Vis menyen'}
               aria-expanded={isSidebarOpen}
               title={isSidebarOpen ? 'Skjul menyen' : 'Vis menyen'}
             >
               {isSidebarOpen ? <ChevronLeftIcon /> : <ChevronRightIcon />}
-              {isSidebarOpen ? <span>Skjul meny</span> : null}
+              {isSidebarOpen ? <span className="sidebar-item__label">Skjul meny</span> : null}
             </button>
           </div>
         </aside>
 
-        <main className="content-panel">
+        <main className="content-panel container-fluid">
           <ActivePage />
         </main>
       </div>
