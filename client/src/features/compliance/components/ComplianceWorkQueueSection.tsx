@@ -64,12 +64,11 @@ function ComplianceWorkQueueSection({
       <div className="feature-section__surface">
         <div className="feature-section__header">
           <div>
-            <p className="feature-section__eyebrow">Prioritert oppgaveliste</p>
-            <h2 className="feature-section__title">Det bør gjøres nå</h2>
+            <p className="feature-section__eyebrow">Arbeidsflate</p>
+            <h2 className="feature-section__title">Prioriterte oppgaver</h2>
             <p className="feature-section__description">
-              Denne listen samler de viktigste arbeidsoppgavene på tvers av AML,
-              rapportering, klassifisering og avvik, slik at det er tydelig hva som må
-              løses først.
+              Samler de viktigste sakene på tvers av AML, rapportering og investorstatus.
+              Løs det som haster først, gå direkte til detaljfanen for å følge opp.
             </p>
           </div>
         </div>

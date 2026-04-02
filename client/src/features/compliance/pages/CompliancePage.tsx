@@ -8,7 +8,7 @@ import { getCompliancePageData } from '../lib/getCompliancePageData';
 const complianceSubnavItems = [
   {
     id: 'oversikt',
-    label: 'Oversikt',
+    label: 'Arbeidsflate',
     description: '',
   },
   {
@@ -59,7 +59,7 @@ function CompliancePage() {
       <p className="content-card__eyebrow">Rapporter og compliance</p>
       <h1>Compliance</h1>
       <p className="content-card__description">
-        Oversikt over kontroll, frister, manglende data og rapportering.
+        Status, frister og prioriterte oppgaver på tvers av AML, rapportering og investorregister.
       </p>
 
       <ComplianceSubnav
