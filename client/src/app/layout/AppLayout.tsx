@@ -93,14 +93,14 @@ function AppLayout() {
           <div className="sidebar-footer">
             <button
               type="button"
-              className="sidebar-toggle sidebar-toggle--bottom"
+              className="sidebar-toggle"
               onClick={() => setIsSidebarOpen((current) => !current)}
               aria-label={isSidebarOpen ? 'Skjul menyen' : 'Vis menyen'}
               aria-expanded={isSidebarOpen}
               title={isSidebarOpen ? 'Skjul menyen' : 'Vis menyen'}
             >
               {isSidebarOpen ? <ChevronLeftIcon /> : <ChevronRightIcon />}
-              {isSidebarOpen ? <span>Skjul meny</span> : null}
+              {isSidebarOpen ? <span className="sidebar-item__label">Skjul meny</span> : null}
             </button>
           </div>
         </aside>
