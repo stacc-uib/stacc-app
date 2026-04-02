@@ -29,12 +29,14 @@ function getClassificationStatus(
     (reviewDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24),
   );
 
-  if (investorCategory !== 'Professional') {
-    return 'ikke-profesjonell';
-  }
-
+  // Priority order must match frontend: mangler-naering before ikke-profesjonell
+  // so that missing industry is always surfaced regardless of category
   if (!industryGroup) {
     return 'mangler-naering';
+  }
+
+  if (investorCategory !== 'Professional') {
+    return 'ikke-profesjonell';
   }
 
   if (diffInDays < 0) {

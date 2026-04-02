@@ -32,7 +32,7 @@ export function getComplianceOverviewData(): ComplianceOverviewData {
       },
       {
         id: 'alert-2',
-        title: 'Missing næring',
+        title: 'Manglende næringsgruppe',
         description: formatInvestorCount(
           investorClassificationOverview.missingIndustryGroup,
           'investorer mangler fortsatt påkrevd næring.',

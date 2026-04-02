@@ -31,7 +31,7 @@ export const complianceOverviewMock: ComplianceOverviewContent = {
     },
     {
       id: 'task-2',
-      title: 'Fylle inn missing nærings',
+      title: 'Fyll inn manglende næringsgruppe',
       owner: 'Drift',
       dueLabel: 'Neste 5 dager',
       status: 'todo',
