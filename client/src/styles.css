@@ -655,6 +655,55 @@ textarea {
   border-color: rgba(17, 24, 39, 0.08);
 }
 
+.compliance-overview {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  margin-top: 1.5rem;
+}
+
+.compliance-overview__statusbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0;
+  border: 1px solid rgba(17, 24, 39, 0.08);
+  border-radius: 0.4rem;
+  background: #fff;
+  overflow: hidden;
+}
+
+.compliance-overview__stat {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  flex: 1 1 160px;
+  padding: 1rem 1.25rem;
+  border-right: 1px solid rgba(17, 24, 39, 0.08);
+}
+
+.compliance-overview__stat:last-child {
+  border-right: 0;
+}
+
+.compliance-overview__stat--deadline {
+  flex: 2 1 240px;
+}
+
+.compliance-overview__stat-value {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #111827;
+  line-height: 1.1;
+}
+
+.compliance-overview__stat-label {
+  font-size: 0.82rem;
+  color: #6b7280;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
 .compliance-dashboard {
   display: flex;
   flex-direction: column;
@@ -1740,6 +1789,19 @@ textarea {
   .compliance-dashboard__grid,
   .compliance-dashboard__report-grid {
     grid-template-columns: 1fr;
+  }
+
+  .compliance-overview__statusbar {
+    flex-direction: column;
+  }
+
+  .compliance-overview__stat {
+    border-right: 0;
+    border-bottom: 1px solid rgba(17, 24, 39, 0.08);
+  }
+
+  .compliance-overview__stat:last-child {
+    border-bottom: 0;
   }
 
   .compliance-dashboard__hero,
