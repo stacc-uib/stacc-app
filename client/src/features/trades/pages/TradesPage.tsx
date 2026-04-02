@@ -125,6 +125,12 @@ function TradesPage() {
     ? selectedInvestor.holdings.reduce((total, holding) => total + holding.estimatedValue, 0)
     : 0;
 
+  const projectedValue = amountValue > 0
+    ? direction === 'kjop'
+      ? holdingsValue + amountValue
+      : holdingsValue - amountValue
+    : null;
+
   const validationMessages = useMemo(() => {
     const messages: string[] = [];
 
@@ -591,9 +597,20 @@ function TradesPage() {
                           <dd>{selectedInvestor.investorCategory}</dd>
                         </div>
                         <div>
-                          <dt>Total verdi</dt>
+                          <dt>Total verdi nå</dt>
                           <dd>{formatCurrency(holdingsValue)}</dd>
                         </div>
+                        {projectedValue !== null ? (
+                          <div>
+                            <dt>Verdi etter handel</dt>
+                            <dd style={{ color: projectedValue >= holdingsValue ? '#15803d' : '#b91c1c' }}>
+                              {formatCurrency(projectedValue)}
+                              <span style={{ fontSize: '0.82rem', fontWeight: 400, marginLeft: '0.4rem', color: 'inherit' }}>
+                                ({direction === 'kjop' ? '+' : '-'}{formatCurrency(amountValue)})
+                              </span>
+                            </dd>
+                          </div>
+                        ) : null}
                       </dl>
 
                       <div className="trade-sidebar-card__status-row">
