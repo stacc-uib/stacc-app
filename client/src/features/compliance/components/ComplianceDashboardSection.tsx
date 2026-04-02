@@ -34,21 +34,6 @@ function ComplianceDashboardSection({
   return (
     <section className="feature-section feature-section--dashboard">
       <div className="feature-section__surface compliance-dashboard">
-        <div className="compliance-dashboard__hero">
-          <div>
-            <p className="feature-section__eyebrow compliance-dashboard__eyebrow">
-              Complianceoversikt
-            </p>
-            <h2 className="compliance-dashboard__title">Hva trenger oppmerksomhet nå?</h2>
-          </div>
-
-          <div className="compliance-dashboard__hero-meta">
-            <span className="status-badge status-badge--neutral">
-              {dashboard.totalInvestors} investorer i registeret
-            </span>
-          </div>
-        </div>
-
         <div className="summary-grid compliance-dashboard__summary-grid">
           {dashboard.metrics.map((metric) => (
             <article
