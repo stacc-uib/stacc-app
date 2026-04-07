@@ -2,7 +2,7 @@
 
 ## 1. Oversikt
 
-Escali Insight er en intern arbeidsflate for fondsforvaltere. Applikasjonen gir CCO, drift og forvaltning tilgang til compliance-oppfølging, handelsregistrering, investoroversikt, rapportering og fondsinformasjon — samlet i ett grensesnitt.
+Escali Insight er en intern arbeidsflate for fondsforvaltere. Applikasjonen gir tilgang til handelsregistrering, investoroversikt, rapportering, fondsinformasjon og compliance-oppfølging - samlet i ett grensesnitt.
 
 ### 1.1 Teknisk plattform
 
