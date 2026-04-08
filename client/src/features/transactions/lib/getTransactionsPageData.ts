@@ -3,15 +3,18 @@ import trades from "../../../mocks/trades.json";
 
 export type TransactionsPageData = {
     transactions: Transaction[];
-    total: number;
 };
 
 export const getTransactionsPageData = (): TransactionsPageData => {
-    const valid = (trades as Transaction[])
-        .filter((tx) => tx.tradeDate !== null && tx.customerName !== null);
+    const valid = (trades as unknown as Transaction[])
+        .filter((tx) =>
+            tx.tradeDate !== null &&
+            tx.tradeDate !== undefined &&
+            tx.customerName !== null &&
+            tx.customerName !== undefined &&
+            tx.customerId !== "None"
+        )
+        .reverse();
 
-    return {
-        transactions: valid.slice(-20).reverse(),
-        total: valid.length,
-    };
+    return { transactions: valid };
 };

@@ -2,7 +2,7 @@ import TransactionsTable from '../components/TransactionsTable';
 import { getTransactionsPageData } from '../lib/getTransactionsPageData';
 
 function TransactionsPage() {
-  const { transactions, total } = getTransactionsPageData();
+  const { transactions } = getTransactionsPageData();
 
   return (
     <div className="content-card">
@@ -12,7 +12,7 @@ function TransactionsPage() {
         Siste registrerte transaksjoner på tvers av fond og kunder.
       </p>
 
-      <TransactionsTable transactions={transactions} total={total} />
+      <TransactionsTable transactions={transactions} />
     </div>
   );
 }
