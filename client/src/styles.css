@@ -2102,3 +2102,25 @@ textarea {
     min-width: 640px;
   }
 }
+
+/* Transactions table */
+
+.transactions-table thead th {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  background: #f8fafc;
+  white-space: nowrap;
+}
+
+.transactions-table tbody tr {
+  transition: background-color 0.18s ease;
+}
+
+.transactions-table tbody tr:hover {
+  background: rgba(239, 246, 255, 0.7);
+}
+
+.transactions-table td {
+  white-space: nowrap;
+}
