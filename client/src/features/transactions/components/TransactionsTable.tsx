@@ -28,7 +28,7 @@ function TransactionsTable({ transactions, total }: Props) {
       <div className="data-table-card__header">
         <h3 className="data-table-card__title">Transaksjoner</h3>
         <p className="data-table-card__description">
-          Viser de 25 nyeste av {total} transaksjoner
+          Viser de 20 nyeste av {total} transaksjoner
         </p>
       </div>
 
@@ -38,13 +38,13 @@ function TransactionsTable({ transactions, total }: Props) {
             <tr>
               <th>Kunde</th>
               <th>Dato</th>
-              <th>Status</th>
+              <th>Fond</th>
+              <th>Klasse</th>
               <th>Type</th>
               <th style={{ textAlign: 'right' }}>Antall</th>
               <th style={{ textAlign: 'right' }}>Kurs</th>
               <th style={{ textAlign: 'right' }}>Beløp</th>
-              <th>Fond</th>
-              <th>Klasse</th>
+              <th>Status</th>
             </tr>
           </thead>
           <tbody>
@@ -55,14 +55,18 @@ function TransactionsTable({ transactions, total }: Props) {
                     <strong>{tx.customerName}</strong>
                   </div>
                 </td>
-                <td>{formatDate(tx.tradeDate)}</td>
-                <td>Oppgjort</td>
-                <td>{tx.transactionType}</td>
-                <td style={{ textAlign: 'right' }}>{formatNumber(tx.units)}</td>
-                <td style={{ textAlign: 'right' }}>{formatNumber(tx.price)}</td>
-                <td style={{ textAlign: 'right' }}>{formatNumber(tx.amount)}</td>
-                <td>{tx.fundName}</td>
-                <td>{getShareClassName(tx.shareClass)}</td>
+                <td>{formatDate(tx.tradeDate ?? '')}</td>
+                <td>{tx.fundName ?? ''}</td>
+                <td>{getShareClassName(tx.shareClass ?? '')}</td>
+                <td>{tx.transactionType ?? ''}</td>
+                <td style={{ textAlign: 'right' }}>{formatNumber(tx.units ?? 0)}</td>
+                <td style={{ textAlign: 'right' }}>{formatNumber(tx.price ?? 0)}</td>
+                <td style={{ textAlign: 'right' }}>{formatNumber(tx.amount ?? 0)}</td>
+                <td>
+                  <span className={`status-badge ${tx.settlementDate ? 'status-badge--ok' : 'status-badge--neutral'}`}>
+                    {tx.settlementDate ? 'Oppgjort' : 'Ikke oppgjort'}
+                  </span>
+                </td>
               </tr>
             ))}
 
