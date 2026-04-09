@@ -3,6 +3,16 @@ import type { Transaction } from '../types/transactions';
 
 const PAGE_SIZE = 25;
 
+const selectStyle = {
+  minHeight: '38px',
+  padding: '0.5rem 0.75rem',
+  border: '1px solid rgba(17, 24, 39, 0.12)',
+  borderRadius: '0.3rem',
+  background: '#fff',
+  color: '#374151',
+  fontSize: '0.9rem',
+};
+
 function formatDate(dateString: string) {
   const [year, month, day] = dateString.split('-');
   return `${day}.${month}.${year}`;
@@ -28,6 +38,9 @@ function TransactionsTable({ transactions }: Props) {
   const [searchQuery, setSearchQuery] = useState('');
   const [fundFilter, setFundFilter] = useState('');
   const [typeFilter, setTypeFilter] = useState('');
+  const [classFilter, setClassFilter] = useState('');
+  const [statusFilter, setStatusFilter] = useState('');
+  const [page, setPage] = useState(0);
 
   const funds = useMemo(() =>
     Array.from(new Set(transactions.map((tx) => tx.fundName as string))).sort(),
@@ -39,24 +52,40 @@ function TransactionsTable({ transactions }: Props) {
     [transactions]
   );
 
-  const filtered = useMemo(() =>
-    transactions.filter((tx) => {
+  const classes = useMemo(() =>
+    Array.from(new Set(
+      transactions.map((tx) => getShareClassName(tx.shareClass as string)).filter(Boolean)
+    )).sort(),
+    [transactions]
+  );
+
+  const filtered = useMemo(() => {
+    setPage(0);
+    return transactions.filter((tx) => {
       if (searchQuery && !tx.customerName?.toLowerCase().includes(searchQuery.toLowerCase())) return false;
       if (fundFilter && tx.fundName !== fundFilter) return false;
       if (typeFilter && tx.transactionType !== typeFilter) return false;
+      if (classFilter && getShareClassName(tx.shareClass ?? '') !== classFilter) return false;
+      if (statusFilter === 'oppgjort' && !tx.settlementDate) return false;
+      if (statusFilter === 'ikke-oppgjort' && tx.settlementDate) return false;
       return true;
-    }),
-    [transactions, searchQuery, fundFilter, typeFilter]
-  );
+    });
+  }, [transactions, searchQuery, fundFilter, typeFilter, classFilter, statusFilter]);
 
   function handleReset() {
     setSearchQuery('');
     setFundFilter('');
     setTypeFilter('');
+    setClassFilter('');
+    setStatusFilter('');
+    setPage(0);
   }
 
-  const visible = filtered.slice(0, PAGE_SIZE);
-  const isFiltered = searchQuery || fundFilter || typeFilter;
+  const totalPages = Math.ceil(filtered.length / PAGE_SIZE);
+  const visible = filtered.slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE);
+  const isFiltered = searchQuery || fundFilter || typeFilter || classFilter || statusFilter;
+  const start = page * PAGE_SIZE + 1;
+  const end = Math.min((page + 1) * PAGE_SIZE, filtered.length);
 
   return (
     <div className="data-table-card">
@@ -65,8 +94,8 @@ function TransactionsTable({ transactions }: Props) {
           <h3 className="data-table-card__title">Transaksjoner</h3>
           <p className="data-table-card__description">
             {isFiltered
-              ? `Viser ${visible.length} av ${filtered.length} filtrerte (${transactions.length} totalt)`
-              : `Viser de ${visible.length} nyeste av ${transactions.length} transaksjoner`}
+              ? `Viser ${start}-${end} av ${filtered.length} filtrerte (${transactions.length} totalt)`
+              : `Viser ${start}-${end} av ${transactions.length} transaksjoner`}
           </p>
         </div>
 
@@ -83,26 +112,25 @@ function TransactionsTable({ transactions }: Props) {
 
       <div className="compliance-registry__toolbar">
         <div className="queue-filter-row">
-          <select
-            value={fundFilter}
-            onChange={(e) => setFundFilter(e.target.value)}
-            className="transactions-toolbar__select"
-          >
+          <select value={fundFilter} onChange={(e) => setFundFilter(e.target.value)} style={{ ...selectStyle, minWidth: '140px' }}>
             <option value="">Alle fond</option>
-            {funds.map((fund) => (
-              <option key={fund} value={fund}>{fund}</option>
-            ))}
+            {funds.map((f) => <option key={f} value={f}>{f}</option>)}
           </select>
 
-          <select
-            value={typeFilter}
-            onChange={(e) => setTypeFilter(e.target.value)}
-            className="transactions-toolbar__select"
-          >
+          <select value={typeFilter} onChange={(e) => setTypeFilter(e.target.value)} style={{ ...selectStyle, minWidth: '160px' }}>
             <option value="">Alle typer</option>
-            {types.map((type) => (
-              <option key={type} value={type}>{type}</option>
-            ))}
+            {types.map((t) => <option key={t} value={t}>{t}</option>)}
+          </select>
+
+          <select value={classFilter} onChange={(e) => setClassFilter(e.target.value)} style={{ ...selectStyle, minWidth: '120px' }}>
+            <option value="">Alle klasser</option>
+            {classes.map((c) => <option key={c} value={c}>{c}</option>)}
+          </select>
+
+          <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)} style={{ ...selectStyle, minWidth: '150px' }}>
+            <option value="">Alle statuser</option>
+            <option value="oppgjort">Oppgjort</option>
+            <option value="ikke-oppgjort">Ikke oppgjort</option>
           </select>
 
           {isFiltered && (
@@ -118,7 +146,7 @@ function TransactionsTable({ transactions }: Props) {
       </div>
 
       <div className="table-scroll">
-        <table className="data-table transactions-table">
+        <table className="data-table compliance-registry__table" style={{ fontSize: '0.82rem', minWidth: 'unset' }}>
           <thead>
             <tr>
               <th>Kunde</th>
@@ -165,6 +193,20 @@ function TransactionsTable({ transactions }: Props) {
           </tbody>
         </table>
       </div>
+
+      {totalPages > 1 && (
+        <div className="queue-filter-row" style={{ padding: '1rem 0 0', justifyContent: 'center' }}>
+          <button type="button" className="queue-filter" onClick={() => setPage((p) => p - 1)} disabled={page === 0}>
+            Forrige
+          </button>
+          <span style={{ padding: '0 0.5rem', color: '#6b7280', fontSize: '0.9rem', alignSelf: 'center' }}>
+            Side {page + 1} av {totalPages}
+          </span>
+          <button type="button" className="queue-filter" onClick={() => setPage((p) => p + 1)} disabled={page >= totalPages - 1}>
+            Neste
+          </button>
+        </div>
+      )}
     </div>
   );
 }
