@@ -1,10 +1,12 @@
 import type { Transaction } from "../types/transactions";
+import { getTransactionsChartData, type TransactionsChartData } from "./getTransactionsChartData";
 import { getTransactionsKpi, type TransactionsKpi } from "./getTransactionsKpi";
 import trades from "../../../mocks/trades.json";
 
 export type TransactionsPageData = {
     transactions: Transaction[];
     kpi: TransactionsKpi;
+    chartData: TransactionsChartData;
 };
 
 export const getTransactionsPageData = (): TransactionsPageData => {
@@ -21,5 +23,6 @@ export const getTransactionsPageData = (): TransactionsPageData => {
     return {
         transactions: valid,
         kpi: getTransactionsKpi(valid),
+        chartData: getTransactionsChartData(valid),
     };
 };
