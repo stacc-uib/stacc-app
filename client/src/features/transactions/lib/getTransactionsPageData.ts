@@ -1,8 +1,10 @@
 import type { Transaction } from "../types/transactions";
+import { getTransactionsKpi, type TransactionsKpi } from "./getTransactionsKpi";
 import trades from "../../../mocks/trades.json";
 
 export type TransactionsPageData = {
     transactions: Transaction[];
+    kpi: TransactionsKpi;
 };
 
 export const getTransactionsPageData = (): TransactionsPageData => {
@@ -16,5 +18,8 @@ export const getTransactionsPageData = (): TransactionsPageData => {
         )
         .reverse();
 
-    return { transactions: valid };
+    return {
+        transactions: valid,
+        kpi: getTransactionsKpi(valid),
+    };
 };
