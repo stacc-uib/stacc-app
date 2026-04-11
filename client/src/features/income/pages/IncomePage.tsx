@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import IncomeSubnav from '../components/IncomeSubnav';
+import IncomeTable from '../components/IncomeTable';
 
 const incomeSubnavItems = [
   {
@@ -18,6 +19,36 @@ const incomeSubnavItems = [
     description: '',
   },
 ] as const;
+
+const incomeInfo = [
+    {
+        name: "Escali Norden",
+        volume: 1000000,
+        volume_change: 2.3,
+        kurs: 3.5,
+        kurs_change: 3.1,
+        income: 45000,
+        income_change: 6.7
+    },
+    {
+        name: "Escali Global",
+        volume: 1000000,
+        volume_change: -2.3,
+        kurs: 3.5,
+        kurs_change: 3.1,
+        income: 45000,
+        income_change: -6.7
+    },
+    {
+        name: "Escali Kreditt",
+        volume: 1000000,
+        volume_change: 2.3,
+        kurs: -3.5,
+        kurs_change: 3.1,
+        income: 45000,
+        income_change: -6.7
+    }
+]
 
 function getIncomeSubpageIdFromHash() {
   const hash = window.location.hash.replace(/^#/, '');
@@ -48,12 +79,12 @@ function IncomePage() {
   function handleSubpageSelect(nextSubpageId: string) {
     window.location.hash = `#inntekt/${nextSubpageId}`;
   }
+
   return (
     <div className="content-card">
       <p className="content-card__eyebrow">Income</p>
       <h1>Inntekt</h1>
       <p className="content-card__description">
-        
         Placeholder for inntektsanalyse, honorarutvikling og relaterte oversikter.
       </p>
 
@@ -76,9 +107,7 @@ function IncomePage() {
       ) : null}
 
       {activeSubpageId === 'fondsinntekter' ? (
-          <div className="content-card__placeholder">
-            Placeholder inntekt.
-          </div>
+            <IncomeTable incomeInfo={incomeInfo}/>
       ) : null}
     </div>
   );
