@@ -1,14 +1,11 @@
 import { useCallback, useRef } from 'react';
-import type { DateRange } from '../lib/getTransactionsDateRange';
-
-type Preset = '1m' | '6m' | '1y' | '5y' | '10y';
+import type { DateRange, Preset } from '../lib/getTransactionsDateRange';
 
 const presets: { id: Preset; label: string }[] = [
-  { id: '1m',  label: '1 mnd' },
-  { id: '6m',  label: '6 mnd' },
   { id: '1y',  label: '1 år' },
   { id: '5y',  label: '5 år' },
   { id: '10y', label: '10 år' },
+  { id: '20y', label: '20 år' },
 ];
 
 type Props = {
@@ -41,7 +38,7 @@ function TransactionsPeriodFilter({ range, minDate, maxDate, activePreset, onRan
 
   const fromPct = ((fromMs - minMs) / span) * 100;
   const toPct = ((toMs - minMs) / span) * 100;
-  const isFullRange = range.from === minDate && range.to === maxDate;
+  const isFullRange = range.from === minDate && range.to === maxDate && activePreset === null;
 
   const pctToMs = useCallback((pct: number) => {
     return Math.round(minMs + (pct / 100) * span);
@@ -91,30 +88,15 @@ function TransactionsPeriodFilter({ range, minDate, maxDate, activePreset, onRan
             <span style={{ fontSize: '0.8rem', color: '#374151', fontWeight: 600 }}>{formatLabel(range.to)}</span>
           </div>
 
-          {/* Track */}
           <div
             ref={trackRef}
             onMouseDown={handleMouseDown}
             style={{ position: 'relative', height: '24px', display: 'flex', alignItems: 'center', cursor: 'pointer', userSelect: 'none' }}
           >
-            {/* Background */}
             <div style={{ position: 'absolute', left: 0, right: 0, height: '4px', background: 'rgba(17,24,39,0.1)', borderRadius: '2px' }} />
-            {/* Active fill */}
             <div style={{ position: 'absolute', left: `${fromPct}%`, width: `${toPct - fromPct}%`, height: '4px', background: '#da1e24', borderRadius: '2px' }} />
-            {/* From thumb */}
-            <div style={{
-              position: 'absolute', left: `${fromPct}%`, transform: 'translateX(-50%)',
-              width: '16px', height: '16px', borderRadius: '50%',
-              background: '#fff', border: '2px solid #da1e24',
-              boxShadow: '0 1px 3px rgba(0,0,0,0.15)',
-            }} />
-            {/* To thumb */}
-            <div style={{
-              position: 'absolute', left: `${toPct}%`, transform: 'translateX(-50%)',
-              width: '16px', height: '16px', borderRadius: '50%',
-              background: '#fff', border: '2px solid #da1e24',
-              boxShadow: '0 1px 3px rgba(0,0,0,0.15)',
-            }} />
+            <div style={{ position: 'absolute', left: `${fromPct}%`, transform: 'translateX(-50%)', width: '16px', height: '16px', borderRadius: '50%', background: '#fff', border: '2px solid #da1e24', boxShadow: '0 1px 3px rgba(0,0,0,0.15)' }} />
+            <div style={{ position: 'absolute', left: `${toPct}%`, transform: 'translateX(-50%)', width: '16px', height: '16px', borderRadius: '50%', background: '#fff', border: '2px solid #da1e24', boxShadow: '0 1px 3px rgba(0,0,0,0.15)' }} />
           </div>
         </div>
 
@@ -136,7 +118,8 @@ function TransactionsPeriodFilter({ range, minDate, maxDate, activePreset, onRan
             style={{ visibility: isFullRange ? 'hidden' : 'visible' }}
           >
             Nullstill
-          </button>        </div>
+          </button>
+        </div>
 
       </div>
     </div>

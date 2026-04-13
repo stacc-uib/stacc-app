@@ -3,12 +3,10 @@ import TransactionsChartRow from '../components/TransactionsChartRow';
 import TransactionsKpiRow from '../components/TransactionsKpiRow';
 import TransactionsPeriodFilter from '../components/TransactionsPeriodFilter';
 import TransactionsTable from '../components/TransactionsTable';
-import { applyDateRange, getPresetRange, getTransactionsDateRange, type DateRange } from '../lib/getTransactionsDateRange';
+import { applyDateRange, getPresetRange, getTransactionsDateRange, type DateRange, type Preset } from '../lib/getTransactionsDateRange';
 import { getTransactionsChartData } from '../lib/getTransactionsChartData';
 import { getTransactionsKpi } from '../lib/getTransactionsKpi';
 import { getTransactionsPageData } from '../lib/getTransactionsPageData';
-
-type Preset = '1m' | '6m' | '1y' | '5y' | '10y';
 
 function TransactionsPage() {
   const { transactions } = getTransactionsPageData();
@@ -23,7 +21,7 @@ function TransactionsPage() {
 
   function handlePresetSelect(preset: Preset) {
     setActivePreset(preset);
-    setRange(getPresetRange(preset, maxDate));
+    setRange(getPresetRange(preset, maxDate, minDate));
   }
 
   function handleRangeChange(newRange: DateRange) {
@@ -38,10 +36,10 @@ function TransactionsPage() {
 
   return (
     <div className="content-card">
-      <p className="content-card__eyebrow">Transactions</p>
+      <p className="content-card__eyebrow">Transaksjoner</p>
       <h1>Transaksjoner</h1>
       <p className="content-card__description">
-        Transaksjonsoversikt og utvikling på tvers av fond og kunder.
+        Transaksjoner på tvers av fond og kunder.
       </p>
 
       <TransactionsPeriodFilter
