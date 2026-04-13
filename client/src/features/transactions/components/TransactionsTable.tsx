@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react';
+import { exportTransactionsCsv } from '../lib/exportTransactionsCsv';
 import type { Transaction } from '../types/transactions';
 
 const PAGE_SIZE = 25;
@@ -99,15 +100,25 @@ function TransactionsTable({ transactions }: Props) {
           </p>
         </div>
 
-        <label className="compliance-registry__search">
-          <span>Søk etter kunde</span>
-          <input
-            type="search"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Navn på kunde..."
-          />
-        </label>
+        <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'flex-end', flexShrink: 0, maxWidth: '420px' }}>
+          <label className="compliance-registry__search" style={{ minWidth: 'unset', flex: 1 }}>
+            <span>Søk etter kunde</span>
+            <input
+              type="search"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Navn på kunde..."
+            />
+          </label>
+          <button
+            type="button"
+            className="queue-filter"
+            onClick={() => exportTransactionsCsv(filtered)}
+            style={{ whiteSpace: 'nowrap', flexShrink: 0 }}
+          >
+            Last ned CSV
+          </button>
+        </div>
       </div>
 
       <div className="compliance-registry__toolbar">
@@ -140,9 +151,7 @@ function TransactionsTable({ transactions }: Props) {
           )}
         </div>
 
-        <p className="compliance-registry__results">
-          {filtered.length} treff
-        </p>
+        <p className="compliance-registry__results">{filtered.length} treff</p>
       </div>
 
       <div className="table-scroll">
