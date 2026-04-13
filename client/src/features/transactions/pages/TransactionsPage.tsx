@@ -5,6 +5,7 @@ import TransactionsPeriodFilter from '../components/TransactionsPeriodFilter';
 import TransactionsTable from '../components/TransactionsTable';
 import { applyDateRange, getPresetRange, getTransactionsDateRange, type DateRange, type Preset } from '../lib/getTransactionsDateRange';
 import { getTransactionsChartData } from '../lib/getTransactionsChartData';
+import { getTransactionsGrowth } from '../lib/getTransactionsGrowth';
 import { getTransactionsKpi } from '../lib/getTransactionsKpi';
 import { getTransactionsPageData } from '../lib/getTransactionsPageData';
 
@@ -18,6 +19,7 @@ function TransactionsPage() {
   const filtered = useMemo(() => applyDateRange(transactions, range), [transactions, range]);
   const kpi = useMemo(() => getTransactionsKpi(filtered), [filtered]);
   const chartData = useMemo(() => getTransactionsChartData(filtered), [filtered]);
+  const growth = useMemo(() => getTransactionsGrowth(transactions, range.from, range.to), [transactions, range]);
 
   function handlePresetSelect(preset: Preset) {
     setActivePreset(preset);
@@ -36,10 +38,10 @@ function TransactionsPage() {
 
   return (
     <div className="content-card">
-      <p className="content-card__eyebrow">Transaksjoner</p>
+      <p className="content-card__eyebrow">Transactions</p>
       <h1>Transaksjoner</h1>
       <p className="content-card__description">
-        Transaksjoner på tvers av fond og kunder.
+        Transaksjonsoversikt og utvikling på tvers av fond og kunder.
       </p>
 
       <TransactionsPeriodFilter
@@ -52,7 +54,7 @@ function TransactionsPage() {
         onReset={handleReset}
       />
       <TransactionsKpiRow kpi={kpi} />
-      <TransactionsChartRow averageTransactionSize={kpi.averageTransactionSize} chartData={chartData} />
+      <TransactionsChartRow averageTransactionSize={kpi.averageTransactionSize} chartData={chartData} growth={growth} />
       <TransactionsTable transactions={filtered} />
     </div>
   );
