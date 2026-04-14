@@ -1,67 +1,125 @@
-
-function formatNumber(value: number, decimals = 2) {
-  return new Intl.NumberFormat('nb-NO', {
-    minimumFractionDigits: 0,
-    maximumFractionDigits: decimals,
-  }).format(value);
+const IncomeTableHeaderCell = ({label}) => {
+    return(
+        <th style={{ textAlign: 'center' }}>{label}</th>
+    )
 }
 
-function formatPercentageChange(value: number) {
-  const color = value >= 0 ? 'green' : 'red';
-  return <strong><span style={{ color: color }}>{value}%</span></strong>;
-}
-
-function getShareClassName(shareClass: string) {
-  const match = shareClass.match(/Klasse\s+\w+/);
-  return match ? match[0] : shareClass;
-}
-
-
-function IncomeTable({ incomeInfo }: Props) {
-  return (
-    <div className="data-table-card">
-      <div className="data-table-card__header">
-        <h3 className="data-table-card__title">Inntektstabell</h3>
-      </div>
-
-      <div className="table-scroll">
-        <table className="data-table transactions-table">
-          <thead>
+const IncomeTableHeader = ({incomeTableHeaders}) => {
+    return (
+        <thead>
             <tr>
-              <th>Fond</th>
-              <th style={{ textAlign: 'right' }}>Volum</th>
-              <th>Volumendring</th>
-              <th>Kurs</th>
-              <th>Kursendring</th>
-              <th>Markedsverdi</th>
-              <th>Inntekt</th>
-              <th>Inntektsendring</th>
-              <th>Status</th>
+                {incomeTableHeaders.map((label) => (
+                    <IncomeTableHeaderCell label={label} key={label} />
+                ))}
             </tr>
-          </thead>
+        </thead>
+    ) 
+};
+const IncomeTableBodyRowCellPrimary = ({value}) => {
+    return (
+        <td>
+            <div className="table-primary-cell">
+                <strong>{value}</strong>
+            </div>
+        </td>
+    )
+}
+const IncomeTableBodyRowCellInteger = ({value}) => {
+    const formatInteger = (value: number) => {
+        return new Intl.NumberFormat('nb-NO', {
+            minimumFractionDigits: 0,
+            maximumFractionDigits: 0,
+        }).format(value);
+    }
 
-          <tbody>
-            {incomeInfo.map((fund) => (
-              <tr key={fund.name}>
-                <td>
-                  <div className="table-primary-cell">
-                    <strong>{fund.name}</strong>
-                  </div>
-                </td>
-                <td style={{ textAlign: 'right' }}>NOK {formatNumber(fund.volume?? 0)}</td>
-                <td style={{ textAlign: 'center' }}>{formatPercentageChange(fund.volume_change)}</td>
-                <td style={{ textAlign: 'right' }}>NOK {formatNumber(fund.kurs?? 0)}</td>
-                <td style={{ textAlign: 'center' }}>{formatPercentageChange(fund.kurs_change)}</td>
-                <td style={{ textAlign: 'right' }}>NOK {formatNumber(fund.kurs * fund.volume ?? 0)}</td>
-                <td style={{ textAlign: 'right' }}>NOK {formatNumber(fund.income ?? 0)}</td>
-                <td style={{ textAlign: 'center' }}>{formatPercentageChange(fund.income_change)}</td>
-              </tr>
+    return (
+        <td style={{ textAlign: 'center' }}>
+            {formatInteger(value)}
+        </td>
+    )
+}
+
+const IncomeTableBodyRowCellPercentage = ({value}) => {
+    const formatPercentageChange = (value: number) =>  {
+        const color = value >= 0 ? 'green' : 'red';
+        return (
+            <span style={{ color: color }}>{value}%</span>
+        )
+    }
+
+    return (
+        <td style={{ textAlign: 'center' }}>
+            {formatPercentageChange(value)}
+        </td>
+    )
+}
+
+const IncomeTableBodyRowCellMonetary = ({value}) => {
+    const formatMonetaryValue = (value: number) => {
+        return new Intl.NumberFormat('nb-NO', {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2,
+        }).format(value);
+    }
+    
+    return (
+        <td style={{ textAlign: 'right' }}>
+            {formatMonetaryValue(value)} kr
+        </td>
+    )
+
+}
+
+const IncomeTableBodyRow = ({fund}) => {
+    return (
+        <tr>
+            <IncomeTableBodyRowCellPrimary value={fund.name} />
+            <IncomeTableBodyRowCellInteger value={fund.volume} />
+            <IncomeTableBodyRowCellPercentage value={fund.volumeChange} />
+            <IncomeTableBodyRowCellMonetary value={fund.kurs} />
+            <IncomeTableBodyRowCellPercentage value={fund.kursChange} />
+            <IncomeTableBodyRowCellMonetary value={fund.kurs * fund.volume} />
+            <IncomeTableBodyRowCellMonetary value={fund.income} />
+            <IncomeTableBodyRowCellPercentage value={fund.incomeChange} />
+        </tr>
+    )
+}
+
+const IncomeTableBody = ({incomeTableData}) => {
+    return (
+        <tbody>
+            {incomeTableData.map((fund) => (
+                <IncomeTableBodyRow fund={fund} key={fund.name} />
             ))}
-          </tbody>
-        </table>
-      </div>
-    </div>
-  )
+        </tbody>
+    );
+}
+
+const IncomeTable = ({incomeTableData}) => {
+    const incomeTableHeaders = [
+        "Fond",
+        "Volum",
+        "Volumendring",
+        "Kurs",
+        "Kursendring",
+        "Markedsverdi",
+        "Inntekt",
+        "Inntektsendring"
+    ];
+
+    return (
+        <div className="data-table-card">
+            <div className="data-table-card__header">
+                <h3 className="data-table-card__title">Inntektstabell</h3>
+            </div>
+            <div className="table-scroll">
+                <table className="data-table transactions-table">
+                    <IncomeTableHeader incomeTableHeaders={incomeTableHeaders} /> 
+                    <IncomeTableBody incomeTableData={incomeTableData} />
+                </table>
+            </div>
+        </div>
+    )
 }
 
 export default IncomeTable;

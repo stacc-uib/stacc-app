@@ -20,35 +20,35 @@ const incomeSubnavItems = [
   },
 ] as const;
 
-const incomeInfo = [
+const incomeTableData = [
     {
         name: "Escali Norden",
         volume: 1000000,
-        volume_change: 2.3,
+        volumeChange: 2.3,
         kurs: 3.5,
-        kurs_change: 3.1,
+        kursChange: 3.1,
         income: 45000,
-        income_change: 6.7
+        incomeChange: 6.7
     },
     {
         name: "Escali Global",
         volume: 1000000,
-        volume_change: -2.3,
+        volumeChange: -2.3,
         kurs: 3.5,
-        kurs_change: 3.1,
+        kursChange: 3.1,
         income: 45000,
-        income_change: -6.7
+        incomeChange: -6.7
     },
     {
         name: "Escali Kreditt",
         volume: 1000000,
-        volume_change: 2.3,
+        volumeChange: 2.3,
         kurs: -3.5,
-        kurs_change: 3.1,
+        kursChange: 3.1,
         income: 45000,
-        income_change: -6.7
+        incomeChange: -6.7
     }
-]
+];
 
 function getIncomeSubpageIdFromHash() {
   const hash = window.location.hash.replace(/^#/, '');
@@ -107,7 +107,7 @@ function IncomePage() {
       ) : null}
 
       {activeSubpageId === 'fondsinntekter' ? (
-            <IncomeTable incomeInfo={incomeInfo}/>
+            <IncomeTable incomeTableData={incomeTableData}/>
       ) : null}
     </div>
   );
