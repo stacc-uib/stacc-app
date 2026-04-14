@@ -1,5 +1,5 @@
 import trades from "../../../mocks/trades.json";
-import type { Transaction } from "../types/transactions";
+import type { Trade } from "../types/trade";
 
 export type CumulativeInvestmentSnapshot = {
     date: string | null;

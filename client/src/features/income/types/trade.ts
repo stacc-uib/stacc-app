@@ -1,4 +1,4 @@
-export type Transaction = {
+export type Trade = {
   id: string;
   customerId: string;
   customerName: string | null;
