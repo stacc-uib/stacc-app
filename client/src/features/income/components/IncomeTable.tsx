@@ -1,3 +1,5 @@
+import { getCumulativeInvestmentData } from "../lib/getCumulativeInvestmentData";
+
 const IncomeTableHeaderCell = ({label}) => {
     return(
         <th style={{ textAlign: 'center' }}>{label}</th>
@@ -106,6 +108,19 @@ const IncomeTable = ({incomeTableData}) => {
         "Inntekt",
         "Inntektsendring"
     ];
+
+    const allInvestmentData = [
+        getCumulativeInvestmentData("Escali Norden AS", "Escali Norden AS - Klasse A"),
+        getCumulativeInvestmentData("Escali Norden AS", "Escali Norden AS - Klasse B"),
+        getCumulativeInvestmentData("Escali Norden AS", "Escali Norden AS - Klasse C"),
+        getCumulativeInvestmentData("Escali Global AS", "Escali Global AS - Klasse A"),
+        getCumulativeInvestmentData("Escali Global AS", "Escali Global AS - Klasse B"),
+        getCumulativeInvestmentData("Escali Global AS", "Escali Global AS - Klasse C"),
+        getCumulativeInvestmentData("Escali Kreditt AS", "Escali Kreditt AS - Klasse A"),
+        getCumulativeInvestmentData("Escali Kreditt AS", "Escali Kreditt AS - Klasse B"),
+        getCumulativeInvestmentData("Escali Kreditt AS", "Escali Kreditt AS - Klasse C")
+    ];
+
 
     return (
         <div className="data-table-card">
