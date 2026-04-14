@@ -1,0 +1,259 @@
+.cd-page {
+  padding: 18px;
+}
+
+.cd-back-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 600;
+  color: #1a1a1a;
+  padding: 0;
+  margin-bottom: 20px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  opacity: 0.7;
+  transition: opacity 0.15s;
+}
+
+.cd-back-btn:hover {
+  opacity: 1;
+}
+
+.cd-layout {
+  display: grid;
+  grid-template-columns: 340px 1fr;
+  gap: 20px;
+  align-items: start;
+}
+
+.cd-left {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.cd-card {
+  background: #fff;
+  border: 1px solid #e6e6e6;
+  border-radius: 6px;
+  padding: 24px;
+}
+
+.cd-card--full {
+  height: 100%;
+}
+
+.cd-card-title {
+  font-size: 20px;
+  font-weight: 800;
+  margin: 0 0 18px 0;
+  color: #1a1a1a;
+}
+
+.cd-section-title {
+  font-size: 15px;
+  font-weight: 700;
+  margin: 0;
+  color: #444;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.cd-section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+  gap: 12px;
+}
+
+.cd-page-size-selector {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.cd-page-size-label {
+  font-size: 12px;
+  color: #777;
+  margin-right: 4px;
+}
+
+.cd-page-size-btn {
+  padding: 3px 9px;
+  font-size: 12px;
+  border: 1px solid #d0d5dd;
+  border-radius: 4px;
+  background: #fff;
+  color: #333;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
+}
+
+.cd-page-size-btn:hover {
+  background: #f0f4ff;
+  border-color: #a0b4e8;
+}
+
+.cd-page-size-btn--active {
+  background: #1a1a1a;
+  color: #fff;
+  border-color: #1a1a1a;
+}
+
+.cd-info-list {
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.cd-info-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 12px;
+  font-size: 14px;
+  border-bottom: 1px solid rgba(0,0,0,0.05);
+  padding-bottom: 10px;
+}
+
+.cd-info-row:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.cd-info-row dt {
+  font-weight: 600;
+  color: #666;
+  white-space: nowrap;
+}
+
+.cd-info-row dd {
+  margin: 0;
+  font-weight: 700;
+  color: #1a1a1a;
+  text-align: right;
+}
+
+/* Pie chart */
+.cd-pie-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+}
+
+.cd-pie-svg {
+  width: 160px;
+  height: 160px;
+}
+
+.cd-pie-empty {
+  font-size: 14px;
+  color: #888;
+}
+
+.cd-pie-legend {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.cd-pie-legend-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 14px;
+}
+
+.cd-pie-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.cd-pie-legend-label {
+  flex: 1;
+  font-weight: 600;
+  color: #333;
+}
+
+.cd-pie-legend-pct {
+  font-weight: 700;
+  color: #1a1a1a;
+}
+
+/* Activity table */
+.cd-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial;
+  font-size: 14px;
+}
+
+.cd-table thead th {
+  background: #efefef;
+  padding: 12px 14px;
+  text-align: left;
+  font-weight: 700;
+  font-size: 13px;
+  border: 1px solid rgba(0,0,0,0.08);
+}
+
+.cd-table tbody td {
+  padding: 12px 14px;
+  border-top: 1px solid rgba(0,0,0,0.05);
+  color: #222;
+}
+
+.cd-table .td-right {
+  text-align: right;
+  font-weight: 700;
+}
+
+.cd-table-footer {
+  height: 36px;
+  background: #efefef;
+  border-top: 1px solid rgba(0,0,0,0.08);
+}
+
+.cd-badge {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.cd-badge--buy {
+  background: #d4edda;
+  color: #1a5c2a;
+}
+
+.cd-badge--sell {
+  background: #fde8e8;
+  color: #7a1a1a;
+}
+
+.cd-empty {
+  font-size: 14px;
+  color: #888;
+}
+
+.cd-not-found {
+  padding: 18px;
+}
+
+/* Hover effect on table rows */
+.cd-clickable-row:hover td {
+  background: #f7f7f7;
+}
