@@ -5,14 +5,17 @@ import CustomerDetailPage from './CustomerDetailPage';
 import investorsData from '../../../mocks/investors.json';
 import '../components/customers.css';
 
+type SearchResult = { id: string; name: string };
+
 function getCustomerIdFromHash(): string | null {
+  if (typeof window === 'undefined') return null;
   const hash = window.location.hash.replace(/^#/, '');
   const parts = hash.split('/');
   return parts[0] === 'kundeoversikt' && parts[1] ? parts[1] : null;
 }
 
 function CustomersPage() {
-  const [customerId, setCustomerId] = useState<string | null>(getCustomerIdFromHash);
+  const [customerId, setCustomerId] = useState<string | null>(getCustomerIdFromHash());
   const [filteredCustomers, setFilteredCustomers] = useState<SearchResult[]>([]);
   const [selectedCustomer, setSelectedCustomer] = useState<SearchResult | null>(null);
 
@@ -43,6 +46,7 @@ function CustomersPage() {
   };
 
   const handleSelectCustomer = (customer: SearchResult) => {
+    setSelectedCustomer(customer);
     window.location.hash = `#kundeoversikt/${customer.id}`;
   };
 
@@ -52,37 +56,49 @@ function CustomersPage() {
   };
 
   return (
-    <div className="content-card customers-page">
-      <div className="search-section">
-        <div className="search-and-filter">
-          <CustomerSearch
-            onSearch={handleSearch}
-            onSelectCustomer={handleSelectCustomer}
-            suggestions={filteredCustomers}
-            placeholder="Søk på kunde"
-          />
-        </div>
-
-        {selectedCustomer && (
-          <div className="selected-customer">
-            <span>{selectedCustomer.name}</span>
-            <button 
-              onClick={handleClearSearch} 
-              className="clear-search-btn"
-              aria-label="Fjern søk"
-            >
-              ✕
-            </button>
-          </div>
-        )}
+    <div>
+      {/* Header Section */}
+      <div className="content-card">
+        <p className="content-card__eyebrow">Customers</p>
+        <h1>Kundeoversikt</h1>
+        <p className="content-card__description">
+          Kundeoversikt og kundedetaljer.
+        </p>
       </div>
 
-      <div className="table-wrap">
-        {selectedCustomer ? (
-          <CustomersData filteredCustomerId={selectedCustomer.id} />
-        ) : (
-          <CustomersData />
-        )}
+      {/* Main Content */}
+      <div className="content-card customers-page">
+        <div className="search-section">
+          <div className="search-and-filter">
+            <CustomerSearch
+              onSearch={handleSearch}
+              onSelectCustomer={handleSelectCustomer}
+              suggestions={filteredCustomers}
+              placeholder="Søk på kunde"
+            />
+          </div>
+
+          {selectedCustomer && (
+            <div className="selected-customer">
+              <span>{selectedCustomer.name}</span>
+              <button 
+                onClick={handleClearSearch} 
+                className="clear-search-btn"
+                aria-label="Fjern søk"
+              >
+                ✕
+              </button>
+            </div>
+          )}
+        </div>
+
+        <div className="table-wrap">
+          {selectedCustomer ? (
+            <CustomersData filteredCustomerId={selectedCustomer.id} />
+          ) : (
+            <CustomersData />
+          )}
+        </div>
       </div>
     </div>
   );
