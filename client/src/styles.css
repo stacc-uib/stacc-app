@@ -601,7 +601,7 @@ textarea {
   font-size: 0.8rem;
   font-weight: 600;
   line-height: 1.3;
-  white-space: normal;
+  white-space: nowrap;
 }
 
 .status-badge--ok {
@@ -2101,4 +2101,48 @@ textarea {
   .data-table {
     min-width: 640px;
   }
+}
+
+.transactions-table thead th {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  background: #f8fafc;
+  white-space: nowrap;
+}
+
+.transactions-table tbody tr {
+  transition: background-color 0.18s ease;
+}
+
+.transactions-table tbody tr:hover {
+  background: rgba(239, 246, 255, 0.7);
+}
+
+.transactions-table td {
+  white-space: nowrap;
+}
+
+.transactions-toolbar {
+  display: flex;
+  align-items: flex-end;
+  gap: 1rem;
+  flex-wrap: wrap;
+  margin-bottom: 1.25rem;
+}
+
+.transactions-toolbar__filters {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.transactions-toolbar__select {
+  padding: 0.45rem 0.75rem;
+  border: 1px solid rgba(17, 24, 39, 0.12);
+  border-radius: 0.25rem;
+  font-size: 0.9rem;
+  background: #fff;
+  color: #111827;
 }
