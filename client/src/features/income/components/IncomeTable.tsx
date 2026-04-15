@@ -1,32 +1,44 @@
-import { getCumulativeInvestmentData } from "../lib/getCumulativeInvestmentData";
+import fundPrices from "../../../mocks/fundPrices.json";
+import investors from "../../../mocks/investors.json";
+import trades from "../../../mocks/trades.json";
 
-const IncomeTableHeaderCell = ({label}) => {
-    return(
-        <th style={{ textAlign: 'center' }}>{label}</th>
-    )
-}
+import { getCumulativeIncomeData } from "../lib/getCumulativeIncomeData";
 
 const IncomeTableHeader = ({incomeTableHeaders}) => {
     return (
         <thead>
             <tr>
                 {incomeTableHeaders.map((label) => (
-                    <IncomeTableHeaderCell label={label} key={label} />
+                    <th key={label} style={{ textAlign: 'center' }}>
+                        {label}
+                    </th>
                 ))}
             </tr>
         </thead>
     ) 
 };
-const IncomeTableBodyRowCellPrimary = ({value}) => {
-    return (
-        <td>
-            <div className="table-primary-cell">
-                <strong>{value}</strong>
-            </div>
-        </td>
-    )
+
+const IncomeTableBodyRowCellText = ({value, isPrimary}) => {
+    if (isPrimary == "true") {
+        return (
+            <td>
+                <div className="table-primary-cell">
+                    <strong>{value}</strong>
+                </div>
+            </td>
+        )
+    } else {
+        return (
+            <td>
+                <div className="table-primary-cell">
+                    {value}
+                </div>
+            </td>
+        )
+    }
 }
-const IncomeTableBodyRowCellInteger = ({value}) => {
+
+const IncomeTableBodyRowCellInteger = ({value, isPrimary}) => {
     const formatInteger = (value: number) => {
         return new Intl.NumberFormat('nb-NO', {
             minimumFractionDigits: 0,
@@ -34,56 +46,91 @@ const IncomeTableBodyRowCellInteger = ({value}) => {
         }).format(value);
     }
 
-    return (
-        <td style={{ textAlign: 'center' }}>
-            {formatInteger(value)}
-        </td>
-    )
-}
-
-const IncomeTableBodyRowCellPercentage = ({value}) => {
-    const formatPercentageChange = (value: number) =>  {
-        const color = value >= 0 ? 'green' : 'red';
+    if (isPrimary == "true") {
         return (
-            <span style={{ color: color }}>{value}%</span>
+            <td style={{ textAlign: 'center' }}>
+                <strong>{formatInteger(value)}</strong>
+            </td>
+        )
+    } else {
+        return (
+            <td style={{ textAlign: 'center' }}>
+                {formatInteger(value)}
+            </td>
         )
     }
 
-    return (
-        <td style={{ textAlign: 'center' }}>
-            {formatPercentageChange(value)}
-        </td>
-    )
 }
 
-const IncomeTableBodyRowCellMonetary = ({value}) => {
+const IncomeTableBodyRowCellPercentage = ({value, isPrimary}) => {
+    const formatPercentageChange = (value: number) =>  {
+        const color = value >= 0 ? 'green' : 'red';
+        const prefix = value >= 0 ? '+' : '';
+
+        return (
+            <span style={{ color: color }}>{prefix}{value}%</span>
+        )
+    }
+
+    if (isPrimary == "true") {
+        return (
+            <td style={{ textAlign: 'center' }}>
+                <strong>{formatPercentageChange(value)}</strong>
+            </td>
+        )
+    } else {
+        return (
+            <td style={{ textAlign: 'center' }}>
+                {formatPercentageChange(value)}
+            </td>
+        )
+    }
+}
+
+const IncomeTableBodyRowCellMonetary = ({value, isPrimary}) => {
     const formatMonetaryValue = (value: number) => {
         return new Intl.NumberFormat('nb-NO', {
             minimumFractionDigits: 2,
             maximumFractionDigits: 2,
         }).format(value);
     }
-    
-    return (
-        <td style={{ textAlign: 'right' }}>
-            {formatMonetaryValue(value)} kr
-        </td>
-    )
+
+    if (isPrimary == "true") {
+        return (
+            <td style={{ textAlign: 'right' }}>
+                <strong>{formatMonetaryValue(value)} kr</strong>
+            </td>
+        )
+    } else {
+        return (
+            <td style={{ textAlign: 'right' }}>
+                {formatMonetaryValue(value)} kr
+            </td>
+        )
+    }
 
 }
 
-const IncomeTableBodyRow = ({fund}) => {
+const IncomeTableBodyRow = ({fund, isPrimary}) => {
     return (
         <tr>
-            <IncomeTableBodyRowCellPrimary value={fund.name} />
-            <IncomeTableBodyRowCellInteger value={fund.volume} />
-            <IncomeTableBodyRowCellPercentage value={fund.volumeChange} />
-            <IncomeTableBodyRowCellMonetary value={fund.kurs} />
-            <IncomeTableBodyRowCellPercentage value={fund.kursChange} />
-            <IncomeTableBodyRowCellMonetary value={fund.kurs * fund.volume} />
-            <IncomeTableBodyRowCellMonetary value={fund.income} />
-            <IncomeTableBodyRowCellPercentage value={fund.incomeChange} />
+            <IncomeTableBodyRowCellText value={fund.name} isPrimary={isPrimary} />
+            <IncomeTableBodyRowCellInteger value={fund.volume} isPrimary={isPrimary} />
+            <IncomeTableBodyRowCellPercentage value={fund.volumeChange} isPrimary={isPrimary} />
+            <IncomeTableBodyRowCellMonetary value={fund.kurs} isPrimary={isPrimary} />
+            <IncomeTableBodyRowCellPercentage value={fund.kursChange} isPrimary={isPrimary} />
+            <IncomeTableBodyRowCellMonetary value={fund.income} isPrimary={isPrimary} />
+            <IncomeTableBodyRowCellPercentage value={fund.incomeChange} isPrimary={isPrimary} />
         </tr>
+    )
+}
+
+const IncomeTableBodySection = ({fund}) => {
+    return (
+        <>
+            <IncomeTableBodyRow fund={fund} isPrimary="true" />
+            <IncomeTableBodyRow fund={fund} isPrimary="false" />
+        </>
     )
 }
 
@@ -91,7 +138,7 @@ const IncomeTableBody = ({incomeTableData}) => {
     return (
         <tbody>
             {incomeTableData.map((fund) => (
-                <IncomeTableBodyRow fund={fund} key={fund.name} />
+                <IncomeTableBodySection fund={fund} key={fund.name} />
             ))}
         </tbody>
     );
@@ -104,28 +151,16 @@ const IncomeTable = ({incomeTableData}) => {
         "Volumendring",
         "Kurs",
         "Kursendring",
-        "Markedsverdi",
         "Inntekt",
         "Inntektsendring"
     ];
 
-    const allInvestmentData = [
-        getCumulativeInvestmentData("Escali Norden AS", "Escali Norden AS - Klasse A"),
-        getCumulativeInvestmentData("Escali Norden AS", "Escali Norden AS - Klasse B"),
-        getCumulativeInvestmentData("Escali Norden AS", "Escali Norden AS - Klasse C"),
-        getCumulativeInvestmentData("Escali Global AS", "Escali Global AS - Klasse A"),
-        getCumulativeInvestmentData("Escali Global AS", "Escali Global AS - Klasse B"),
-        getCumulativeInvestmentData("Escali Global AS", "Escali Global AS - Klasse C"),
-        getCumulativeInvestmentData("Escali Kreditt AS", "Escali Kreditt AS - Klasse A"),
-        getCumulativeInvestmentData("Escali Kreditt AS", "Escali Kreditt AS - Klasse B"),
-        getCumulativeInvestmentData("Escali Kreditt AS", "Escali Kreditt AS - Klasse C")
-    ];
-
+    const incomeData = getCumulativeIncomeData(trades, investors, fundPrices);
 
     return (
         <div className="data-table-card">
             <div className="data-table-card__header">
-                <h3 className="data-table-card__title">Inntektstabell</h3>
+                <h3 className="data-table-card__title">Inntesktstabell</h3>
             </div>
             <div className="table-scroll">
                 <table className="data-table transactions-table">
