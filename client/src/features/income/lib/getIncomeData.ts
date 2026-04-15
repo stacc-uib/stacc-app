@@ -6,8 +6,8 @@ import type { FundPrice } from "../types/fundPrice";
 import type { Investor } from "../types/investor";
 import type { Trade } from "../types/trade";
 
-const CLASS_B_MONTHLY_RATE = 0.0075 / 12;
-const CLASS_C_MONTHLY_RATE = 0.01 / 12;
+const CLASS_B_MONTHLY_RATE = (1 + 0.0075) ** (1 / 12) - 1;
+const CLASS_C_MONTHLY_RATE = (1 + 0.01) ** (1 / 12) - 1;
 
 export interface IncomeEvent {
     date: string;
@@ -20,18 +20,18 @@ export interface IncomeEvent {
     incomeType: "management fee" | "dividend";
 }
 
-export interface CumulativeIncomeData {
+export interface IncomeData {
     events: IncomeEvent[];
 }
 
 // map from fund / share class to units owned
 export type CustomerHolding = Map<string, number>;
 
-export function getCumulativeIncomeData(
+export function getIncomeData(
     trades: Trade[],
     investors: Investor[],
     fundPrices: FundPrice[]
-): CumulativeIncomeData {
+): IncomeData {
     const validTrades = trades.filter((t) =>
         t.tradeDate != null &&
         t.customerName != null &&

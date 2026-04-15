@@ -2,7 +2,7 @@ import fundPrices from "../../../mocks/fundPrices.json";
 import investors from "../../../mocks/investors.json";
 import trades from "../../../mocks/trades.json";
 
-import { getCumulativeIncomeData } from "../lib/getCumulativeIncomeData";
+import { getIncomeData } from "../lib/getIncomeData";
 
 const IncomeTableHeader = ({incomeTableHeaders}) => {
     return (
@@ -155,7 +155,7 @@ const IncomeTable = ({incomeTableData}) => {
         "Inntektsendring"
     ];
 
-    const incomeData = getCumulativeIncomeData(trades, investors, fundPrices);
+    const incomeData = getIncomeData(trades, investors, fundPrices);
 
     return (
         <div className="data-table-card">
