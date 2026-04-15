@@ -2,6 +2,7 @@
 import CompliancePage from '../../features/compliance/pages/CompliancePage';
 import CustomersPage from '../../features/customers/pages/CustomersPage';
 import DashboardPage from '../../features/dashboard/pages/DashboardPage';
+import DividendsPage from '../../features/dividends/pages/DividendsPage';
 import FundOverviewPage from '../../features/funds/pages/FundOverviewPage';
 import IncomePage from '../../features/income/pages/IncomePage';
 import TradesPage from '../../features/trades/pages/TradesPage';
@@ -284,6 +285,6 @@ export const navItems: AppNavItem[] = [
     label: 'Registrer utbytte',
     description: 'Før inn utbytte og koble det til riktig kunde eller fond.',
     icon: <DividendIcon />,
-    page: DashboardPage,
+    page: DividendsPage,
   },
 ];
