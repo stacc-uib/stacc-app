@@ -1,8 +1,4 @@
-import fundPrices from "../../../mocks/fundPrices.json";
-import investors from "../../../mocks/investors.json";
-import trades from "../../../mocks/trades.json";
-
-import { getIncomeData } from "../lib/getIncomeData";
+import IncomeData from "../lib/getIncomeData";
 
 const IncomeTableHeader = ({incomeTableHeaders}) => {
     return (
@@ -41,7 +37,7 @@ const IncomeTableBodyRowCellText = ({value, isPrimary}) => {
 const IncomeTableBodyRowCellInteger = ({value, isPrimary}) => {
     const formatInteger = (value: number) => {
         return new Intl.NumberFormat('nb-NO', {
-            minimumFractionDigits: 0,
+            minimumFractionDigsits: 0,
             maximumFractionDigits: 0,
         }).format(value);
     }
@@ -111,40 +107,84 @@ const IncomeTableBodyRowCellMonetary = ({value, isPrimary}) => {
 
 }
 
-const IncomeTableBodyRow = ({fund, isPrimary}) => {
+const IncomeTableBodyRow = ({fundIncome, isPrimary}) => {
+    const unitsChange = 100 * (fundIncome.units - fundIncome.unitsInitial) / fundIncome.unitsInitial;
+    const priceChange = 100 * (fundIncome.price - fundIncome.priceInitial) / fundIncome.priceInitial;
+    const incomeChange = 100 * (fundIncome.income - fundIncome.incomeInitial) / fundIncome.incomeInitial;
+
     return (
         <tr>
-            <IncomeTableBodyRowCellText value={fund.name} isPrimary={isPrimary} />
-            <IncomeTableBodyRowCellInteger value={fund.volume} isPrimary={isPrimary} />
-            <IncomeTableBodyRowCellPercentage value={fund.volumeChange} isPrimary={isPrimary} />
-            <IncomeTableBodyRowCellMonetary value={fund.kurs} isPrimary={isPrimary} />
-            <IncomeTableBodyRowCellPercentage value={fund.kursChange} isPrimary={isPrimary} />
-            <IncomeTableBodyRowCellMonetary value={fund.income} isPrimary={isPrimary} />
-            <IncomeTableBodyRowCellPercentage value={fund.incomeChange} isPrimary={isPrimary} />
+            <IncomeTableBodyRowCellText value={fundIncome.name} isPrimary={isPrimary} />
+            <IncomeTableBodyRowCellInteger value={fundIncome.units} isPrimary={isPrimary} />
+            <IncomeTableBodyRowCellPercentage value={unitsChange} isPrimary={isPrimary} />
+            <IncomeTableBodyRowCellMonetary value={fundIncome.price} isPrimary={isPrimary} />
+            <IncomeTableBodyRowCellPercentage value={priceChange} isPrimary={isPrimary} />
+            <IncomeTableBodyRowCellMonetary value={fundIncome.income} isPrimary={isPrimary} />
+            <IncomeTableBodyRowCellPercentage value={incomeChange} isPrimary={isPrimary} />
         </tr>
     )
 }
 
-const IncomeTableBodySection = ({fund}) => {
+const IncomeTableBodySection = ({fundIncome}) => {
     return (
         <>
-            <IncomeTableBodyRow fund={fund} isPrimary="true" />
-            <IncomeTableBodyRow fund={fund} isPrimary="false" />
+            <IncomeTableBodyRow fundIncome={fundIncome} isPrimary="true" />
         </>
     )
 }
 
-const IncomeTableBody = ({incomeTableData}) => {
+interface ShareClassIncome {
+    name: string;
+    units: number;
+    unitsInitial: number;
+    price: number;
+    priceInitial: number;
+    income: number;
+    incomeInitial: number;
+}
+
+function getIncomeDataByShareClass(incomeData: IncomeData): Map<string, ShareClassIncome> {
+    const result = new Map<string, ShareClassIncome>();
+    console.log(incomeData);
+
+    for (const event of incomeData.events) {
+        if (!result.has(event.shareClass)) {
+            result.set(event.shareClass, {
+                name: event.shareClass,
+                units: 0,
+                unitsInitial: 0,
+                price: 0,
+                priceInitial: event.price,
+                income: 0,
+                incomeInitial: 0
+            });
+        }
+
+        const currShareClassIncome = result.get(event.shareClass)!;
+        currShareClassIncome.units += event.units;
+        currShareClassIncome.price = event.price;
+        currShareClassIncome.income += event.income;
+
+        // Update the Map with the modified object
+        result.set(event.shareClass, currShareClassIncome);
+    }
+    return result;
+}
+
+const IncomeTableBody = ({incomeData}) => {
+    const byShareClass = getIncomeDataByShareClass(incomeData);
+    console.log(byShareClass);
+
     return (
         <tbody>
-            {incomeTableData.map((fund) => (
-                <IncomeTableBodySection fund={fund} key={fund.name} />
+            {Array.from(byShareClass).map(([shareClass, fundIncome]) => (
+                <IncomeTableBodySection fundIncome={fundIncome} key={shareClass} />
             ))}
         </tbody>
     );
 }
 
-const IncomeTable = ({incomeTableData}) => {
+const IncomeTable = ({incomeData}) => {
     const incomeTableHeaders = [
         "Fond",
         "Volum",
@@ -155,17 +195,15 @@ const IncomeTable = ({incomeTableData}) => {
         "Inntektsendring"
     ];
 
-    const incomeData = getIncomeData(trades, investors, fundPrices);
-
     return (
         <div className="data-table-card">
             <div className="data-table-card__header">
-                <h3 className="data-table-card__title">Inntesktstabell</h3>
+                <h3 className="data-table-card__title">Funker ikke enda! :)</h3>
             </div>
             <div className="table-scroll">
                 <table className="data-table transactions-table">
                     <IncomeTableHeader incomeTableHeaders={incomeTableHeaders} /> 
-                    <IncomeTableBody incomeTableData={incomeTableData} />
+                    <IncomeTableBody incomeData={incomeData} />
                 </table>
             </div>
         </div>

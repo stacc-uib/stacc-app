@@ -27,7 +27,7 @@ export interface IncomeData {
 // map from fund / share class to units owned
 export type CustomerHolding = Map<string, number>;
 
-export function getIncomeData(
+export default function getIncomeData(
     trades: Trade[],
     investors: Investor[],
     fundPrices: FundPrice[]
@@ -54,6 +54,7 @@ export function getIncomeData(
             if (!customerHoldings.has(currTrade.customerId)) {
                 customerHoldings.set(currTrade.customerId, new Map<string, number>());
             }
+
             let currCustomerHolding = customerHoldings.get(currTrade.customerId);
 
             if (!currCustomerHolding.has(currTrade.shareClass)) {
@@ -106,5 +107,5 @@ export function getIncomeData(
             }
         }
     }
-    return incomeEvents;
+    return { events: incomeEvents } as IncomeData;
 }

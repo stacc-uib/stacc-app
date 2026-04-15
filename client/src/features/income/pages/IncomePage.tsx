@@ -1,25 +1,35 @@
-import { useEffect, useState } from 'react';
 import IncomeSubnav from '../components/IncomeSubnav';
 import IncomeTable from '../components/IncomeTable';
+import IncomePeriodFilter from '../components/IncomePeriodFilter';
+import getIncomeData from '../lib/getIncomeData';
+import { applyDateRange, getPresetRange, getIncomeDateRange, type DateRange, type Preset } from '../lib/getIncomeDateRange';
+
+import fundPrices from "../../../mocks/fundPrices.json";
+import investors from "../../../mocks/investors.json";
+import trades from "../../../mocks/trades.json";
+
+import { useMemo, useEffect, useState } from 'react';
+
 
 const incomeSubnavItems = [
-  {
-    id: 'oversikt',
-    label: 'Oversikt',
-    description: '',
-  },
-  {
-    id: 'fondsinntekter',
-    label: 'Fondsinntekter',
-    description: '',
-  },
-  {
-    id: 'projeksjoner',
-    label: 'Projeksjoner',
-    description: '',
-  },
+    {
+        id: 'oversikt',
+        label: 'Oversikt',
+        description: '',
+    },
+    {
+        id: 'fondsinntekter',
+        label: 'Fondsinntekter',
+        description: '',
+    },
+    {
+        id: 'projeksjoner',
+        label: 'Projeksjoner',
+        description: '',
+    },
 ] as const;
 
+/*
 const incomeTableData = [
     {
         name: "Escali Norden",
@@ -49,68 +59,106 @@ const incomeTableData = [
         incomeChange: -6.7
     }
 ];
+*/
+
 
 function getIncomeSubpageIdFromHash() {
-  const hash = window.location.hash.replace(/^#/, '');
-  const [, subpageId] = hash.split('/');
+    const hash = window.location.hash.replace(/^#/, '');
+    const [, subpageId] = hash.split('/');
 
-  return incomeSubnavItems.some((item) => item.id === subpageId)
-    ? subpageId
-    : 'oversikt';
+    return incomeSubnavItems.some((item) => item.id === subpageId)
+        ? subpageId
+        : 'oversikt';
 }
 
 function IncomePage() {
-  const [activeSubpageId, setActiveSubpageId] = useState(
-    getIncomeSubpageIdFromHash,
-  );
+    const [activeSubpageId, setActiveSubpageId] = useState(
+        getIncomeSubpageIdFromHash,
+    );
 
-  useEffect(() => {
-    const handleHashChange = () => {
-      setActiveSubpageId(getIncomeSubpageIdFromHash());
-    };
+    const incomeData = getIncomeData(trades, investors, fundPrices);
+    const { from: minDate, to: maxDate } = getIncomeDateRange(incomeData);
 
-    window.addEventListener('hashchange', handleHashChange);
+    const [range, setRange] = useState<DateRange>({ from: minDate, to: maxDate });
+    const [activePreset, setActivePreset] = useState<Preset | null>(null);
 
-    return () => {
-      window.removeEventListener('hashchange', handleHashChange);
-    };
-  }, []);
+    function handlePresetSelect(preset: Preset) {
+        setActivePreset(preset);
+        setRange(getPresetRange(preset, maxDate, minDate));
+    }
 
-  function handleSubpageSelect(nextSubpageId: string) {
-    window.location.hash = `#inntekt/${nextSubpageId}`;
-  }
+    function handleRangeChange(newRange: DateRange) {
+        setActivePreset(null);
+        setRange(newRange);
+    }
 
-  return (
-    <div className="content-card">
-      <p className="content-card__eyebrow">Income</p>
-      <h1>Inntekt</h1>
-      <p className="content-card__description">
-        Placeholder for inntektsanalyse, honorarutvikling og relaterte oversikter.
-      </p>
+    function handleReset() {
+        setActivePreset(null);
+        setRange({ from: minDate, to: maxDate });
+    }
 
-      <IncomeSubnav
-        items={[...incomeSubnavItems]}
-        activeItemId={activeSubpageId}
-        onSelect={handleSubpageSelect}
-      />
+    const filteredIncomeData = useMemo(() => applyDateRange(incomeData, range), [incomeData, range]);
 
-      {activeSubpageId === 'oversikt' ? (
-          <div className="content-card__placeholder">
-            Placeholder inntekt.
-          </div>
-      ) : null}
+    useEffect(() => {
+        const handleHashChange = () => {
+            setActiveSubpageId(getIncomeSubpageIdFromHash());
+        };
 
-      {activeSubpageId === 'projeksjoner' ? (
-          <div className="content-card__placeholder">
-            Placeholder inntekt.
-          </div>
-      ) : null}
+        window.addEventListener('hashchange', handleHashChange);
 
-      {activeSubpageId === 'fondsinntekter' ? (
-            <IncomeTable incomeTableData={incomeTableData}/>
-      ) : null}
-    </div>
-  );
+        return () => {
+            window.removeEventListener('hashchange', handleHashChange);
+        };
+    }, []);
+
+    function handleSubpageSelect(nextSubpageId: string) {
+        window.location.hash = `#inntekt/${nextSubpageId}`;
+    }
+
+    return (
+        <div className="content-card">
+            <p className="content-card__eyebrow">Income</p>
+
+            <h1>Inntekt</h1>
+
+            <p className="content-card__description">
+                Placeholder for inntektsanalyse, honorarutvikling og relaterte oversikter.
+            </p>
+
+            <IncomeSubnav
+                items={[...incomeSubnavItems]}
+                activeItemId={activeSubpageId}
+                onSelect={handleSubpageSelect}
+            />
+
+            {activeSubpageId === 'oversikt' ? (
+                <div className="content-card__placeholder">
+                    Placeholder inntekt.
+                </div>
+            ) : null}
+
+            {activeSubpageId === 'projeksjoner' ? (
+                <div className="content-card__placeholder">
+                    Placeholder inntekt.
+                </div>
+            ) : null}
+
+            {activeSubpageId === 'fondsinntekter' ? (
+                <>
+                    <IncomePeriodFilter
+                        range={range}
+                        minDate={minDate}
+                        maxDate={maxDate}
+                        activePreset={activePreset}
+                        onRangeChange={handleRangeChange}
+                        onPresetSelect={handlePresetSelect}
+                        onReset={handleReset}
+                    />
+                    <IncomeTable incomeData={filteredIncomeData}/>
+                </>
+            ) : null}
+        </div>
+    );
 }
 
 export default IncomePage;
