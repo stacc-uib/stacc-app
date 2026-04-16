@@ -1,4 +1,11 @@
-import type { ComplianceStat } from '../lib/getComplianceOverviewStats';
+import type { ComplianceStatus } from '../types/compliance';
+
+type ComplianceStat = {
+  id: string;
+  label: string;
+  value: string;
+  tone?: ComplianceStatus;
+};
 
 type ComplianceStatGridProps = {
   stats: ComplianceStat[];
