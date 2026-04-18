@@ -5,7 +5,7 @@ export type DateRange = {
     to: string;
 };
 
-export type Preset = '1y' | '5y' | '10y' | '20y';
+export type Preset = 'ytd' | '5y' | '10y' | '20y';
 
 export const getTransactionsDateRange = (transactions: Transaction[]): DateRange => {
     const dates = transactions
@@ -31,7 +31,7 @@ export const applyDateRange = (transactions: Transaction[], range: DateRange): T
 export const getPresetRange = (preset: Preset, maxDate: string, _minDate: string): DateRange => {
     const d = new Date(maxDate);
     switch (preset) {
-        case '1y':  d.setFullYear(d.getFullYear() - 1); break;
+        case 'ytd': d.setMonth(0); d.setDate(1); break;
         case '5y':  d.setFullYear(d.getFullYear() - 5); break;
         case '10y': d.setFullYear(d.getFullYear() - 10); break;
         case '20y': d.setFullYear(d.getFullYear() - 20); break;

@@ -19,7 +19,7 @@ function TransactionsPage() {
   const filtered = useMemo(() => applyDateRange(transactions, range), [transactions, range]);
   const kpi = useMemo(() => getTransactionsKpi(filtered), [filtered]);
   const chartData = useMemo(() => getTransactionsChartData(filtered), [filtered]);
-  const growth = useMemo(() => getTransactionsGrowth(transactions, range.from, range.to), [transactions, range]);
+  const growth = useMemo(() => getTransactionsGrowth(filtered, range.from, range.to), [filtered, range]);
 
   function handlePresetSelect(preset: Preset) {
     setActivePreset(preset);

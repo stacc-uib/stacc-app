@@ -28,7 +28,7 @@ const TYPE_COLORS = [
   '#991b1b', '#1f2937',
 ];
 
-function VolumeChart({ data }: { data: TransactionsChartData['volumeByYear'] }) {
+function VolumeChart({ data }: { data: TransactionsChartData['volumeByPeriod'] }) {
   if (data.length === 0) return (
     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%' }}>
       <p style={{ color: '#9ca3af', fontSize: '0.85rem' }}>Ingen data</p>
@@ -40,16 +40,14 @@ function VolumeChart({ data }: { data: TransactionsChartData['volumeByYear'] }) 
   const iw = w - pad.left - pad.right;
   const ih = h - pad.top - pad.bottom;
   const maxCount = Math.max(...data.map((d) => d.count));
-  const minYear = data[0].year;
-  const maxYear = data[data.length - 1].year;
-  const yearSpan = maxYear - minYear || 1;
+  const n = data.length;
 
-  function x(year: number) { return pad.left + ((year - minYear) / yearSpan) * iw; }
-  function y(count: number) { return pad.top + ih - (count / maxCount) * ih; }
+  function x(i: number) { return pad.left + (n <= 1 ? iw / 2 : (i / (n - 1)) * iw); }
+  function y(count: number) { return pad.top + ih - (count / (maxCount || 1)) * ih; }
 
-  const points = data.map((d) => `${x(d.year)},${y(d.count)}`).join(' ');
+  const points = data.map((d, i) => `${x(i)},${y(d.count)}`).join(' ');
   const yTicks = [0, Math.round(maxCount / 2), maxCount];
-  const xTicks = data.filter((_, i) => i === 0 || i === data.length - 1 || data.length <= 6);
+  const xTicks = data.filter((_, i) => i === 0 || i === n - 1 || n <= 6);
 
   return (
     <svg viewBox={`0 0 ${w} ${h}`} width="100%" style={{ display: 'block' }}>
@@ -62,14 +60,14 @@ function VolumeChart({ data }: { data: TransactionsChartData['volumeByYear'] }) 
           </text>
         </g>
       ))}
-      {xTicks.map((d) => (
-        <text key={d.year} x={x(d.year)} y={h - 6} textAnchor="middle" fill="#9ca3af" fontSize={8}>
-          {d.year}
+      {xTicks.map((d, i) => (
+        <text key={d.label} x={x(data.indexOf(d))} y={h - 6} textAnchor={i === 0 ? 'start' : i === xTicks.length - 1 ? 'end' : 'middle'} fill="#9ca3af" fontSize={7}>
+          {d.label}
         </text>
       ))}
       <polyline points={points} fill="none" stroke="#da1e24" strokeWidth={2} strokeLinejoin="round" />
-      {data.map((d) => (
-        <circle key={d.year} cx={x(d.year)} cy={y(d.count)} r={3} fill="#da1e24" />
+      {data.map((d, i) => (
+        <circle key={d.label} cx={x(i)} cy={y(d.count)} r={3} fill="#da1e24" />
       ))}
       <text x={w / 2} y={13} textAnchor="middle" fill="#374151" fontSize={9} fontWeight="bold">
         Transaksjonsvolum
@@ -139,7 +137,7 @@ function TransactionsChartRow({ averageTransactionSize, chartData, growth }: Pro
     <div className="row g-3" style={{ marginBottom: '1.5rem' }}>
       <div className="col-12 col-lg-4">
         <div className="summary-card h-100" style={{ padding: '0.75rem' }}>
-          <VolumeChart data={chartData.volumeByYear} />
+          <VolumeChart data={chartData.volumeByPeriod} />
         </div>
       </div>
 
@@ -160,7 +158,7 @@ function TransactionsChartRow({ averageTransactionSize, chartData, growth }: Pro
           <div className="col-6">
             <article className="summary-card h-100">
               <p className="summary-card__label" style={{ fontSize: '0.8rem' }}>Vekst transaksjoner</p>
-              <p className="summary-card__value" style={{ fontSize: '1.1rem', color: countGrowth.color }}>{countGrowth.label}</p>
+              <p className="summary-card__value" style={{ fontSize: '1.1rem', color: countGrowth.color, whiteSpace: 'nowrap' }}>{countGrowth.label}</p>
             </article>
           </div>
           <div className="col-6">

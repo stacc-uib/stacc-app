@@ -7,30 +7,27 @@ export type TransactionsGrowth = {
 };
 
 export const getTransactionsGrowth = (
-    allTransactions: Transaction[],
+    transactions: Transaction[],
     fromDate: string,
     toDate: string,
 ): TransactionsGrowth => {
     const fromMs = new Date(fromDate).getTime();
     const toMs = new Date(toDate).getTime();
-    const periodMs = toMs - fromMs;
+    const midMs = fromMs + (toMs - fromMs) / 2;
+    const midDate = new Date(midMs).toISOString().slice(0, 10);
 
-    // Forrige periode: like lang, rett før
-    const prevTo = new Date(fromMs - 1).toISOString().slice(0, 10);
-    const prevFrom = new Date(fromMs - periodMs).toISOString().slice(0, 10);
+    const firstHalf = applyDateRange(transactions, { from: fromDate, to: midDate });
+    const secondHalf = applyDateRange(transactions, { from: midDate, to: toDate });
 
-    const current = applyDateRange(allTransactions, { from: fromDate, to: toDate });
-    const previous = applyDateRange(allTransactions, { from: prevFrom, to: prevTo });
+    const firstAmount = firstHalf.reduce((sum, tx) => sum + (Number(tx.amount) || 0), 0);
+    const secondAmount = secondHalf.reduce((sum, tx) => sum + (Number(tx.amount) || 0), 0);
 
-    const currentAmount = current.reduce((sum, tx) => sum + (Number(tx.amount) || 0), 0);
-    const previousAmount = previous.reduce((sum, tx) => sum + (Number(tx.amount) || 0), 0);
-
-    const countGrowthPct = previous.length > 0
-        ? ((current.length - previous.length) / previous.length) * 100
+    const countGrowthPct = firstHalf.length > 0
+        ? ((secondHalf.length - firstHalf.length) / firstHalf.length) * 100
         : null;
 
-    const amountGrowthPct = previousAmount > 0
-        ? ((currentAmount - previousAmount) / previousAmount) * 100
+    const amountGrowthPct = firstAmount > 0
+        ? ((secondAmount - firstAmount) / firstAmount) * 100
         : null;
 
     return { countGrowthPct, amountGrowthPct };
