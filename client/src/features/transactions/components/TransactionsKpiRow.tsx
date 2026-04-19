@@ -27,7 +27,7 @@ function TransactionsKpiRow({ kpi }: Props) {
         <div key={item.label} className="col">
           <article className="summary-card">
             <p className="summary-card__label" style={{ fontSize: '0.8rem' }}>{item.label}</p>
-            <p className="summary-card__value" style={{ fontSize: '1.5rem' }}>{item.value}</p>
+            <p className="summary-card__value" style={{ fontSize: 'clamp(1rem, 1.5vw, 1.15rem)' }}>{item.value}</p>
           </article>
         </div>
       ))}

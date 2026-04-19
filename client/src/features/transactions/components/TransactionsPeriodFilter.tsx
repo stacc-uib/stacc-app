@@ -2,7 +2,7 @@ import { useCallback, useRef } from 'react';
 import type { DateRange, Preset } from '../lib/getTransactionsDateRange';
 
 const presets: { id: Preset; label: string }[] = [
-  { id: '1y',  label: '1 år' },
+  { id: 'ytd', label: 'YTD' },
   { id: '5y',  label: '5 år' },
   { id: '10y', label: '10 år' },
   { id: '20y', label: '20 år' },

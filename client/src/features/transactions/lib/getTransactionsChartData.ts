@@ -1,7 +1,7 @@
 import type { Transaction } from "../types/transactions";
 
 export type VolumeDataPoint = {
-    year: number;
+    label: string;
     count: number;
 };
 
@@ -12,21 +12,39 @@ export type TypeDataPoint = {
 };
 
 export type TransactionsChartData = {
-    volumeByYear: VolumeDataPoint[];
+    volumeByPeriod: VolumeDataPoint[];
     byType: TypeDataPoint[];
 };
 
+const MONTH_NAMES = ['jan', 'feb', 'mar', 'apr', 'mai', 'jun', 'jul', 'aug', 'sep', 'okt', 'nov', 'des'];
+
 export const getTransactionsChartData = (transactions: Transaction[]): TransactionsChartData => {
-    // Volum per år
-    const countByYear = new Map<number, number>();
+    const dates = transactions.map((tx) => tx.tradeDate).filter((d): d is string => !!d).sort();
+    const spanMs = dates.length >= 2
+        ? new Date(dates[dates.length - 1]).getTime() - new Date(dates[0]).getTime()
+        : 0;
+    const useMonths = spanMs < 2 * 365 * 24 * 60 * 60 * 1000;
+
+    // Store { label, sortKey } per period
+    const periodMap = new Map<string, { label: string; sortKey: string; count: number }>();
     for (const tx of transactions) {
         if (!tx.tradeDate) continue;
-        const year = new Date(tx.tradeDate).getFullYear();
-        countByYear.set(year, (countByYear.get(year) ?? 0) + 1);
+        const d = new Date(tx.tradeDate);
+        const year = d.getFullYear();
+        const month = d.getMonth();
+        const sortKey = useMonths
+            ? `${year}-${String(month + 1).padStart(2, '0')}`
+            : `${year}`;
+        const label = useMonths
+            ? `${MONTH_NAMES[month]} ${year}`
+            : `${year}`;
+        const existing = periodMap.get(sortKey);
+        periodMap.set(sortKey, { label, sortKey, count: (existing?.count ?? 0) + 1 });
     }
-    const volumeByYear = Array.from(countByYear.entries())
-        .map(([year, count]) => ({ year, count }))
-        .sort((a, b) => a.year - b.year);
+
+    const volumeByPeriod = Array.from(periodMap.values())
+        .sort((a, b) => a.sortKey.localeCompare(b.sortKey))
+        .map(({ label, count }) => ({ label, count }));
 
     // Fordeling per transaksjonstype
     const countByType = new Map<string, number>();
@@ -43,5 +61,5 @@ export const getTransactionsChartData = (transactions: Transaction[]): Transacti
         }))
         .sort((a, b) => b.count - a.count);
 
-    return { volumeByYear, byType };
+    return { volumeByPeriod, byType };
 };
