@@ -5,6 +5,7 @@ import fundsData from '../../../mocks/funds.json';
 import FundTypeFilter, { ALL_FUND_TYPES } from './FundTypeFilter';
 import ClassFilter, { ALL_CLASSES, KlasseType } from './ClassFilter';
 import CustomerTypeFilter, { ALL_CUSTOMER_TYPES, CustomerType } from './CustomerTypeFilter';
+import { HoldingFilter } from './CustomerChanges';
 
 export type FundType = 'Norden' | 'Global' | 'Kreditt';
 
@@ -68,22 +69,23 @@ function getLatestTradeForCustomer(customerId: string, trades: TradeRecord[]): T
 
 function calculateCustomerHoldings(customerId: string, trades: TradeRecord[]): { totalValue: number; funds: Fund[] } {
   const fundMap = new Map<FundType, number>();
-  let totalValue = 0;
 
   trades
     .filter(trade => trade.customerId === customerId)
     .forEach(trade => {
       const fundType = getFundTypeFromName(trade.fundName);
-      const value = trade.unitEffect * trade.price;
-      
+      const isSalg = trade.transactionType.toLowerCase() === 'salg';
+      const value = isSalg ? -trade.amount : trade.amount;
+
       const currentAmount = fundMap.get(fundType) || 0;
       fundMap.set(fundType, currentAmount + value);
-      totalValue += value;
     });
 
   const funds: Fund[] = Array.from(fundMap.entries())
     .filter(([_, amount]) => amount > 0)
     .map(([type, amount]) => ({ type, amount }));
+
+  const totalValue = funds.reduce((sum, f) => sum + f.amount, 0);
 
   return { totalValue, funds };
 }
@@ -93,7 +95,20 @@ function formatCurrency(n: number) {
 }
 
 
-function CustomersList({ filteredCustomerId }: { filteredCustomerId?: string }) {
+function matchesHoldingFilter(customer: Customer, filter: HoldingFilter): boolean {
+  if (!filter) return true;
+  const fundsAboveMillion = customer.funds.filter(f => f.amount >= 1_000_000);
+  const fundsNearMillion = customer.funds.filter(f => f.amount >= 900_000 && f.amount < 1_000_000);
+  if (filter === 'sterk') {
+    return customer.klasse === 'Klasse C' && customer.totalBeholdning > 1_000_000;
+  }
+  if (filter === 'naer') {
+    return fundsAboveMillion.length === 2 && fundsNearMillion.length >= 1;
+  }
+  return true;
+}
+
+function CustomersList({ filteredCustomerId, holdingFilter }: { filteredCustomerId?: string; holdingFilter?: HoldingFilter }) {
   const [data, setData] = useState<Customer[] | null>(null);
   const [selectedFundTypes, setSelectedFundTypes] = useState([...ALL_FUND_TYPES]);
   const [selectedClasses, setSelectedClasses] = useState<KlasseType[]>([...ALL_CLASSES]);
@@ -176,6 +191,7 @@ function CustomersList({ filteredCustomerId }: { filteredCustomerId?: string }) 
       <tbody>
         {data
           .filter(c => {
+            if (!matchesHoldingFilter(c, holdingFilter ?? null)) return false;
             const activeClasses = selectedClasses.length === 0 ? ALL_CLASSES : selectedClasses;
             if (!activeClasses.includes(c.klasse as KlasseType)) return false;
             const activeTypes = selectedCustomerTypes.length === 0 ? ALL_CUSTOMER_TYPES : selectedCustomerTypes;

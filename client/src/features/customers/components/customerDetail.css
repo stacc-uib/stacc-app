@@ -190,6 +190,16 @@
 .cd-pie-legend-pct {
   font-weight: 700;
   color: #1a1a1a;
+  min-width: 44px;
+  text-align: right;
+}
+
+.cd-pie-legend-amount {
+  font-weight: 500;
+  color: #555;
+  font-size: 12px;
+  margin-left: 6px;
+  white-space: nowrap;
 }
 
 /* Activity table */
