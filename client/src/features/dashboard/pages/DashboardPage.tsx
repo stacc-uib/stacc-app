@@ -24,11 +24,16 @@ const fmtNav = new Intl.NumberFormat('nb-NO', {
   minimumFractionDigits: 2,
   maximumFractionDigits: 2,
 });
+const fmtNav = new Intl.NumberFormat('nb-NO', {
+  minimumFractionDigits: 2,
+  maximumFractionDigits: 2,
+});
 const fmtInt = new Intl.NumberFormat('nb-NO', { maximumFractionDigits: 0 });
 
 function fmtMetric(value: number, format: FundOverviewMetricFormat): string {
   if (format === 'currency') return fmtCurrency.format(value);
   if (format === 'percent') return fmtPercent.format(value);
+  if (format === 'nav') return fmtNav.format(value);
   if (format === 'nav') return fmtNav.format(value);
   return fmtInt.format(value);
 }
