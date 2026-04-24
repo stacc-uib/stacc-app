@@ -1,5 +1,71 @@
 .customers-page { padding: 18px; }
-.search-row {
+
+.search-section {
+  margin-bottom: 20px;
+}
+
+.search-and-filter {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.holding-filter-buttons {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.holding-filter-btn {
+  display: inline-flex;
+  align-items: center;
+  padding: 10px 18px;
+  border-radius: 32px;
+  border: 2px solid transparent;
+  font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  white-space: nowrap;
+  text-shadow: none;
+  transition: box-shadow 0.15s, border-color 0.15s, filter 0.15s;
+  line-height: 1.2;
+}
+
+.holding-filter-btn--yellow {
+  background: #f5c518;
+  color: #222;
+  border-color: #f5c518;
+}
+
+.holding-filter-btn--yellow:hover {
+  filter: brightness(0.95);
+}
+
+.holding-filter-btn--yellow.holding-filter-btn--active {
+  border-color: #b8860b;
+  box-shadow: 0 2px 8px rgba(181, 134, 11, 0.45);
+  filter: brightness(0.93);
+}
+
+.holding-filter-btn--orange {
+  background: #f47b20;
+  color: #fff;
+  border-color: #f47b20;
+}
+
+.holding-filter-btn--orange:hover {
+  filter: brightness(0.95);
+}
+
+.holding-filter-btn--orange.holding-filter-btn--active {
+  border-color: #b85a00;
+  box-shadow: 0 2px 8px rgba(184, 90, 0, 0.45);
+  filter: brightness(0.93);
+}
+
+
   display: flex;
   align-items: center;
   justify-content: space-between;
