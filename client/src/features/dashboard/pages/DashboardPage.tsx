@@ -1,8 +1,6 @@
 import { useMemo, type ReactNode } from 'react';
-import getIncomeData from '../../income/lib/getIncomeData';
-import { getIncomeDateRange, getPresetRange } from '../../income/lib/getIncomeDateRange';
+import getIncomeData, { getIncomeDateRange, getPresetRange } from '../lib/incomeCalc';
 import fundPricesJson from '../../../mocks/fundPrices.json';
-import investorsJson from '../../../mocks/investors.json';
 import tradesJson from '../../../mocks/trades.json';
 import { getFundOverviewData } from '../../funds/lib/getFundOverviewData';
 import { getCompliancePageData } from '../../compliance/lib/getCompliancePageData';
@@ -24,16 +22,11 @@ const fmtNav = new Intl.NumberFormat('nb-NO', {
   minimumFractionDigits: 2,
   maximumFractionDigits: 2,
 });
-const fmtNav = new Intl.NumberFormat('nb-NO', {
-  minimumFractionDigits: 2,
-  maximumFractionDigits: 2,
-});
 const fmtInt = new Intl.NumberFormat('nb-NO', { maximumFractionDigits: 0 });
 
 function fmtMetric(value: number, format: FundOverviewMetricFormat): string {
   if (format === 'currency') return fmtCurrency.format(value);
   if (format === 'percent') return fmtPercent.format(value);
-  if (format === 'nav') return fmtNav.format(value);
   if (format === 'nav') return fmtNav.format(value);
   return fmtInt.format(value);
 }
@@ -188,8 +181,7 @@ function DashboardPage() {
   const incomeStats = useMemo(() => {
     const incomeData = getIncomeData(
       tradesJson as Parameters<typeof getIncomeData>[0],
-      investorsJson as Parameters<typeof getIncomeData>[1],
-      fundPricesJson as Parameters<typeof getIncomeData>[2],
+      fundPricesJson as Parameters<typeof getIncomeData>[1],
     );
     const { from: minDate, to: maxDate } = getIncomeDateRange(incomeData);
     const range12m = getPresetRange('1y', maxDate, minDate);
