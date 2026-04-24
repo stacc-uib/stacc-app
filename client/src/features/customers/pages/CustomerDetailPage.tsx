@@ -75,6 +75,7 @@ function PieChart({ slices }: { slices: Slice[] }) {
               <span className="cd-pie-dot" style={{ background: FUND_COLORS[sl.type] }} />
               <span className="cd-pie-legend-label">{sl.type}</span>
               <span className="cd-pie-legend-pct">{sl.pct.toFixed(1)}%</span>
+              <span className="cd-pie-legend-amount">{sl.value.toLocaleString('nb-NO', { minimumFractionDigits: 0, maximumFractionDigits: 0 })} kr</span>
             </li>
           ))}
         </ul>
@@ -112,6 +113,7 @@ function PieChart({ slices }: { slices: Slice[] }) {
             <span className="cd-pie-dot" style={{ background: FUND_COLORS[sl.type] }} />
             <span className="cd-pie-legend-label">{sl.type}</span>
             <span className="cd-pie-legend-pct">{sl.pct.toFixed(1)}%</span>
+            <span className="cd-pie-legend-amount">{sl.value.toLocaleString('nb-NO', { minimumFractionDigits: 0, maximumFractionDigits: 0 })} kr</span>
           </li>
         ))}
       </ul>
@@ -172,12 +174,13 @@ function CustomerDetailPage({ customerId }: { customerId: string }) {
     const map = new Map<FundType, number>();
     trades.forEach((t) => {
       const ft = getFundType(t.fundName);
-      map.set(ft, (map.get(ft) ?? 0) + t.unitEffect * t.price);
+      const isSalg = t.transactionType.toLowerCase() === 'salg';
+      const value = isSalg ? -t.amount : t.amount;
+      map.set(ft, (map.get(ft) ?? 0) + value);
     });
-    const total = Array.from(map.values()).reduce((s, v) => s + v, 0);
-    return Array.from(map.entries())
-      .filter(([, v]) => v > 0)
-      .map(([type, value]) => ({ type, value, pct: total > 0 ? (value / total) * 100 : 0 }));
+    const filtered = Array.from(map.entries()).filter(([, v]) => v > 0);
+    const total = filtered.reduce((s, [, v]) => s + v, 0);
+    return filtered.map(([type, value]) => ({ type, value, pct: total > 0 ? (value / total) * 100 : 0 }));
   }, [trades]);
 
   const totalBeholdning = fundHoldings.reduce((s, f) => s + f.value, 0);
@@ -227,8 +230,8 @@ function CustomerDetailPage({ customerId }: { customerId: string }) {
                 <dd>{klasse}</dd>
               </div>
               <div className="cd-info-row">
-                <dt>Beholdning</dt>
-                <dd>{formatCurrency(totalBeholdning)}</dd>
+                <dt>Total beholdning</dt>
+                <dd>{formatCurrency(totalBeholdning)} kr</dd>
               </div>
               <div className="cd-info-row">
                 <dt>Telefon</dt>

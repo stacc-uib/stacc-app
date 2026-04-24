@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import CustomerSearch from '../components/CustomerSearch';
 import CustomersData from '../components/CustomerData';
+import CustomerChanges, { HoldingFilter } from '../components/CustomerChanges';
 import CustomerDetailPage from './CustomerDetailPage';
 import investorsData from '../../../mocks/investors.json';
 import '../components/customers.css';
@@ -18,6 +19,7 @@ function CustomersPage() {
   const [customerId, setCustomerId] = useState<string | null>(getCustomerIdFromHash());
   const [filteredCustomers, setFilteredCustomers] = useState<SearchResult[]>([]);
   const [selectedCustomer, setSelectedCustomer] = useState<SearchResult | null>(null);
+  const [activeHoldingFilter, setActiveHoldingFilter] = useState<HoldingFilter>(null);
 
   useEffect(() => {
     const onHashChange = () => setCustomerId(getCustomerIdFromHash());
@@ -70,6 +72,7 @@ function CustomersPage() {
       <div className="content-card customers-page">
         <div className="search-section">
           <div className="search-and-filter">
+            <CustomerChanges activeFilter={activeHoldingFilter} onFilterChange={setActiveHoldingFilter} />
             <CustomerSearch
               onSearch={handleSearch}
               onSelectCustomer={handleSelectCustomer}
@@ -94,9 +97,9 @@ function CustomersPage() {
 
         <div className="table-wrap">
           {selectedCustomer ? (
-            <CustomersData filteredCustomerId={selectedCustomer.id} />
+            <CustomersData filteredCustomerId={selectedCustomer.id} holdingFilter={activeHoldingFilter} />
           ) : (
-            <CustomersData />
+            <CustomersData holdingFilter={activeHoldingFilter} />
           )}
         </div>
       </div>
