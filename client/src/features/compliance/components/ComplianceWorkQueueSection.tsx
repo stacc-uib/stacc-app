@@ -11,6 +11,55 @@ type ComplianceWorkQueueSectionProps = {
   onOpenSubpage: (subpageId: ComplianceSubpageId) => void;
 };
 
+type ActionDialogState = {
+  item: ComplianceWorkQueueItem;
+} | null;
+
+function getDialogContent(item: ComplianceWorkQueueItem) {
+  if (item.actionType === 'gjennomga') {
+    return {
+      title: 'Gjennomgå sak',
+      description: `Du er i ferd med å gjennomgå «${item.title}».`,
+      detail: item.summary,
+      steps: [
+        'Kontroller at all dokumentasjon er oppdatert',
+        'Vurder risikonivå og eventuelle avvik',
+        'Marker saken som gjennomgått når du er ferdig',
+      ],
+      primaryLabel: 'Gå til detaljvisning',
+      secondaryLabel: 'Marker som gjennomgått',
+    };
+  }
+
+  if (item.actionType === 'fullfor') {
+    return {
+      title: 'Fullfør oppgave',
+      description: `Du er i ferd med å fullføre «${item.title}».`,
+      detail: item.summary,
+      steps: [
+        'Verifiser at alle valideringskontroller er lukket',
+        'Kontroller at rapporten er klar for innsending',
+        'Bekreft fullføring for å fjerne oppgaven fra køen',
+      ],
+      primaryLabel: 'Gå til rapportering',
+      secondaryLabel: 'Bekreft fullført',
+    };
+  }
+
+  return {
+    title: 'Åpne sak',
+    description: `Du åpner saken «${item.title}».`,
+    detail: item.summary,
+    steps: [
+      'Saken tildeles deg som ansvarlig',
+      'Gå til detaljvisningen for å oppdatere investorstatus',
+      'Lukk saken når oppfølgingen er ferdig',
+    ],
+    primaryLabel: 'Gå til detaljvisning',
+    secondaryLabel: 'Tildel til meg',
+  };
+}
+
 const filterOptions: { id: ComplianceWorkQueueFilter; label: string }[] = [
   { id: 'alle', label: 'Alle' },
   { id: 'kritiske', label: 'Kritiske' },
@@ -37,6 +86,7 @@ function ComplianceWorkQueueSection({
   const [activeFilter, setActiveFilter] = useState<ComplianceWorkQueueFilter>('alle');
   const [completedIds, setCompletedIds] = useState<string[]>([]);
   const [assignedIds, setAssignedIds] = useState<string[]>([]);
+  const [dialog, setDialog] = useState<ActionDialogState>(null);
 
   const visibleItems = overview.items.filter((item) => {
     if (completedIds.includes(item.id)) {
@@ -47,16 +97,37 @@ function ComplianceWorkQueueSection({
   });
 
   function handlePrimaryAction(item: ComplianceWorkQueueItem) {
+    setDialog({ item });
+  }
+
+  function handleDialogPrimary() {
+    if (!dialog) return;
+    const { item } = dialog;
+
     onOpenSubpage(item.targetSubpageId);
 
     if (item.actionType === 'apne-sak') {
       setAssignedIds((current) =>
         current.includes(item.id) ? current : [...current, item.id],
       );
-      return;
     }
 
-    setCompletedIds((current) => [...current, item.id]);
+    setDialog(null);
+  }
+
+  function handleDialogSecondary() {
+    if (!dialog) return;
+    const { item } = dialog;
+
+    if (item.actionType === 'apne-sak') {
+      setAssignedIds((current) =>
+        current.includes(item.id) ? current : [...current, item.id],
+      );
+    } else {
+      setCompletedIds((current) => [...current, item.id]);
+    }
+
+    setDialog(null);
   }
 
   return (
@@ -135,6 +206,78 @@ function ComplianceWorkQueueSection({
             </article>
           ) : null}
         </div>
+
+        {dialog ? (() => {
+          const content = getDialogContent(dialog.item);
+
+          return (
+            <div className="queue-dialog-overlay" onClick={() => setDialog(null)}>
+              <div
+                className="queue-dialog"
+                role="dialog"
+                aria-label={content.title}
+                onClick={(e) => e.stopPropagation()}
+              >
+                <div className="queue-dialog__header">
+                  <div>
+                    <p className="queue-card__eyebrow">{dialog.item.category}</p>
+                    <h3 className="queue-dialog__title">{content.title}</h3>
+                  </div>
+                  <button
+                    type="button"
+                    className="queue-dialog__close"
+                    onClick={() => setDialog(null)}
+                    aria-label="Lukk"
+                  >
+                    ✕
+                  </button>
+                </div>
+
+                <p className="queue-dialog__description">{content.description}</p>
+                <p className="queue-dialog__detail">{content.detail}</p>
+
+                <div className="queue-dialog__meta">
+                  <span>Prioritet: <span className={getPriorityClassName(dialog.item.priority)}>{dialog.item.priority}</span></span>
+                  <span>Frist: {dialog.item.dueLabel}</span>
+                  <span>Ansvarlig: {assignedIds.includes(dialog.item.id) ? 'Meg' : dialog.item.owner}</span>
+                </div>
+
+                <div className="queue-dialog__steps">
+                  <p className="queue-dialog__steps-title">Neste steg</p>
+                  <ol className="queue-dialog__steps-list">
+                    {content.steps.map((step) => (
+                      <li key={step}>{step}</li>
+                    ))}
+                  </ol>
+                </div>
+
+                <div className="queue-dialog__actions">
+                  <button
+                    type="button"
+                    className="queue-action queue-action--primary"
+                    onClick={handleDialogPrimary}
+                  >
+                    {content.primaryLabel}
+                  </button>
+                  <button
+                    type="button"
+                    className="queue-action"
+                    onClick={handleDialogSecondary}
+                  >
+                    {content.secondaryLabel}
+                  </button>
+                  <button
+                    type="button"
+                    className="queue-action"
+                    onClick={() => setDialog(null)}
+                  >
+                    Avbryt
+                  </button>
+                </div>
+              </div>
+            </div>
+          );
+        })() : null}
       </div>
     </section>
   );
