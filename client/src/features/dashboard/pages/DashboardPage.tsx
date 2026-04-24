@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useMemo, type ReactNode } from 'react';
 import getIncomeData from '../../income/lib/getIncomeData';
 import { getIncomeDateRange, getPresetRange } from '../../income/lib/getIncomeDateRange';
 import fundPricesJson from '../../../mocks/fundPrices.json';
@@ -48,7 +48,7 @@ function SummaryCard({
 }: {
   title: string;
   description: string;
-  children: React.ReactNode;
+  children: ReactNode;
 }) {
   return (
     <article
