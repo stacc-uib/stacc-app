@@ -59,7 +59,7 @@ export default function getIncomeData(
 
         for (const [customerId, holdings] of customerHoldings) {
             for (const [shareClass, units] of holdings) {
-                if (shareClass.at(-1) === 'B') {
+                if (shareClass[shareClass.length - 1] === 'B') {
                     incomeEvents.push({
                         date: fp.date,
                         customerId,
@@ -70,7 +70,7 @@ export default function getIncomeData(
                         amount: units * fp.classB * CLASS_B_MONTHLY_RATE,
                         incomeType: 'management fee',
                     });
-                } else if (shareClass.at(-1) === 'C') {
+                } else if (shareClass[shareClass.length - 1] === 'C') {
                     incomeEvents.push({
                         date: fp.date,
                         customerId,
