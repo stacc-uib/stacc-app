@@ -179,7 +179,7 @@ function ToneTag({ tone, label }: { tone?: string; label: string }) {
 
 // ── Dashboard ──────────────────────────────────────────────────────────────
 function DashboardPage() {
-  // Inntekter: sum management fees + dividends for the last 12 months
+  // Inntekter: sum management fees for the last 12 months
   const incomeStats = useMemo(() => {
     const incomeData = getIncomeData(
       tradesJson as Parameters<typeof getIncomeData>[0],
@@ -194,10 +194,7 @@ function DashboardPage() {
     const totalFee = events12m
       .filter((e) => e.incomeType === 'management fee')
       .reduce((acc, e) => acc + e.amount, 0);
-    const totalDiv = events12m
-      .filter((e) => e.incomeType === 'dividend')
-      .reduce((acc, e) => acc + e.amount, 0);
-    return { total: totalFee + totalDiv, totalFee, totalDiv };
+    return { total: totalFee, totalFee };
   }, []);
 
   // Forvaltning + Tegning + Topp 5: reuse fund overview for 12m period, nav grouped per fund
@@ -239,10 +236,8 @@ function DashboardPage() {
       {/* Rad 1: Inntekter + Forvaltning */}
       <div className="row g-3" style={{ marginBottom: '1rem' }}>
         <div className="col-12 col-md-6">
-          <SummaryCard title="Inntekter" description="Inntektsutvikling siste 12 mnd">
-            <StatRow label="Total inntekt" value={fmtCurrency.format(incomeStats.total)} />
+          <SummaryCard title="Inntekter" description="Forvaltningshonorar siste 12 mnd">
             <StatRow label="Forvaltningshonorar" value={fmtCurrency.format(incomeStats.totalFee)} />
-            <StatRow label="Utbytte" value={fmtCurrency.format(incomeStats.totalDiv)} />
           </SummaryCard>
         </div>
         <div className="col-12 col-md-6">
