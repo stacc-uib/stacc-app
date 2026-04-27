@@ -94,9 +94,9 @@ function TransactionsPeriodFilter({ range, minDate, maxDate, activePreset, onRan
             style={{ position: 'relative', height: '24px', display: 'flex', alignItems: 'center', cursor: 'pointer', userSelect: 'none' }}
           >
             <div style={{ position: 'absolute', left: 0, right: 0, height: '4px', background: 'rgba(17,24,39,0.1)', borderRadius: '2px' }} />
-            <div style={{ position: 'absolute', left: `${fromPct}%`, width: `${toPct - fromPct}%`, height: '4px', background: '#da1e24', borderRadius: '2px' }} />
-            <div style={{ position: 'absolute', left: `${fromPct}%`, transform: 'translateX(-50%)', width: '16px', height: '16px', borderRadius: '50%', background: '#fff', border: '2px solid #da1e24', boxShadow: '0 1px 3px rgba(0,0,0,0.15)' }} />
-            <div style={{ position: 'absolute', left: `${toPct}%`, transform: 'translateX(-50%)', width: '16px', height: '16px', borderRadius: '50%', background: '#fff', border: '2px solid #da1e24', boxShadow: '0 1px 3px rgba(0,0,0,0.15)' }} />
+            <div style={{ position: 'absolute', left: `${fromPct}%`, width: `${toPct - fromPct}%`, height: '4px', background: '#ff7415', borderRadius: '2px' }} />
+            <div style={{ position: 'absolute', left: `${fromPct}%`, transform: 'translateX(-50%)', width: '16px', height: '16px', borderRadius: '50%', background: '#fff', border: '2px solid #ff7415', boxShadow: '0 1px 3px rgba(0,0,0,0.15)' }} />
+            <div style={{ position: 'absolute', left: `${toPct}%`, transform: 'translateX(-50%)', width: '16px', height: '16px', borderRadius: '50%', background: '#fff', border: '2px solid #ff7415', boxShadow: '0 1px 3px rgba(0,0,0,0.15)' }} />
           </div>
         </div>
 
