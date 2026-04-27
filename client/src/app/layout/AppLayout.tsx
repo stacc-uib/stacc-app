@@ -39,8 +39,12 @@ function getMainPageIdFromHash() {
   return navItems.some((item) => item.id === mainPageId) ? mainPageId : navItems[0].id;
 }
 
+function getInitialSidebarOpen() {
+  return window.matchMedia('(min-width: 901px)').matches;
+}
+
 function AppLayout() {
-  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(getInitialSidebarOpen);
   const [activeItemId, setActiveItemId] = useState(getMainPageIdFromHash);
 
   useEffect(() => {
@@ -52,6 +56,19 @@ function AppLayout() {
 
     return () => {
       window.removeEventListener('hashchange', handleHashChange);
+    };
+  }, []);
+
+  useEffect(() => {
+    const mediaQuery = window.matchMedia('(min-width: 901px)');
+    const handleBreakpointChange = (event: MediaQueryListEvent) => {
+      setIsSidebarOpen(event.matches);
+    };
+
+    mediaQuery.addEventListener('change', handleBreakpointChange);
+
+    return () => {
+      mediaQuery.removeEventListener('change', handleBreakpointChange);
     };
   }, []);
 
@@ -80,11 +97,10 @@ function AppLayout() {
                   className={`sidebar-item ${isActive ? 'sidebar-item--active' : ''}`}
                   onClick={() => handleMainNavigation(item.id)}
                   title={isSidebarOpen ? undefined : item.label}
+                  aria-current={isActive ? 'page' : undefined}
                 >
                   <span className="sidebar-item__icon">{item.icon}</span>
-                  {isSidebarOpen ? (
-                    <span className="sidebar-item__label">{item.label}</span>
-                  ) : null}
+                  <span className="sidebar-item__label">{item.label}</span>
                 </button>
               );
             })}
@@ -100,7 +116,7 @@ function AppLayout() {
               title={isSidebarOpen ? 'Skjul menyen' : 'Vis menyen'}
             >
               {isSidebarOpen ? <ChevronLeftIcon /> : <ChevronRightIcon />}
-              {isSidebarOpen ? <span className="sidebar-item__label">Skjul meny</span> : null}
+              <span className="sidebar-item__label">Skjul meny</span>
             </button>
           </div>
         </aside>

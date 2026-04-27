@@ -82,6 +82,7 @@ textarea {
   position: sticky;
   top: 72px;
   height: calc(100vh - 72px);
+  overflow-x: hidden;
   overflow-y: auto;
   scrollbar-width: none;
 }
@@ -163,13 +164,17 @@ textarea {
 }
 
 .sidebar-item--active {
-  background: #da1e24;
+  background: #ff7415;
   color: #fff;
 }
 
 .sidebar--collapsed .sidebar-item {
   justify-content: center;
   padding: 0.85rem;
+}
+
+.sidebar--collapsed .sidebar-item__label {
+  display: none;
 }
 
 .sidebar-item__icon {
@@ -182,6 +187,7 @@ textarea {
 .sidebar-item__label {
   font-size: 0.96rem;
   font-weight: 600;
+  white-space: nowrap;
 }
 
 .app-icon {
@@ -2485,28 +2491,65 @@ textarea {
 
 @media (max-width: 900px) {
   .workspace {
-    grid-template-columns: 1fr;
+    grid-template-columns: auto minmax(0, 1fr);
   }
 
   .sidebar {
-    width: 100%;
-    padding: 0.85rem;
-    border-right: 0;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    padding: 0.85rem 0.65rem;
+    border-right: 1px solid rgba(255, 255, 255, 0.08);
+    border-bottom: 0;
   }
 
   .sidebar-nav {
-    flex-direction: row;
-    overflow-x: auto;
-    padding-bottom: 0.2rem;
-    scrollbar-width: thin;
+    flex-direction: column;
+    overflow-x: hidden;
+    padding-bottom: 0;
+  }
+
+  .sidebar-footer {
+    margin-top: auto;
+    padding-top: 0.75rem;
+    padding-left: 0;
+    border-top: 1px solid rgba(255, 255, 255, 0.06);
+    border-left: 0;
   }
 
   .sidebar-item,
   .sidebar--collapsed .sidebar-item {
+    justify-content: center;
+    min-width: 0;
+    padding: 0.85rem;
+  }
+
+  .sidebar--collapsed .sidebar-item__label {
+    display: none;
+  }
+
+  .sidebar-toggle,
+  .sidebar--collapsed .sidebar-toggle {
+    justify-content: center;
+    padding: 0.65rem;
+  }
+
+  .sidebar-toggle .sidebar-item__label {
+    display: none;
+  }
+
+  .sidebar--open {
+    width: 232px;
+  }
+
+  .sidebar--open .sidebar-item {
     justify-content: flex-start;
-    min-width: max-content;
     padding: 0.85rem 1rem;
+  }
+
+  .sidebar--open .sidebar-item__label {
+    display: inline;
+  }
+
+  .sidebar--collapsed {
+    width: 72px;
   }
 
   .summary-grid,
@@ -2615,6 +2658,26 @@ textarea {
 }
 
 @media (max-width: 640px) {
+  .workspace {
+    grid-template-columns: 64px minmax(0, 1fr);
+  }
+
+  .sidebar {
+    padding: 0.75rem 0.55rem;
+  }
+
+  .sidebar--collapsed {
+    width: 64px;
+  }
+
+  .sidebar--open {
+    position: fixed;
+    left: 0;
+    z-index: 30;
+    width: min(248px, calc(100vw - 1rem));
+    box-shadow: 18px 0 32px rgba(15, 23, 42, 0.22);
+  }
+
   .top-navbar {
     padding: 0 1rem;
   }

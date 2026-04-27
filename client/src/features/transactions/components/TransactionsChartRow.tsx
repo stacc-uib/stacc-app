@@ -23,9 +23,9 @@ function formatGrowth(pct: number | null) {
 }
 
 const TYPE_COLORS = [
-  '#da1e24', '#6b7280', '#9ca3af', '#374151',
-  '#d1d5db', '#b91c1c', '#4b5563', '#e5e7eb',
-  '#991b1b', '#1f2937',
+  '#ff7415', '#6b7280', '#9ca3af', '#374151',
+  '#d1d5db', '#b85717', '#4b5563', '#e5e7eb',
+  '#ff7415', '#1f2937',
 ];
 
 function VolumeChart({ data }: { data: TransactionsChartData['volumeByPeriod'] }) {
@@ -65,9 +65,9 @@ function VolumeChart({ data }: { data: TransactionsChartData['volumeByPeriod'] }
           {d.label}
         </text>
       ))}
-      <polyline points={points} fill="none" stroke="#da1e24" strokeWidth={2} strokeLinejoin="round" />
+      <polyline points={points} fill="none" stroke="#ff7415" strokeWidth={2} strokeLinejoin="round" />
       {data.map((d, i) => (
-        <circle key={d.label} cx={x(i)} cy={y(d.count)} r={3} fill="#da1e24" />
+        <circle key={d.label} cx={x(i)} cy={y(d.count)} r={3} fill="#ff7415" />
       ))}
       <text x={w / 2} y={13} textAnchor="middle" fill="#374151" fontSize={9} fontWeight="bold">
         Transaksjonsvolum
