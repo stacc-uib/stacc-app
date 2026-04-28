@@ -1,5 +1,7 @@
 export type FundOverviewClassId = 'all' | 'A' | 'B' | 'C';
 
+export type FundOverviewShareClassId = Exclude<FundOverviewClassId, 'all'>;
+
 export type FundOverviewPeriodId = '1m' | 'qtd' | 'ytd' | '12m' | 'itd' | 'custom';
 
 export type FundOverviewChartGrouping = 'combined' | 'fund' | 'class';
@@ -14,13 +16,20 @@ export type FundOverviewMetricDelta = {
 };
 
 export type FundOverviewFilters = {
-  fundId: string;
-  classId: FundOverviewClassId;
+  fundIds?: string[];
+  classIds?: FundOverviewShareClassId[];
+  fundId?: string;
+  classId?: FundOverviewClassId;
   periodId: FundOverviewPeriodId;
   startDate?: string;
   endDate?: string;
   navGrouping: FundOverviewChartGrouping;
   flowGrouping: FundOverviewChartGrouping;
+};
+
+export type FundOverviewResolvedFilters = Omit<FundOverviewFilters, 'fundIds' | 'classIds'> & {
+  fundIds: string[];
+  classIds: FundOverviewShareClassId[];
 };
 
 export type FundOverviewSelectOption = {
@@ -63,6 +72,30 @@ export type FundOverviewFlowPoint = {
   net: number;
 };
 
+export type FundOverviewFlowContributorRow = {
+  customerId: string;
+  investorName: string;
+  investorType: string;
+  investorCategory: string;
+  amount: number;
+  tradeCount: number;
+  shareOfFlow: number;
+};
+
+export type FundOverviewCompositionPoint = {
+  id: string;
+  label: string;
+  value: number;
+  color: string;
+};
+
+export type FundOverviewCompositionSection = {
+  funds: FundOverviewCompositionPoint[];
+  classes: FundOverviewCompositionPoint[];
+  investorCategories: FundOverviewCompositionPoint[];
+  largestOwners: FundOverviewCompositionPoint[];
+};
+
 export type FundOverviewNavSection = {
   series: FundOverviewLineSeries[];
   kpis: FundOverviewMetric[];
@@ -75,6 +108,8 @@ export type FundOverviewFlowSection = {
   combinedPoints: FundOverviewFlowPoint[];
   series: FundOverviewLineSeries[];
   kpis: FundOverviewMetric[];
+  buyContributors: FundOverviewFlowContributorRow[];
+  sellContributors: FundOverviewFlowContributorRow[];
   description: string;
   granularityLabel: string;
   groupingOptions: FundOverviewSelectOption[];
@@ -123,7 +158,7 @@ export type FundOverviewSnapshot = {
   periodOptions: FundOverviewSelectOption[];
   groupingOptions: FundOverviewSelectOption[];
   availableDateOptions: FundOverviewDateOption[];
-  filters: FundOverviewFilters;
+  filters: FundOverviewResolvedFilters;
   selectedFundLabel: string;
   selectedClassLabel: string;
   selectedPeriodLabel: string;
@@ -132,6 +167,7 @@ export type FundOverviewSnapshot = {
   metrics: FundOverviewMetric[];
   navSection: FundOverviewNavSection;
   flowSection: FundOverviewFlowSection;
+  compositionSection: FundOverviewCompositionSection;
   dividendSection: FundOverviewDividendSection;
   shareholderSection: FundOverviewShareholderSection;
   notes: string[];

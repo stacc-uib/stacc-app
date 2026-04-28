@@ -5,7 +5,6 @@ import tradeRecords from '../../../mocks/trades.json';
 import { formatDateLabel } from '../../../shared/utils/formatDateLabel';
 import type {
   FundOverviewChartGrouping,
-  FundOverviewClassId,
   FundOverviewDividendRow,
   FundOverviewDividendSection,
   FundOverviewFilters,
@@ -17,7 +16,11 @@ import type {
   FundOverviewNavSection,
   FundOverviewPeriodId,
   FundOverviewDateOption,
+  FundOverviewCompositionPoint,
+  FundOverviewCompositionSection,
+  FundOverviewFlowContributorRow,
   FundOverviewSelectOption,
+  FundOverviewShareClassId,
   FundOverviewShareholderSection,
   FundOverviewSnapshot,
   FundOverviewTopShareholder,
@@ -55,7 +58,7 @@ type RawTradeRecord = {
   unitEffect: number | null;
 };
 
-type ShareClassId = Exclude<FundOverviewClassId, 'all'>;
+type ShareClassId = FundOverviewShareClassId;
 type BucketGranularity = 'day' | 'month' | 'year';
 
 type PricePoint = {
@@ -121,7 +124,6 @@ type GroupDefinition = {
 };
 
 const shareClassOptions: FundOverviewSelectOption[] = [
-  { id: 'all', label: 'Alle klasser' },
   { id: 'A', label: 'Klasse A' },
   { id: 'B', label: 'Klasse B' },
   { id: 'C', label: 'Klasse C' },
@@ -454,10 +456,10 @@ const fundDefinitions: FundDefinition[] = (fundUniverse as RawFundRecord[])
   }))
   .sort((left, right) => left.label.localeCompare(right.label, 'nb'));
 
-const fundOptions: FundOverviewSelectOption[] = [
-  { id: 'all', label: 'Alle fond' },
-  ...fundDefinitions.map((fund) => ({ id: fund.id, label: fund.label })),
-];
+const fundOptions: FundOverviewSelectOption[] = fundDefinitions.map((fund) => ({
+  id: fund.id,
+  label: fund.label,
+}));
 
 const fundIdByName = new Map(fundDefinitions.map((fund) => [fund.name, fund.id]));
 const fundLabelById = new Map(fundDefinitions.map((fund) => [fund.id, fund.label]));
@@ -550,10 +552,13 @@ const normalizedTrades: NormalizedTrade[] = (tradeRecords as RawTradeRecord[])
   .filter((trade): trade is NormalizedTrade => trade !== null)
   .sort((left, right) => left.tradeDate.localeCompare(right.tradeDate));
 
-function getSelectedInstruments(fundId: string, classId: FundOverviewClassId) {
+function getSelectedInstruments(fundIds: string[], classIds: ShareClassId[]) {
+  const selectedFundIds = new Set(fundIds);
+  const selectedClassIds = new Set(classIds);
+
   return instrumentDefinitions.filter((instrument) => {
-    const matchesFund = fundId === 'all' ? true : instrument.fundId === fundId;
-    const matchesClass = classId === 'all' ? true : instrument.classId === classId;
+    const matchesFund = selectedFundIds.has(instrument.fundId);
+    const matchesClass = selectedClassIds.has(instrument.classId);
     return matchesFund && matchesClass;
   });
 }
@@ -626,6 +631,48 @@ function getRangeLabel(startDate: string, endDate: string) {
   return startDate === endDate
     ? formatDateLabel(endDate)
     : `${formatDateLabel(startDate)} - ${formatDateLabel(endDate)}`;
+}
+
+function normalizeSelectedFundIds(requestedFundIds: string[]) {
+  const validFundIds = new Set(fundOptions.map((option) => option.id));
+  const selectedFundIds = requestedFundIds.filter((fundId, index, array) => {
+    return validFundIds.has(fundId) && array.indexOf(fundId) === index;
+  });
+
+  return selectedFundIds.length > 0 ? selectedFundIds : fundOptions.map((option) => option.id);
+}
+
+function normalizeSelectedClassIds(requestedClassIds: FundOverviewShareClassId[]) {
+  const validClassIds = new Set<FundOverviewShareClassId>(shareClassIds);
+  const selectedClassIds = requestedClassIds.filter((classId, index, array) => {
+    return validClassIds.has(classId) && array.indexOf(classId) === index;
+  });
+
+  return selectedClassIds.length > 0 ? selectedClassIds : [...shareClassIds];
+}
+
+function getSelectedFundLabel(selectedFundIds: string[]) {
+  if (selectedFundIds.length === fundOptions.length) {
+    return 'Alle fond';
+  }
+
+  const labels = fundOptions
+    .filter((option) => selectedFundIds.includes(option.id))
+    .map((option) => option.label);
+
+  return labels.length <= 2 ? labels.join(' og ') : `${labels.length} fond`;
+}
+
+function getSelectedClassLabel(selectedClassIds: ShareClassId[]) {
+  if (selectedClassIds.length === shareClassIds.length) {
+    return 'Alle klasser';
+  }
+
+  const labels = shareClassOptions
+    .filter((option) => selectedClassIds.includes(option.id as ShareClassId))
+    .map((option) => option.label);
+
+  return labels.length <= 2 ? labels.join(' og ') : `${labels.length} klasser`;
 }
 
 function getHoldingsSnapshot(
@@ -790,9 +837,9 @@ function getFlowPointsForTrades(
     }
 
     if (trade.transactionType === 'Kjop') {
-      bucket.grossBuy += trade.amount;
+      bucket.grossBuy += Math.max(trade.amount, 0);
     } else if (trade.transactionType === 'Salg') {
-      bucket.grossSell += trade.amount;
+      bucket.grossSell += Math.max(trade.amount, 0);
     }
   }
 
@@ -809,12 +856,61 @@ function getFlowPointsForTrades(
   });
 }
 
+function createFlowContributorRows(
+  periodTrades: NormalizedTrade[],
+  transactionType: NormalizedTrade['transactionType'],
+): FundOverviewFlowContributorRow[] {
+  const contributorByCustomerId = new Map<
+    string,
+    {
+      customerId: string;
+      investorName: string;
+      investorType: string;
+      investorCategory: string;
+      amount: number;
+      tradeCount: number;
+    }
+  >();
+
+  for (const trade of periodTrades) {
+    const isInternalActor = trade.investorType === 'Fond' || trade.investorType === 'Fondsforvalter';
+
+    if (trade.transactionType !== transactionType || isInternalActor || trade.amount <= 0) {
+      continue;
+    }
+
+    const current = contributorByCustomerId.get(trade.customerId) ?? {
+      customerId: trade.customerId,
+      investorName: trade.investorName,
+      investorType: trade.investorType,
+      investorCategory: trade.investorCategory,
+      amount: 0,
+      tradeCount: 0,
+    };
+
+    current.amount += trade.amount;
+    current.tradeCount += 1;
+    contributorByCustomerId.set(trade.customerId, current);
+  }
+
+  const totalAmount = sum(Array.from(contributorByCustomerId.values()).map((row) => row.amount));
+
+  return Array.from(contributorByCustomerId.values())
+    .sort((left, right) => right.amount - left.amount)
+    .map((row) => ({
+      ...row,
+      shareOfFlow: totalAmount > 0 ? row.amount / totalAmount : 0,
+    }));
+}
+
 function createMetrics(
   startAum: number,
   aum: number,
   startShareholders: number,
   shareholders: number,
   netSubscriptions: number,
+  grossBuy: number,
+  grossSell: number,
   periodReturn: number,
   startNav: number,
   closingNav: number,
@@ -824,6 +920,9 @@ function createMetrics(
 ): FundOverviewMetric[] {
   const dateLabel = formatDateLabel(asOfDate);
   const rangeLabel = getRangeLabel(periodStartDate, asOfDate);
+  const grossActivity = grossBuy + grossSell;
+  const netFlowRatio = aum > 0 ? netSubscriptions / aum : 0;
+  const dividendYield = startAum > 0 ? dividends / startAum : 0;
 
   return [
     createMetric(
@@ -866,6 +965,26 @@ function createMetrics(
       },
     ),
     createMetric(
+      'gross-activity',
+      'Brutto aktivitet',
+      grossActivity,
+      'currency',
+      `Kjøp og salg i perioden ${rangeLabel}`,
+    ),
+    createMetric(
+      'net-flow-ratio',
+      'Nettoflyt av AUM',
+      netFlowRatio,
+      'percent',
+      `Netto tegninger delt på AUM per ${dateLabel}`,
+      {
+        value: netFlowRatio,
+        format: 'percent',
+        direction: getDeltaDirection(netFlowRatio),
+        label: 'I perioden',
+      },
+    ),
+    createMetric(
       'return',
       'Avkastning',
       periodReturn,
@@ -903,6 +1022,15 @@ function createMetrics(
         direction: getDeltaDirection(dividends),
         label: 'I perioden',
       },
+    ),
+    createMetric(
+      'dividend-yield',
+      'Utbytteyield',
+      dividendYield,
+      'percent',
+      startAum > 0
+        ? 'Utbytte delt på AUM ved periodestart'
+        : `Utbytte i perioden ${rangeLabel}`,
     ),
   ];
 }
@@ -1024,6 +1152,8 @@ function createFlowSection(
 
   const totalGrossBuy = sum(combinedPoints.map((point) => point.grossBuy));
   const totalGrossSell = sum(combinedPoints.map((point) => point.grossSell));
+  const grossActivity = totalGrossBuy + totalGrossSell;
+  const redemptionRatio = totalGrossBuy > 0 ? totalGrossSell / totalGrossBuy : 0;
   const mostActivePoint = combinedPoints.reduce(
     (best, point) =>
       point.grossBuy + point.grossSell > best.grossBuy + best.grossSell ? point : best,
@@ -1040,6 +1170,8 @@ function createFlowSection(
   return {
     combinedPoints,
     series,
+    buyContributors: createFlowContributorRows(periodTrades, 'Kjop'),
+    sellContributors: createFlowContributorRows(periodTrades, 'Salg'),
     kpis: [
       createMetric('gross-buy', 'Brutto kjøp', totalGrossBuy, 'currency', `I perioden ${rangeLabel}`),
       createMetric(
@@ -1055,6 +1187,20 @@ function createFlowSection(
         totalGrossBuy - totalGrossSell,
         'currency',
         `Kjøp minus salg i perioden ${rangeLabel}`,
+      ),
+      createMetric(
+        'gross-activity',
+        'Brutto aktivitet',
+        grossActivity,
+        'currency',
+        `Samlet kjøp og salg i perioden ${rangeLabel}`,
+      ),
+      createMetric(
+        'redemption-ratio',
+        'Salg/kjøp-forhold',
+        redemptionRatio,
+        'percent',
+        totalGrossBuy > 0 ? 'Brutto salg delt på brutto kjøp' : 'Ingen kjøp i perioden',
       ),
       createMetric(
         'flow-activity',
@@ -1097,8 +1243,7 @@ function createDividendSection(
       right.amount === left.amount
         ? right.date.localeCompare(left.date)
         : right.amount - left.amount,
-    )
-    .slice(0, 10);
+    );
 
   const recipientCount = new Set(allRows.map((row) => row.investorName)).size;
   const totalAmount = sum(allRows.map((row) => row.amount));
@@ -1116,7 +1261,7 @@ function createDividendSection(
     ],
     description:
       allRows.length > 0
-        ? `Viser topp 10 utbytteutbetalinger i perioden ${getRangeLabel(periodStartDate, asOfDate)}.`
+        ? `Viser utbytteutbetalinger i perioden ${getRangeLabel(periodStartDate, asOfDate)}.`
         : `Ingen utbyttehendelser i perioden ${getRangeLabel(periodStartDate, asOfDate)}.`,
   };
 }
@@ -1167,7 +1312,6 @@ function createShareholderSection(
   const rows: FundOverviewTopShareholder[] = Array.from(ownerAccumulator.values())
     .filter((owner) => owner.marketValue > 0)
     .sort((left, right) => right.marketValue - left.marketValue)
-    .slice(0, 10)
     .map((owner) => {
       const investor = investorById.get(owner.customerId);
 
@@ -1186,6 +1330,11 @@ function createShareholderSection(
   const top1 = rows[0];
   const top3Share = sum(rows.slice(0, 3).map((row) => row.ownershipShare));
   const top10Share = sum(rows.slice(0, 10).map((row) => row.ownershipShare));
+  const professionalAum = sum(
+    rows
+      .filter((row) => row.investorCategory === 'Profesjonell')
+      .map((row) => row.marketValue),
+  );
 
   return {
     rows,
@@ -1212,6 +1361,13 @@ function createShareholderSection(
         'Andel av valgt AUM',
       ),
       createMetric(
+        'professional-share',
+        'Profesjonell kapital',
+        totalAum > 0 ? professionalAum / totalAum : 0,
+        'percent',
+        'Andel av AUM eid av profesjonelle',
+      ),
+      createMetric(
         'average-holder',
         'Snitt per andelseier',
         endHoldings.shareholders > 0 ? totalAum / endHoldings.shareholders : 0,
@@ -1219,18 +1375,101 @@ function createShareholderSection(
         `${endHoldings.shareholders} aktive eiere`,
       ),
     ],
-    description: `Topp andelseiere per ${formatDateLabel(asOfDate)}.`,
+    description: `Andelseiere per ${formatDateLabel(asOfDate)}.`,
     showUnits: selectedInstruments.length === 1,
   };
 }
 
+function mapCompositionEntries(
+  entries: { id: string; label: string; value: number }[],
+): FundOverviewCompositionPoint[] {
+  return entries
+    .filter((entry) => entry.value > 0)
+    .sort((left, right) => right.value - left.value)
+    .map((entry, index) => ({
+      ...entry,
+      color: groupPalette[index % groupPalette.length],
+    }));
+}
+
+function createCompositionSection(
+  selectedInstruments: InstrumentDefinition[],
+  endHoldings: HoldingsSnapshot,
+  asOfDate: string,
+  totalAum: number,
+  shareholderRows: FundOverviewTopShareholder[],
+): FundOverviewCompositionSection {
+  const valueByFundId = new Map<string, { id: string; label: string; value: number }>();
+  const valueByClassId = new Map<string, { id: string; label: string; value: number }>();
+
+  for (const instrument of selectedInstruments) {
+    const units = Math.max(0, endHoldings.unitsByInstrument.get(instrument.instrumentId) ?? 0);
+    const nav =
+      findLatestPriceOnOrBefore(priceHistoryByInstrument.get(instrument.instrumentId) ?? [], asOfDate)?.nav ?? 0;
+    const marketValue = units * nav;
+
+    const fundEntry = valueByFundId.get(instrument.fundId) ?? {
+      id: instrument.fundId,
+      label: instrument.fundLabel,
+      value: 0,
+    };
+    fundEntry.value += marketValue;
+    valueByFundId.set(instrument.fundId, fundEntry);
+
+    const classEntry = valueByClassId.get(instrument.classId) ?? {
+      id: instrument.classId,
+      label: instrument.classLabel,
+      value: 0,
+    };
+    classEntry.value += marketValue;
+    valueByClassId.set(instrument.classId, classEntry);
+  }
+
+  const valueByCategory = new Map<string, { id: string; label: string; value: number }>();
+
+  for (const row of shareholderRows) {
+    const entry = valueByCategory.get(row.investorCategory) ?? {
+      id: row.investorCategory,
+      label: row.investorCategory,
+      value: 0,
+    };
+    entry.value += row.marketValue;
+    valueByCategory.set(row.investorCategory, entry);
+  }
+
+  const largestOwnerEntries = shareholderRows.slice(0, 5).map((row) => ({
+    id: row.customerId,
+    label: row.investorName,
+    value: row.marketValue,
+  }));
+  const topOwnerValue = sum(largestOwnerEntries.map((entry) => entry.value));
+
+  if (totalAum > topOwnerValue) {
+    largestOwnerEntries.push({
+      id: 'other-owners',
+      label: 'Andre',
+      value: totalAum - topOwnerValue,
+    });
+  }
+
+  return {
+    funds: mapCompositionEntries(Array.from(valueByFundId.values())),
+    classes: mapCompositionEntries(Array.from(valueByClassId.values())),
+    investorCategories: mapCompositionEntries(Array.from(valueByCategory.values())),
+    largestOwners: mapCompositionEntries(largestOwnerEntries),
+  };
+}
+
 export function getFundOverviewData(filters: FundOverviewFilters): FundOverviewSnapshot {
-  const selectedFundId = fundOptions.some((option) => option.id === filters.fundId)
-    ? filters.fundId
-    : 'all';
-  const selectedClassId = shareClassOptions.some((option) => option.id === filters.classId)
-    ? filters.classId
-    : 'all';
+  const requestedFundIds =
+    filters.fundIds ?? (filters.fundId && filters.fundId !== 'all' ? [filters.fundId] : []);
+  const requestedClassIds =
+    filters.classIds ??
+    (filters.classId && filters.classId !== 'all'
+      ? ([filters.classId] as FundOverviewShareClassId[])
+      : []);
+  const selectedFundIds = normalizeSelectedFundIds(requestedFundIds);
+  const selectedClassIds = normalizeSelectedClassIds(requestedClassIds);
   const selectedPeriodId = periodOptions.some((option) => option.id === filters.periodId)
     ? filters.periodId
     : '12m';
@@ -1241,7 +1480,7 @@ export function getFundOverviewData(filters: FundOverviewFilters): FundOverviewS
     ? filters.flowGrouping
     : 'combined';
 
-  const selectedInstruments = getSelectedInstruments(selectedFundId, selectedClassId);
+  const selectedInstruments = getSelectedInstruments(selectedFundIds, selectedClassIds);
   const selectedInstrumentIds = new Set(
     selectedInstruments.map((instrument) => instrument.instrumentId),
   );
@@ -1284,12 +1523,12 @@ export function getFundOverviewData(filters: FundOverviewFilters): FundOverviewS
   const grossBuyTotal = sum(
     periodTrades
       .filter((trade) => trade.transactionType === 'Kjop')
-      .map((trade) => trade.amount),
+      .map((trade) => Math.max(trade.amount, 0)),
   );
   const grossSellTotal = sum(
     periodTrades
       .filter((trade) => trade.transactionType === 'Salg')
-      .map((trade) => trade.amount),
+      .map((trade) => Math.max(trade.amount, 0)),
   );
   const dividends = sum(
     periodTrades
@@ -1327,6 +1566,13 @@ export function getFundOverviewData(filters: FundOverviewFilters): FundOverviewS
     endHoldings,
     endAggregate.totalAum,
   );
+  const compositionSection = createCompositionSection(
+    selectedInstruments,
+    endHoldings,
+    asOfDate,
+    endAggregate.totalAum,
+    shareholderSection.rows,
+  );
 
   return {
     fundOptions,
@@ -1335,17 +1581,16 @@ export function getFundOverviewData(filters: FundOverviewFilters): FundOverviewS
     groupingOptions,
     availableDateOptions,
     filters: {
-      fundId: selectedFundId,
-      classId: selectedClassId,
+      fundIds: selectedFundIds,
+      classIds: selectedClassIds,
       periodId: selectedPeriodId,
       startDate: normalizedPeriodStartDate,
       endDate: asOfDate,
       navGrouping: selectedNavGrouping,
       flowGrouping: selectedFlowGrouping,
     },
-    selectedFundLabel: fundLabelById.get(selectedFundId) ?? 'Alle fond',
-    selectedClassLabel:
-      shareClassOptions.find((option) => option.id === selectedClassId)?.label ?? 'Alle klasser',
+    selectedFundLabel: getSelectedFundLabel(selectedFundIds),
+    selectedClassLabel: getSelectedClassLabel(selectedClassIds),
     selectedPeriodLabel:
       periodOptions.find((option) => option.id === selectedPeriodId)?.label ?? 'Siste 12 måneder',
     asOfDate,
@@ -1356,6 +1601,8 @@ export function getFundOverviewData(filters: FundOverviewFilters): FundOverviewS
       startHoldings.shareholders,
       endHoldings.shareholders,
       netSubscriptions,
+      grossBuyTotal,
+      grossSellTotal,
       periodReturn,
       startAggregate.nav,
       endAggregate.nav,
@@ -1365,13 +1612,11 @@ export function getFundOverviewData(filters: FundOverviewFilters): FundOverviewS
     ),
     navSection,
     flowSection,
+    compositionSection,
     dividendSection,
     shareholderSection,
     notes: [
-      `Viser ${fundLabelById.get(selectedFundId) ?? 'alle fond'} i ${
-        shareClassOptions.find((option) => option.id === selectedClassId)?.label.toLowerCase() ??
-        'alle klasser'
-      }.`,
+      `Viser ${getSelectedFundLabel(selectedFundIds)} / ${getSelectedClassLabel(selectedClassIds).toLowerCase()}.`,
       `Slutt NAV og avkastning bruker siste tilgjengelige NAV per klasse frem til ${formatDateLabel(asOfDate)}.`,
     ],
   };
