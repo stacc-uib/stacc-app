@@ -335,7 +335,15 @@ function InvestorClassificationSection({
                   <tr key={row.customerId}>
                     <td>
                       <div className="table-primary-cell">
-                        <strong>{row.investorName}</strong>
+                        <button
+                          type="button"
+                          className="compliance-customer-link"
+                          onClick={() => {
+                            window.location.hash = `kundeoversikt/${row.customerId}`;
+                          }}
+                        >
+                          <strong>{row.investorName}</strong>
+                        </button>
                         <span>Kunde-ID {row.customerId}</span>
                       </div>
                     </td>

@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import investorsData from '../../../mocks/investors.json';
 import tradesData from '../../../mocks/trades.json';
 import MultiSelectFilter from '../../../shared/components/MultiSelectFilter';
+import { getCustomerComplianceData } from '../../../shared/lib/getCustomerComplianceData';
 import { formatCurrency, formatDate } from '../../../shared/utils/format';
 import ActivityPageSizeSelector, { PageSize } from '../components/ActivityPageSizeSelector';
 import '../components/customerDetail.css';
@@ -113,6 +114,20 @@ function PieLegend({ slices }: { slices: Slice[] }) {
   );
 }
 
+// ---- Compliance badge helper ----
+function getComplianceBadgeClass(status: string): string {
+  switch (status) {
+    case 'pep-forfalt':
+    case 'ikke-profesjonell':
+      return 'status-badge status-badge--critical';
+    case 'mangler-naering':
+    case 'pep-forfaller-snart':
+      return 'status-badge status-badge--warning';
+    default:
+      return 'status-badge status-badge--ok';
+  }
+}
+
 // ---- Main component ----
 function CustomerDetailPage({ customerId }: { customerId: string }) {
   const investor = (investorsData as InvestorRecord[]).find(
@@ -188,6 +203,11 @@ function CustomerDetailPage({ customerId }: { customerId: string }) {
 
   const totalBeholdning = fundHoldings.reduce((s, f) => s + f.value, 0);
 
+  const complianceData = useMemo(
+    () => getCustomerComplianceData(customerId),
+    [customerId],
+  );
+
   const klasse = useMemo(() => {
     if (trades.length === 0) return 'Klasse A';
     const latest = trades[0];
@@ -247,16 +267,55 @@ function CustomerDetailPage({ customerId }: { customerId: string }) {
                 <dt>Epost</dt>
                 <dd>{investor.email ?? '—'}</dd>
               </div>
-              <div className="cd-info-row">
-                <dt>PEP-status</dt>
-                <dd>Ikke PEP</dd>
-              </div>
             </dl>
           </div>
 
           <div className="cd-card">
             <h3 className="cd-section-title">Fondsfordeling</h3>
             <PieChart slices={fundHoldings} />
+          </div>
+
+          <div className="cd-card">
+            <h3 className="cd-card-title">Compliance</h3>
+            {complianceData ? (
+              <>
+                <dl className="cd-info-list">
+                  <div className="cd-info-row">
+                    <dt>PEP-status</dt>
+                    <dd>{complianceData.pepStatus}</dd>
+                  </div>
+                  <div className="cd-info-row">
+                    <dt>AML-risikonivå</dt>
+                    <dd>{complianceData.amlRiskLevel}</dd>
+                  </div>
+                  <div className="cd-info-row">
+                    <dt>Klassifisering</dt>
+                    <dd>
+                      <span className={getComplianceBadgeClass(complianceData.classificationStatus)}>
+                        {complianceData.classificationLabel}
+                      </span>
+                    </dd>
+                  </div>
+                  <div className="cd-info-row">
+                    <dt>Dokumentasjon</dt>
+                    <dd>{complianceData.documentationStatus}</dd>
+                  </div>
+                  <div className="cd-info-row">
+                    <dt>Neste PEP-gjennomgang</dt>
+                    <dd>{complianceData.nextPepReviewLabel}</dd>
+                  </div>
+                </dl>
+                <button
+                  className="cd-back-btn"
+                  style={{ marginTop: '1rem', marginBottom: 0 }}
+                  onClick={() => { window.location.hash = '#rapporter/investorer'; }}
+                >
+                  Se compliance-detaljer →
+                </button>
+              </>
+            ) : (
+              <p className="cd-empty">Ingen compliancedata tilgjengelig</p>
+            )}
           </div>
         </div>
 

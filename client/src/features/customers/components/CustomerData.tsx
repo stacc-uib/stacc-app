@@ -2,6 +2,8 @@ import { useEffect, useState } from 'react';
 import investorsData from '../../../mocks/investors.json';
 import tradesData from '../../../mocks/trades.json';
 import MultiSelectFilter from '../../../shared/components/MultiSelectFilter';
+import { getCustomerComplianceData } from '../../../shared/lib/getCustomerComplianceData';
+import type { InvestorClassificationStatus } from '../../../shared/types/compliance';
 import { formatCurrency } from '../../../shared/utils/format';
 import { HoldingFilter } from './CustomerChanges';
 
@@ -118,6 +120,19 @@ function matchesHoldingFilter(customer: Customer, filter: HoldingFilter): boolea
   return true;
 }
 
+function getComplianceBadgeClass(status: InvestorClassificationStatus): string {
+  switch (status) {
+    case 'pep-forfalt':
+    case 'ikke-profesjonell':
+      return 'status-badge status-badge--critical';
+    case 'mangler-naering':
+    case 'pep-forfaller-snart':
+      return 'status-badge status-badge--warning';
+    default:
+      return 'status-badge status-badge--ok';
+  }
+}
+
 function CustomersList({
   filteredCustomerId,
   holdingFilter,
@@ -218,6 +233,7 @@ function CustomersList({
               ariaLabel="Filtrer fondstyper"
             />
           </th>
+          <th>Compliance</th>
           <th>Beholdning</th>
         </tr>
       </thead>
@@ -241,6 +257,7 @@ function CustomersList({
             const filteredHolding = c.funds
               .filter((f) => activeFundTypes.includes(f.type))
               .reduce((sum, f) => sum + f.amount, 0);
+            const complianceData = getCustomerComplianceData(c.id);
             return (
               <tr
                 key={c.id}
@@ -255,6 +272,37 @@ function CustomersList({
                 <td>{c.klasse}</td>
                 <td>{c.type}</td>
                 <td className="td-right">{formatCurrency(filteredHolding)}</td>
+                <td>
+                  {complianceData ? (
+                    complianceData.classificationStatus === 'ok' ? (
+                      <span className={getComplianceBadgeClass(complianceData.classificationStatus)}>
+                        {complianceData.classificationLabel}
+                      </span>
+                    ) : (
+                      <span
+                        className={getComplianceBadgeClass(complianceData.classificationStatus)}
+                        role="button"
+                        tabIndex={0}
+                        style={{ cursor: 'pointer' }}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          window.location.hash = '#rapporter/investorer';
+                        }}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter' || e.key === ' ') {
+                            e.stopPropagation();
+                            e.preventDefault();
+                            window.location.hash = '#rapporter/investorer';
+                          }
+                        }}
+                      >
+                        {complianceData.classificationLabel}
+                      </span>
+                    )
+                  ) : (
+                    <span className="status-badge status-badge--neutral">Ukjent</span>
+                  )}
+                </td>
                 <td className="td-right">{formatCurrency(c.totalBeholdning)}</td>
               </tr>
             );
@@ -262,7 +310,7 @@ function CustomersList({
       </tbody>
       <tfoot>
         <tr>
-          <td colSpan={6} className="table-footer" />
+          <td colSpan={7} className="table-footer" />
         </tr>
       </tfoot>
     </table>
