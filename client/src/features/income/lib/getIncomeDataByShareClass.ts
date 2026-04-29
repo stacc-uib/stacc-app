@@ -14,7 +14,6 @@ function getIncomeDataByShareClass(incomeData: IncomeData, range: DateRange): Ma
                 price: 0,
                 priceInitial: event.price,
                 income: 0,
-                incomeInitial: 0
             });
         }
 
