@@ -174,7 +174,13 @@ function TransactionsTable({ transactions }: Props) {
               <tr key={tx.id}>
                 <td>
                   <div className="table-primary-cell">
-                    <strong>{tx.customerName}</strong>
+                    <button
+                      type="button"
+                      onClick={() => { window.location.hash = `#kundeoversikt/${tx.customerId}`; }}
+                      style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', textAlign: 'left' }}
+                    >
+                      <strong style={{ color: '#111827' }}>{tx.customerName}</strong>
+                    </button>
                   </div>
                 </td>
                 <td>{formatDate(tx.tradeDate ?? '')}</td>
