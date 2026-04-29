@@ -1,3 +1,4 @@
+import type { InvestorClassificationStatus } from '../../features/compliance/types/compliance';
 export type { InvestorClassificationStatus } from '../../features/compliance/types/compliance';
 
 export type CustomerComplianceData = {
