@@ -1,13 +1,26 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import investorsData from '../../../mocks/investors.json';
 import tradesData from '../../../mocks/trades.json';
-import fundsData from '../../../mocks/funds.json';
-import FundTypeFilter, { ALL_FUND_TYPES } from './FundTypeFilter';
-import ClassFilter, { ALL_CLASSES, KlasseType } from './ClassFilter';
-import CustomerTypeFilter, { ALL_CUSTOMER_TYPES, CustomerType } from './CustomerTypeFilter';
+import MultiSelectFilter from '../../../shared/components/MultiSelectFilter';
+import { formatCurrency } from '../../../shared/utils/format';
 import { HoldingFilter } from './CustomerChanges';
 
 export type FundType = 'Norden' | 'Global' | 'Kreditt';
+
+export const ALL_FUND_TYPES: readonly FundType[] = ['Norden', 'Global', 'Kreditt'] as const;
+export const ALL_CLASSES = ['Klasse A', 'Klasse B', 'Klasse C'] as const;
+export type KlasseType = (typeof ALL_CLASSES)[number];
+export const ALL_CUSTOMER_TYPES = [
+  'Aksjeselskap',
+  'Ansatt',
+  'Fond',
+  'Fondsforvalter',
+  'Forsikringsselskap',
+  'Pensjonskasse',
+  'Privatperson',
+  'Stiftelse',
+] as const;
+export type CustomerType = (typeof ALL_CUSTOMER_TYPES)[number];
 
 export type Fund = {
   type: FundType;
@@ -48,57 +61,54 @@ function getFundTypeFromName(fundName: string): FundType {
   if (fundName.includes('Global')) return 'Global';
   if (fundName.includes('Norden')) return 'Norden';
   if (fundName.includes('Kreditt')) return 'Kreditt';
-  return 'Global'; // fallback
+  return 'Global';
 }
 
 function getClassFromShareClass(shareClass: string): string {
   if (shareClass.includes('Klasse A')) return 'Klasse A';
   if (shareClass.includes('Klasse B')) return 'Klasse B';
   if (shareClass.includes('Klasse C')) return 'Klasse C';
-  return 'Klasse A'; // fallback
+  return 'Klasse A';
 }
 
 function getLatestTradeForCustomer(customerId: string, trades: TradeRecord[]): TradeRecord | null {
-  const customerTrades = trades.filter(trade => trade.customerId === customerId);
+  const customerTrades = trades.filter((trade) => trade.customerId === customerId);
   if (customerTrades.length === 0) return null;
-  
-  return customerTrades.reduce((latest, current) => {
-    return new Date(current.tradeDate) > new Date(latest.tradeDate) ? current : latest;
-  });
+
+  return customerTrades.reduce((latest, current) =>
+    new Date(current.tradeDate) > new Date(latest.tradeDate) ? current : latest,
+  );
 }
 
-function calculateCustomerHoldings(customerId: string, trades: TradeRecord[]): { totalValue: number; funds: Fund[] } {
+function calculateCustomerHoldings(
+  customerId: string,
+  trades: TradeRecord[],
+): { totalValue: number; funds: Fund[] } {
   const fundMap = new Map<FundType, number>();
 
   trades
-    .filter(trade => trade.customerId === customerId)
-    .forEach(trade => {
+    .filter((trade) => trade.customerId === customerId)
+    .forEach((trade) => {
       const fundType = getFundTypeFromName(trade.fundName);
       const isSalg = trade.transactionType.toLowerCase() === 'salg';
       const value = isSalg ? -trade.amount : trade.amount;
-
-      const currentAmount = fundMap.get(fundType) || 0;
-      fundMap.set(fundType, currentAmount + value);
+      fundMap.set(fundType, (fundMap.get(fundType) || 0) + value);
     });
 
   const funds: Fund[] = Array.from(fundMap.entries())
-    .filter(([_, amount]) => amount > 0)
+    .filter(([, amount]) => amount > 0)
     .map(([type, amount]) => ({ type, amount }));
 
   const totalValue = funds.reduce((sum, f) => sum + f.amount, 0);
-
   return { totalValue, funds };
 }
 
-function formatCurrency(n: number) {
-  return n.toLocaleString('nb-NO', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-}
-
-
 function matchesHoldingFilter(customer: Customer, filter: HoldingFilter): boolean {
   if (!filter) return true;
-  const fundsAboveMillion = customer.funds.filter(f => f.amount >= 1_000_000);
-  const fundsNearMillion = customer.funds.filter(f => f.amount >= 900_000 && f.amount < 1_000_000);
+  const fundsAboveMillion = customer.funds.filter((f) => f.amount >= 1_000_000);
+  const fundsNearMillion = customer.funds.filter(
+    (f) => f.amount >= 900_000 && f.amount < 1_000_000,
+  );
   if (filter === 'sterk') {
     return customer.klasse === 'Klasse C' && customer.totalBeholdning > 1_000_000;
   }
@@ -108,11 +118,19 @@ function matchesHoldingFilter(customer: Customer, filter: HoldingFilter): boolea
   return true;
 }
 
-function CustomersList({ filteredCustomerId, holdingFilter }: { filteredCustomerId?: string; holdingFilter?: HoldingFilter }) {
+function CustomersList({
+  filteredCustomerId,
+  holdingFilter,
+}: {
+  filteredCustomerId?: string;
+  holdingFilter?: HoldingFilter;
+}) {
   const [data, setData] = useState<Customer[] | null>(null);
-  const [selectedFundTypes, setSelectedFundTypes] = useState([...ALL_FUND_TYPES]);
+  const [selectedFundTypes, setSelectedFundTypes] = useState<FundType[]>([...ALL_FUND_TYPES]);
   const [selectedClasses, setSelectedClasses] = useState<KlasseType[]>([...ALL_CLASSES]);
-  const [selectedCustomerTypes, setSelectedCustomerTypes] = useState<CustomerType[]>([...ALL_CUSTOMER_TYPES]);
+  const [selectedCustomerTypes, setSelectedCustomerTypes] = useState<CustomerType[]>([
+    ...ALL_CUSTOMER_TYPES,
+  ]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -127,11 +145,11 @@ function CustomersList({ filteredCustomerId, holdingFilter }: { filteredCustomer
         const investors = investorsData as InvestorRecord[];
         const trades = tradesData as TradeRecord[];
 
-        let customers: Customer[] = investors.map(investor => {
+        let customers: Customer[] = investors.map((investor) => {
           const latestTrade = getLatestTradeForCustomer(investor.customerId, trades);
           const { totalValue, funds } = calculateCustomerHoldings(investor.customerId, trades);
-          
-          let klasse = 'Klasse A'; // default
+
+          let klasse = 'Klasse A';
           if (latestTrade) {
             klasse = getClassFromShareClass(latestTrade.shareClass);
           }
@@ -142,13 +160,12 @@ function CustomersList({ filteredCustomerId, holdingFilter }: { filteredCustomer
             klasse,
             type: investor.customerType,
             totalBeholdning: totalValue,
-            funds
+            funds,
           };
         });
 
-        // Filtrer hvis en kunde er valgt
         if (filteredCustomerId) {
-          customers = customers.filter(c => c.id === filteredCustomerId);
+          customers = customers.filter((c) => c.id === filteredCustomerId);
         }
 
         await new Promise((r) => setTimeout(r, 250));
@@ -177,49 +194,71 @@ function CustomersList({ filteredCustomerId, holdingFilter }: { filteredCustomer
           <th>KundeID</th>
           <th>Kundenavn</th>
           <th className="th-fondstyper">
-            <ClassFilter selected={selectedClasses} onChange={setSelectedClasses} />
+            <MultiSelectFilter
+              label="Klasse"
+              options={ALL_CLASSES}
+              selected={selectedClasses}
+              onChange={setSelectedClasses}
+            />
           </th>
           <th className="th-fondstyper">
-            <CustomerTypeFilter selected={selectedCustomerTypes} onChange={setSelectedCustomerTypes} />
+            <MultiSelectFilter
+              label="Kundetype"
+              options={ALL_CUSTOMER_TYPES}
+              selected={selectedCustomerTypes}
+              onChange={setSelectedCustomerTypes}
+            />
           </th>
           <th className="th-fondstyper">
-            <FundTypeFilter selected={selectedFundTypes} onChange={setSelectedFundTypes} />
+            <MultiSelectFilter
+              label="Fondsbeholdning"
+              options={ALL_FUND_TYPES}
+              selected={selectedFundTypes}
+              onChange={setSelectedFundTypes}
+              ariaLabel="Filtrer fondstyper"
+            />
           </th>
           <th>Beholdning</th>
         </tr>
       </thead>
       <tbody>
         {data
-          .filter(c => {
+          .filter((c) => {
             if (!matchesHoldingFilter(c, holdingFilter ?? null)) return false;
-            const activeClasses = selectedClasses.length === 0 ? ALL_CLASSES : selectedClasses;
+            const activeClasses =
+              selectedClasses.length === 0 ? ALL_CLASSES : selectedClasses;
             if (!activeClasses.includes(c.klasse as KlasseType)) return false;
-            const activeTypes = selectedCustomerTypes.length === 0 ? ALL_CUSTOMER_TYPES : selectedCustomerTypes;
+            const activeTypes =
+              selectedCustomerTypes.length === 0 ? ALL_CUSTOMER_TYPES : selectedCustomerTypes;
             if (!activeTypes.includes(c.type as CustomerType)) return false;
-            const activeFundTypes = selectedFundTypes.length === 0 ? ALL_FUND_TYPES : selectedFundTypes;
-            return c.funds.some(f => activeFundTypes.includes(f.type));
+            const activeFundTypes =
+              selectedFundTypes.length === 0 ? ALL_FUND_TYPES : selectedFundTypes;
+            return c.funds.some((f) => activeFundTypes.includes(f.type));
           })
           .map((c) => {
-          const activeFundTypes = selectedFundTypes.length === 0 ? ALL_FUND_TYPES : selectedFundTypes;
-          const filteredHolding = c.funds
-            .filter(f => activeFundTypes.includes(f.type))
-            .reduce((sum, f) => sum + f.amount, 0);
-          return (
-            <tr
-              key={c.id}
-              className="cd-clickable-row"
-              onClick={() => { window.location.hash = `#kundeoversikt/${c.id}`; }}
-              style={{ cursor: 'pointer' }}
-            >
-              <td className="td-id">{c.id}</td>
-              <td className="td-name">{c.name}</td>
-              <td>{c.klasse}</td>
-              <td>{c.type}</td>
-              <td className="td-right">{formatCurrency(filteredHolding)}</td>
-              <td className="td-right">{formatCurrency(c.totalBeholdning)}</td>
-            </tr>
-          );
-        })}
+            const activeFundTypes =
+              selectedFundTypes.length === 0 ? ALL_FUND_TYPES : selectedFundTypes;
+            const filteredHolding = c.funds
+              .filter((f) => activeFundTypes.includes(f.type))
+              .reduce((sum, f) => sum + f.amount, 0);
+            return (
+              <tr
+                key={c.id}
+                className="cd-clickable-row"
+                onClick={() => {
+                  window.location.hash = `#kundeoversikt/${c.id}`;
+                }}
+                style={{ cursor: 'pointer' }}
+              >
+                <td className="td-id">{c.id}</td>
+                <td className="td-name">{c.name}</td>
+                <td>{c.klasse}</td>
+                <td>{c.type}</td>
+                <td className="td-right">{formatCurrency(filteredHolding)}</td>
+                <td className="td-right">{formatCurrency(c.totalBeholdning)}</td>
+              </tr>
+            );
+          })}
       </tbody>
       <tfoot>
         <tr>
@@ -231,4 +270,3 @@ function CustomersList({ filteredCustomerId, holdingFilter }: { filteredCustomer
 }
 
 export default CustomersList;
-
