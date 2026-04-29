@@ -26,7 +26,7 @@ function getDialogContent(item: ComplianceWorkQueueItem) {
         'Vurder risikonivå og eventuelle avvik',
         'Marker saken som gjennomgått når du er ferdig',
       ],
-      primaryLabel: 'Gå til detaljvisning',
+      primaryLabel: item.customerId ? 'Gå til kunde' : 'Gå til detaljvisning',
       secondaryLabel: 'Marker som gjennomgått',
     };
   }
@@ -55,7 +55,7 @@ function getDialogContent(item: ComplianceWorkQueueItem) {
       'Gå til detaljvisningen for å oppdatere investorstatus',
       'Lukk saken når oppfølgingen er ferdig',
     ],
-    primaryLabel: 'Gå til detaljvisning',
+    primaryLabel: item.customerId ? 'Gå til kunde' : 'Gå til detaljvisning',
     secondaryLabel: 'Tildel til meg',
   };
 }
@@ -104,7 +104,11 @@ function ComplianceWorkQueueSection({
     if (!dialog) return;
     const { item } = dialog;
 
-    onOpenSubpage(item.targetSubpageId);
+    if (item.customerId) {
+      window.location.hash = `#kundeoversikt/${item.customerId}`;
+    } else {
+      onOpenSubpage(item.targetSubpageId);
+    }
 
     if (item.actionType === 'apne-sak') {
       setAssignedIds((current) =>

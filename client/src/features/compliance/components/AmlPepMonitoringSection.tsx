@@ -254,6 +254,15 @@ function AmlPepMonitoringSection({ overview }: AmlPepMonitoringSectionProps) {
                       <span className={getBadgeClassName(row.amlRiskLevel)}>{row.amlRiskLevel}</span>
                       <button
                         type="button"
+                        className="compliance-customer-link"
+                        onClick={() => {
+                          window.location.hash = `kundeoversikt/${row.customerId}`;
+                        }}
+                      >
+                        Vis kundeprofil
+                      </button>
+                      <button
+                        type="button"
                         className="aml-review-card__toggle"
                         onClick={() => handleSelectRow(row.customerId)}
                         aria-expanded={isSelected}
@@ -377,7 +386,15 @@ function AmlPepMonitoringSection({ overview }: AmlPepMonitoringSectionProps) {
                   <tr key={row.customerId}>
                     <td>
                       <div className="table-primary-cell">
-                        <strong>{row.investorName}</strong>
+                        <button
+                          type="button"
+                          className="compliance-customer-link"
+                          onClick={() => {
+                            window.location.hash = `kundeoversikt/${row.customerId}`;
+                          }}
+                        >
+                          <strong>{row.investorName}</strong>
+                        </button>
                         <span>
                           {updatedIds.includes(row.customerId)
                             ? 'Kontroll oppdatert'
