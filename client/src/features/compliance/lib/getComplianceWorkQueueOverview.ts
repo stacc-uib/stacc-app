@@ -31,7 +31,7 @@ function getTaskTargetSubpageId(title: string) {
   }
 
   if (normalizedTitle.includes('skatteeksport')) {
-    return 'rapportering' as const;
+    return 'oversikt' as const;
   }
 
   return 'oversikt' as const;
@@ -82,7 +82,7 @@ export function getComplianceWorkQueueOverview(
       owner: blockedReport.owner,
       actionLabel: 'Fullfør',
       actionType: 'fullfor',
-      targetSubpageId: 'rapportering',
+      targetSubpageId: 'oversikt',
       summary: blockedReport.nextAction,
       filterTags: ['alle', 'denne-uken', 'mine-saker'],
     });

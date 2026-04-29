@@ -14,7 +14,6 @@ export type IndustryClassificationOption =
 
 export type ComplianceSubpageId =
   | 'oversikt'
-  | 'rapportering'
   | 'investorer';
 
 export type ComplianceAlert = {

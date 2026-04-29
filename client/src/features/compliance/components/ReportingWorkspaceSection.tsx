@@ -95,10 +95,14 @@ function ReportingWorkspaceSection({ overview, calendar }: ReportingWorkspaceSec
     return { dateKey, dayNumber, event: eventsByDate.get(dateKey) };
   });
 
-  const upcomingDeadlines = calendar.events
+  // Only show upcoming events that are NOT visible in the current month view
+  const visibleDateKeys = new Set(monthEvents.map((e) => e.date));
+  const upcomingNotInView = calendar.events
     .slice()
     .sort((a, b) => a.date.localeCompare(b.date))
-    .slice(0, 5);
+    .filter((e) => !visibleDateKeys.has(e.date))
+    .slice(0, 3);
+
   return (
     <section className="feature-section feature-section--reporting">
       <div className="feature-section__surface">
@@ -111,25 +115,6 @@ function ReportingWorkspaceSection({ overview, calendar }: ReportingWorkspaceSec
               kontroller som fortsatt må lukkes.
             </p>
           </div>
-        </div>
-
-        <div className="summary-grid summary-grid--four-up">
-          <article className="summary-card summary-card--ok">
-            <p className="summary-card__label">Klare for innsending</p>
-            <p className="summary-card__value">{overview.readyForSubmission}</p>
-          </article>
-          <article className="summary-card summary-card--critical">
-            <p className="summary-card__label">Blokkerte rapporter</p>
-            <p className="summary-card__value">{overview.blockedReports}</p>
-          </article>
-          <article className="summary-card summary-card--warning">
-            <p className="summary-card__label">Åpne valideringsfunn</p>
-            <p className="summary-card__value">{overview.openValidationFindings}</p>
-          </article>
-          <article className="summary-card">
-            <p className="summary-card__label">Innsendt dette kvartalet</p>
-            <p className="summary-card__value">{overview.submittedThisQuarter}</p>
-          </article>
         </div>
 
         <div className="feature-panel-grid feature-panel-grid--two-up">
@@ -250,20 +235,23 @@ function ReportingWorkspaceSection({ overview, calendar }: ReportingWorkspaceSec
             </div>
           </div>
 
-          <div className="stack-list" style={{ marginTop: '1rem' }}>
-            {upcomingDeadlines.map((event) => (
-              <article key={event.id} className="stack-card">
-                <div className="stack-card__row">
-                  <div className="stack-card__row stack-card__row--dense">
-                    <span className={`calendar-legend__dot calendar-legend__dot--${event.category}`} />
-                    <h3 className="stack-card__title">{event.title}</h3>
+          {upcomingNotInView.length > 0 ? (
+            <div className="stack-list" style={{ marginTop: '1rem' }}>
+              <p className="feature-subsection__eyebrow">Kommende frister utenfor denne måneden</p>
+              {upcomingNotInView.map((event) => (
+                <article key={event.id} className="stack-card">
+                  <div className="stack-card__row">
+                    <div className="stack-card__row stack-card__row--dense">
+                      <span className={`calendar-legend__dot calendar-legend__dot--${event.category}`} />
+                      <h3 className="stack-card__title">{event.title}</h3>
+                    </div>
+                    <span className="stack-card__meta">{categoryLabels[event.category]}</span>
                   </div>
-                  <span className="stack-card__meta">{categoryLabels[event.category]}</span>
-                </div>
-                <p className="stack-card__body">{event.dateLabel} — {event.summary}</p>
-              </article>
-            ))}
-          </div>
+                  <p className="stack-card__body">{event.dateLabel} — {event.summary}</p>
+                </article>
+              ))}
+            </div>
+          ) : null}
         </section>
       </div>
     </section>

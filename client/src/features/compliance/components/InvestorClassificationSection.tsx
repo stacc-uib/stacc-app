@@ -217,22 +217,11 @@ function InvestorClassificationSection({
       });
   }, [activeFilter, rows, searchQuery, selectedInvestorId]);
 
-  const missingDataCount = rows.filter((row) => row.missingFields.length > 0).length;
-  const pepFollowUpCount = rows.filter(
-    (row) =>
-      row.complianceStatus === 'pep-forfalt' ||
-      row.complianceStatus === 'pep-forfaller-snart',
-  ).length;
-  const reportingReadyCount = rows.filter(
-    (row) => row.reportingReadiness === 'Klar',
-  ).length;
-
   return (
     <section className="feature-section feature-section--classification">
       <div className="feature-section__surface">
         <div className="feature-section__header">
           <div>
-            <p className="feature-section__eyebrow">Investorregister</p>
             <h2 className="feature-section__title">Investorregister</h2>
             <p className="feature-section__description">
               Få oversikt over klassifisering, manglende data og PEP-oppfølging i én
@@ -242,28 +231,26 @@ function InvestorClassificationSection({
         </div>
 
         <div className="row g-3 compliance-registry__summary-grid">
-          <div className="col-12 col-md-6 col-xl-3">
+          <div className="col-12 col-md-6 col-xl-4">
             <article className="summary-card compliance-registry__summary-card h-100">
               <p className="summary-card__label">Investorer i registeret</p>
               <p className="summary-card__value">{rows.length}</p>
             </article>
           </div>
-          <div className="col-12 col-md-6 col-xl-3">
-            <article className="summary-card summary-card--warning compliance-registry__summary-card h-100">
-              <p className="summary-card__label">Mangler opplysninger</p>
-              <p className="summary-card__value">{missingDataCount}</p>
-            </article>
-          </div>
-          <div className="col-12 col-md-6 col-xl-3">
-            <article className="summary-card summary-card--warning compliance-registry__summary-card h-100">
-              <p className="summary-card__label">PEP-oppfølging</p>
-              <p className="summary-card__value">{pepFollowUpCount}</p>
-            </article>
-          </div>
-          <div className="col-12 col-md-6 col-xl-3">
+          <div className="col-12 col-md-6 col-xl-4">
             <article className="summary-card summary-card--ok compliance-registry__summary-card h-100">
-              <p className="summary-card__label">Klar for rapportering</p>
-              <p className="summary-card__value">{reportingReadyCount}</p>
+              <p className="summary-card__label">Profesjonelle</p>
+              <p className="summary-card__value">
+                {rows.filter((r) => r.investorClass === 'Profesjonell').length}
+              </p>
+            </article>
+          </div>
+          <div className="col-12 col-md-6 col-xl-4">
+            <article className="summary-card summary-card--warning compliance-registry__summary-card h-100">
+              <p className="summary-card__label">Ikke-profesjonelle</p>
+              <p className="summary-card__value">
+                {rows.filter((r) => r.investorClass === 'Ikke-profesjonell').length}
+              </p>
             </article>
           </div>
         </div>

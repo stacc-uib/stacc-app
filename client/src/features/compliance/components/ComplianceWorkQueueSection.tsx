@@ -15,17 +15,11 @@ type ActionDialogState = {
   item: ComplianceWorkQueueItem;
 } | null;
 
-function getDialogContent(item: ComplianceWorkQueueItem) {
+function getDialogContent(item: ComplianceWorkQueueItem, currentOwner: string) {
   if (item.actionType === 'gjennomga') {
     return {
-      title: 'Gjennomgå sak',
-      description: `Du er i ferd med å gjennomgå «${item.title}».`,
-      detail: item.summary,
-      steps: [
-        'Kontroller at all dokumentasjon er oppdatert',
-        'Vurder risikonivå og eventuelle avvik',
-        'Marker saken som gjennomgått når du er ferdig',
-      ],
+      title: item.title,
+      context: `Gjennomgå og vurder om saken kan lukkes.`,
       primaryLabel: item.customerId ? 'Gå til kunde' : 'Gå til detaljvisning',
       secondaryLabel: 'Marker som gjennomgått',
     };
@@ -33,30 +27,18 @@ function getDialogContent(item: ComplianceWorkQueueItem) {
 
   if (item.actionType === 'fullfor') {
     return {
-      title: 'Fullfør oppgave',
-      description: `Du er i ferd med å fullføre «${item.title}».`,
-      detail: item.summary,
-      steps: [
-        'Verifiser at alle valideringskontroller er lukket',
-        'Kontroller at rapporten er klar for innsending',
-        'Bekreft fullføring for å fjerne oppgaven fra køen',
-      ],
+      title: item.title,
+      context: `Bekreft at rapporten er klar for innsending.`,
       primaryLabel: 'Gå til rapportering',
       secondaryLabel: 'Bekreft fullført',
     };
   }
 
   return {
-    title: 'Åpne sak',
-    description: `Du åpner saken «${item.title}».`,
-    detail: item.summary,
-    steps: [
-      'Saken tildeles deg som ansvarlig',
-      'Gå til detaljvisningen for å oppdatere investorstatus',
-      'Lukk saken når oppfølgingen er ferdig',
-    ],
+    title: item.title,
+    context: `Nåværende ansvarlig: ${currentOwner}`,
     primaryLabel: item.customerId ? 'Gå til kunde' : 'Gå til detaljvisning',
-    secondaryLabel: 'Tildel til meg',
+    secondaryLabel: 'Ta ansvar',
   };
 }
 
@@ -212,7 +194,8 @@ function ComplianceWorkQueueSection({
         </div>
 
         {dialog ? (() => {
-          const content = getDialogContent(dialog.item);
+          const currentOwner = assignedIds.includes(dialog.item.id) ? 'Meg' : dialog.item.owner;
+          const content = getDialogContent(dialog.item, currentOwner);
 
           return (
             <div className="queue-dialog-overlay" onClick={() => setDialog(null)}>
@@ -223,10 +206,7 @@ function ComplianceWorkQueueSection({
                 onClick={(e) => e.stopPropagation()}
               >
                 <div className="queue-dialog__header">
-                  <div>
-                    <p className="queue-card__eyebrow">{dialog.item.category}</p>
-                    <h3 className="queue-dialog__title">{content.title}</h3>
-                  </div>
+                  <h3 className="queue-dialog__title">{content.title}</h3>
                   <button
                     type="button"
                     className="queue-dialog__close"
@@ -237,23 +217,7 @@ function ComplianceWorkQueueSection({
                   </button>
                 </div>
 
-                <p className="queue-dialog__description">{content.description}</p>
-                <p className="queue-dialog__detail">{content.detail}</p>
-
-                <div className="queue-dialog__meta">
-                  <span>Prioritet: <span className={getPriorityClassName(dialog.item.priority)}>{dialog.item.priority}</span></span>
-                  <span>Frist: {dialog.item.dueLabel}</span>
-                  <span>Ansvarlig: {assignedIds.includes(dialog.item.id) ? 'Meg' : dialog.item.owner}</span>
-                </div>
-
-                <div className="queue-dialog__steps">
-                  <p className="queue-dialog__steps-title">Neste steg</p>
-                  <ol className="queue-dialog__steps-list">
-                    {content.steps.map((step) => (
-                      <li key={step}>{step}</li>
-                    ))}
-                  </ol>
-                </div>
+                <p className="queue-dialog__description">{content.context}</p>
 
                 <div className="queue-dialog__actions">
                   <button
