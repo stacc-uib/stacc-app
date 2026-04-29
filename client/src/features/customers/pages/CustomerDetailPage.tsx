@@ -5,6 +5,7 @@ import tradesData from '../../../mocks/trades.json';
 import MultiSelectFilter from '../../../shared/components/MultiSelectFilter';
 import { getCustomerComplianceData } from '../../../shared/lib/getCustomerComplianceData';
 import { formatCurrency, formatDate } from '../../../shared/utils/format';
+import { useTradesContext } from '../../trades/TradesContext';
 import ActivityPageSizeSelector, { PageSize } from '../components/ActivityPageSizeSelector';
 import '../components/customerDetail.css';
 
@@ -181,12 +182,35 @@ function CustomerDetailPage({ customerId }: { customerId: string }) {
     (inv) => inv.customerId === customerId,
   );
 
+  const { registeredTrades } = useTradesContext();
+
   const trades = useMemo(
     () =>
-      (tradesData as TradeRecord[])
-        .filter((t) => t.customerId === customerId)
-        .sort((a, b) => new Date(b.tradeDate).getTime() - new Date(a.tradeDate).getTime()),
-    [customerId],
+      [
+        ...(registeredTrades
+          .filter((t) => t.customerId === customerId)
+          .map((t) => ({
+            id: t.id,
+            customerId: t.customerId,
+            fundName: t.fundName,
+            shareClass: t.shareClass,
+            tradeDate: t.tradeDate,
+            transactionType: t.transactionType,
+            units: t.units,
+            price: t.price,
+            amount: t.amount,
+            unitEffect: t.unitEffect,
+            settlementStatus: t.settlementStatus,
+          }))),
+        ...(tradesData as TradeRecord[]).filter((t) => t.customerId === customerId),
+      ].sort((a, b) => new Date(b.tradeDate).getTime() - new Date(a.tradeDate).getTime()),
+    [customerId, registeredTrades],
+  );
+
+  // Only settled trades affect holdings; static mock trades are assumed oppgjort
+  const settledTrades = useMemo(
+    () => trades.filter((t) => !('settlementStatus' in t) || (t as { settlementStatus?: string }).settlementStatus === 'oppgjort'),
+    [trades],
   );
 
   const allFundOptions = useMemo(() => {
@@ -233,8 +257,9 @@ function CustomerDetailPage({ customerId }: { customerId: string }) {
 
   const fundHoldings = useMemo(() => {
     // Accumulate units per instrument (shareClass), then value by latest NAV price
+    // Only settled trades count toward holdings
     const instrumentUnits = new Map<string, { fundType: FundType; fundName: string; priceKey: 'classA' | 'classB' | 'classC'; units: number }>();
-    trades.forEach((t) => {
+    settledTrades.forEach((t) => {
       const key = t.shareClass;
       const existing = instrumentUnits.get(key);
       if (existing) {
@@ -266,7 +291,7 @@ function CustomerDetailPage({ customerId }: { customerId: string }) {
       value,
       pct: total > 0 ? (value / total) * 100 : 0,
     }));
-  }, [trades]);
+  }, [settledTrades]);
 
   const totalBeholdning = fundHoldings.reduce((s, f) => s + f.value, 0);
 

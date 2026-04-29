@@ -1,7 +1,12 @@
 import AppShell from './app/AppShell';
+import { TradesProvider } from './features/trades/TradesContext';
 
 function App() {
-  return <AppShell />;
+  return (
+    <TradesProvider>
+      <AppShell />
+    </TradesProvider>
+  );
 }
 
 export default App;
