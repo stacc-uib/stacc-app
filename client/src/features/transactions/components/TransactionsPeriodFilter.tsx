@@ -13,8 +13,11 @@ type Props = {
   minDate: string;
   maxDate: string;
   activePreset: Preset | null;
+  funds: string[];
+  fundFilter: string;
   onRangeChange: (range: DateRange) => void;
   onPresetSelect: (preset: Preset) => void;
+  onFundChange: (fund: string) => void;
   onReset: () => void;
 };
 
@@ -26,7 +29,20 @@ function formatLabel(iso: string) {
   return `${d}.${m}.${y}`;
 }
 
-function TransactionsPeriodFilter({ range, minDate, maxDate, activePreset, onRangeChange, onPresetSelect, onReset }: Props) {
+const selectStyle: React.CSSProperties = {
+  minHeight: '38px',
+  padding: '0.5rem 0.75rem',
+  border: '1px solid rgba(17, 24, 39, 0.12)',
+  borderRadius: '0.3rem',
+  background: '#fff',
+  color: '#374151',
+  fontSize: '0.9rem',
+};
+
+function TransactionsPeriodFilter({
+  range, minDate, maxDate, activePreset, funds, fundFilter,
+  onRangeChange, onPresetSelect, onFundChange, onReset,
+}: Props) {
   const trackRef = useRef<HTMLDivElement>(null);
   const dragging = useRef<'from' | 'to' | null>(null);
 
@@ -38,7 +54,7 @@ function TransactionsPeriodFilter({ range, minDate, maxDate, activePreset, onRan
 
   const fromPct = ((fromMs - minMs) / span) * 100;
   const toPct = ((toMs - minMs) / span) * 100;
-  const isFullRange = range.from === minDate && range.to === maxDate && activePreset === null;
+  const isFullRange = range.from === minDate && range.to === maxDate && activePreset === null && !fundFilter;
 
   const pctToMs = useCallback((pct: number) => {
     return Math.round(minMs + (pct / 100) * span);
@@ -81,13 +97,13 @@ function TransactionsPeriodFilter({ range, minDate, maxDate, activePreset, onRan
     <div className="feature-section__surface" style={{ marginBottom: '1.5rem', padding: '1rem 1.25rem' }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: '1.5rem', flexWrap: 'wrap' }}>
 
+        {/* Slider */}
         <div style={{ flex: 1, minWidth: '260px' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.6rem' }}>
             <span style={{ fontSize: '0.8rem', color: '#374151', fontWeight: 600 }}>{formatLabel(range.from)}</span>
             <span style={{ fontSize: '0.75rem', color: '#9ca3af' }}>Periode</span>
             <span style={{ fontSize: '0.8rem', color: '#374151', fontWeight: 600 }}>{formatLabel(range.to)}</span>
           </div>
-
           <div
             ref={trackRef}
             onMouseDown={handleMouseDown}
@@ -100,6 +116,7 @@ function TransactionsPeriodFilter({ range, minDate, maxDate, activePreset, onRan
           </div>
         </div>
 
+        {/* Presets */}
         <div className="queue-filter-row" style={{ margin: 0 }}>
           {presets.map((preset) => (
             <button
@@ -111,6 +128,18 @@ function TransactionsPeriodFilter({ range, minDate, maxDate, activePreset, onRan
               {preset.label}
             </button>
           ))}
+        </div>
+
+        <div style={{ display: 'flex', gap: '0.6rem', alignItems: 'center' }}>
+          <select
+            value={fundFilter}
+            onChange={(e) => onFundChange(e.target.value)}
+            style={{ ...selectStyle, minWidth: '120px' }}
+          >
+            <option value="">Alle fond</option>
+            {funds.map((f) => <option key={f} value={f}>{f}</option>)}
+          </select>
+
           <button
             type="button"
             className="queue-filter"
