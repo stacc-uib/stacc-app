@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
+import fundPricesData from '../../../mocks/fundPrices.json';
 import investorsData from '../../../mocks/investors.json';
 import tradesData from '../../../mocks/trades.json';
 import MultiSelectFilter from '../../../shared/components/MultiSelectFilter';
@@ -30,6 +31,34 @@ type InvestorRecord = {
   phone: string | null;
   email: string | null;
 };
+
+type FundPriceRecord = {
+  fundName: string;
+  date: string;
+  classA: number;
+  classB: number;
+  classC: number;
+};
+
+const latestPriceByFund = new Map<string, { classA: number; classB: number; classC: number }>();
+const latestDateByFund = new Map<string, string>();
+for (const record of fundPricesData as FundPriceRecord[]) {
+  const prev = latestDateByFund.get(record.fundName);
+  if (!prev || record.date > prev) {
+    latestDateByFund.set(record.fundName, record.date);
+    latestPriceByFund.set(record.fundName, {
+      classA: record.classA,
+      classB: record.classB,
+      classC: record.classC,
+    });
+  }
+}
+
+function getShareClassPriceKey(shareClass: string): 'classA' | 'classB' | 'classC' {
+  if (shareClass.includes('Klasse B')) return 'classB';
+  if (shareClass.includes('Klasse C')) return 'classC';
+  return 'classA';
+}
 
 function getFundType(fundName: string): FundType {
   if (fundName.includes('Norden')) return 'Norden';
@@ -114,6 +143,24 @@ function PieLegend({ slices }: { slices: Slice[] }) {
   );
 }
 
+// ---- Mock contact generators ----
+function mockEmail(name: string): string {
+  const normalized = name
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-z0-9\s]/g, '')
+    .trim();
+  const parts = normalized.split(/\s+/);
+  const local = parts.length >= 2 ? `${parts[0]}.${parts[parts.length - 1]}` : parts[0];
+  return `${local}@outlook.com`;
+}
+
+function mockPhone(customerId: string): string {
+  const digits = customerId.replace(/\D/g, '').padEnd(7, '0').slice(0, 7);
+  return `+47 ${digits.slice(0, 3)} ${digits.slice(3, 5)} ${digits.slice(5, 7)}`;
+}
+
 // ---- Compliance badge helper ----
 function getComplianceBadgeClass(status: string): string {
   switch (status) {
@@ -185,13 +232,33 @@ function CustomerDetailPage({ customerId }: { customerId: string }) {
   }, [trades, selectedFunds, selectedTypes, selectedYears, allFundOptions, allTypeOptions, allYearOptions]);
 
   const fundHoldings = useMemo(() => {
-    const map = new Map<FundType, number>();
+    // Accumulate units per instrument (shareClass), then value by latest NAV price
+    const instrumentUnits = new Map<string, { fundType: FundType; fundName: string; priceKey: 'classA' | 'classB' | 'classC'; units: number }>();
     trades.forEach((t) => {
-      const ft = getFundType(t.fundName);
-      const isSalg = t.transactionType.toLowerCase() === 'salg';
-      const value = isSalg ? -t.amount : t.amount;
-      map.set(ft, (map.get(ft) ?? 0) + value);
+      const key = t.shareClass;
+      const existing = instrumentUnits.get(key);
+      if (existing) {
+        existing.units += t.unitEffect;
+      } else {
+        instrumentUnits.set(key, {
+          fundType: getFundType(t.fundName),
+          fundName: t.fundName,
+          priceKey: getShareClassPriceKey(t.shareClass),
+          units: t.unitEffect,
+        });
+      }
     });
+
+    const map = new Map<FundType, number>();
+    for (const instrument of instrumentUnits.values()) {
+      const prices = latestPriceByFund.get(instrument.fundName);
+      const price = prices ? prices[instrument.priceKey] : 0;
+      const value = Math.max(0, instrument.units) * price;
+      if (value > 0) {
+        map.set(instrument.fundType, (map.get(instrument.fundType) ?? 0) + value);
+      }
+    }
+
     const filtered = Array.from(map.entries()).filter(([, v]) => v > 0);
     const total = filtered.reduce((s, [, v]) => s + v, 0);
     return filtered.map(([type, value]) => ({
@@ -209,12 +276,14 @@ function CustomerDetailPage({ customerId }: { customerId: string }) {
   );
 
   const klasse = useMemo(() => {
-    if (trades.length === 0) return 'Klasse A';
-    const latest = trades[0];
-    if (latest.shareClass.includes('Klasse B')) return 'Klasse B';
-    if (latest.shareClass.includes('Klasse C')) return 'Klasse C';
+    if (!investor) return 'Klasse A';
+    if (investor.customerType === 'Ansatt') return 'Klasse A';
+    if (fundHoldings.length === 0) return 'Klasse A';
+    const fundClasses = fundHoldings.map((f) => (f.value >= 1_000_000 ? 'Klasse B' : 'Klasse C'));
+    if (fundClasses.some((c) => c === 'Klasse C')) return 'Klasse C';
+    if (fundClasses.every((c) => c === 'Klasse B')) return 'Klasse B';
     return 'Klasse A';
-  }, [trades]);
+  }, [investor, fundHoldings]);
 
   function goBack() {
     window.location.hash = '#kundeoversikt';
@@ -261,11 +330,11 @@ function CustomerDetailPage({ customerId }: { customerId: string }) {
               </div>
               <div className="cd-info-row">
                 <dt>Telefon</dt>
-                <dd>{investor.phone ?? '—'}</dd>
+                <dd>{investor.phone ?? mockPhone(investor.customerId)}</dd>
               </div>
               <div className="cd-info-row">
                 <dt>Epost</dt>
-                <dd>{investor.email ?? '—'}</dd>
+                <dd>{investor.email ?? mockEmail(investor.name)}</dd>
               </div>
             </dl>
           </div>
