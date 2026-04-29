@@ -6,6 +6,7 @@ import MultiSelectFilter from '../../../shared/components/MultiSelectFilter';
 import { getCustomerComplianceData } from '../../../shared/lib/getCustomerComplianceData';
 import type { InvestorClassificationStatus } from '../../../shared/types/compliance';
 import { formatCurrency } from '../../../shared/utils/format';
+import { useTradesContext } from '../../trades/TradesContext';
 import { HoldingFilter } from './CustomerChanges';
 
 export type FundType = 'Norden' | 'Global' | 'Kreditt';
@@ -192,50 +193,45 @@ function CustomersList({
   ]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const { registeredTrades } = useTradesContext();
 
   useEffect(() => {
-    let cancelled = false;
+    setLoading(true);
+    setError(null);
 
-    async function processData() {
-      setLoading(true);
-      setError(null);
+    try {
+      const investors = investorsData as InvestorRecord[];
+      // Only settled context trades affect holdings; static mock trades are assumed oppgjort
+      const trades: TradeRecord[] = [
+        ...(registeredTrades.filter((t) => t.settlementStatus === 'oppgjort') as TradeRecord[]),
+        ...(tradesData as TradeRecord[]),
+      ];
 
-      try {
-        const investors = investorsData as InvestorRecord[];
-        const trades = tradesData as TradeRecord[];
+      let customers: Customer[] = investors.map((investor) => {
+        const { totalValue, funds } = calculateCustomerHoldings(investor.customerId, trades);
+        const klasse = getKlasseForCustomer(investor.customerType, funds);
 
-        let customers: Customer[] = investors.map((investor) => {
-          const { totalValue, funds } = calculateCustomerHoldings(investor.customerId, trades);
-          const klasse = getKlasseForCustomer(investor.customerType, funds);
+        return {
+          id: investor.customerId,
+          name: investor.name,
+          klasse,
+          type: investor.customerType,
+          totalBeholdning: totalValue,
+          funds,
+        };
+      });
 
-          return {
-            id: investor.customerId,
-            name: investor.name,
-            klasse,
-            type: investor.customerType,
-            totalBeholdning: totalValue,
-            funds,
-          };
-        });
-
-        if (filteredCustomerId) {
-          customers = customers.filter((c) => c.id === filteredCustomerId);
-        }
-
-        await new Promise((r) => setTimeout(r, 250));
-        if (!cancelled) setData(customers);
-      } catch (err: any) {
-        if (!cancelled) setError(err.message ?? 'Feil ved behandling av data');
-      } finally {
-        if (!cancelled) setLoading(false);
+      if (filteredCustomerId) {
+        customers = customers.filter((c) => c.id === filteredCustomerId);
       }
-    }
 
-    processData();
-    return () => {
-      cancelled = true;
-    };
-  }, [filteredCustomerId]);
+      setData(customers);
+    } catch (err: any) {
+      setError(err.message ?? 'Feil ved behandling av data');
+    } finally {
+      setLoading(false);
+    }
+  }, [filteredCustomerId, registeredTrades]);
 
   if (loading) return <div>Laster kunder…</div>;
   if (error) return <div className="error">Feil: {error}</div>;
