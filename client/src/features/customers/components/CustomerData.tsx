@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import fundPricesData from '../../../mocks/fundPrices.json';
 import investorsData from '../../../mocks/investors.json';
 import tradesData from '../../../mocks/trades.json';
 import MultiSelectFilter from '../../../shared/components/MultiSelectFilter';
@@ -59,6 +60,29 @@ type TradeRecord = {
   unitEffect: number;
 };
 
+type FundPriceRecord = {
+  fundName: string;
+  date: string;
+  classA: number;
+  classB: number;
+  classC: number;
+};
+
+// Latest prices per fund, keyed by fundName
+const latestPriceByFund = new Map<string, { classA: number; classB: number; classC: number }>();
+const latestDateByFund = new Map<string, string>();
+for (const record of fundPricesData as FundPriceRecord[]) {
+  const prev = latestDateByFund.get(record.fundName);
+  if (!prev || record.date > prev) {
+    latestDateByFund.set(record.fundName, record.date);
+    latestPriceByFund.set(record.fundName, {
+      classA: record.classA,
+      classB: record.classB,
+      classC: record.classC,
+    });
+  }
+}
+
 function getFundTypeFromName(fundName: string): FundType {
   if (fundName.includes('Global')) return 'Global';
   if (fundName.includes('Norden')) return 'Norden';
@@ -66,36 +90,47 @@ function getFundTypeFromName(fundName: string): FundType {
   return 'Global';
 }
 
-function getClassFromShareClass(shareClass: string): string {
-  if (shareClass.includes('Klasse A')) return 'Klasse A';
-  if (shareClass.includes('Klasse B')) return 'Klasse B';
-  if (shareClass.includes('Klasse C')) return 'Klasse C';
-  return 'Klasse A';
-}
-
-function getLatestTradeForCustomer(customerId: string, trades: TradeRecord[]): TradeRecord | null {
-  const customerTrades = trades.filter((trade) => trade.customerId === customerId);
-  if (customerTrades.length === 0) return null;
-
-  return customerTrades.reduce((latest, current) =>
-    new Date(current.tradeDate) > new Date(latest.tradeDate) ? current : latest,
-  );
+function getShareClassPriceKey(shareClass: string): 'classA' | 'classB' | 'classC' {
+  if (shareClass.includes('Klasse B')) return 'classB';
+  if (shareClass.includes('Klasse C')) return 'classC';
+  return 'classA';
 }
 
 function calculateCustomerHoldings(
   customerId: string,
   trades: TradeRecord[],
 ): { totalValue: number; funds: Fund[] } {
-  const fundMap = new Map<FundType, number>();
+  // Accumulate units per (fundName + shareClass) instrument
+  type InstrumentKey = string;
+  const instrumentUnits = new Map<InstrumentKey, { fundType: FundType; fundName: string; priceKey: 'classA' | 'classB' | 'classC'; units: number }>();
 
   trades
     .filter((trade) => trade.customerId === customerId)
     .forEach((trade) => {
-      const fundType = getFundTypeFromName(trade.fundName);
-      const isSalg = trade.transactionType.toLowerCase() === 'salg';
-      const value = isSalg ? -trade.amount : trade.amount;
-      fundMap.set(fundType, (fundMap.get(fundType) || 0) + value);
+      const key = trade.shareClass;
+      const existing = instrumentUnits.get(key);
+      if (existing) {
+        existing.units += trade.unitEffect;
+      } else {
+        instrumentUnits.set(key, {
+          fundType: getFundTypeFromName(trade.fundName),
+          fundName: trade.fundName,
+          priceKey: getShareClassPriceKey(trade.shareClass),
+          units: trade.unitEffect,
+        });
+      }
     });
+
+  // Convert units to current value using latest NAV price
+  const fundMap = new Map<FundType, number>();
+  for (const instrument of instrumentUnits.values()) {
+    const prices = latestPriceByFund.get(instrument.fundName);
+    const price = prices ? prices[instrument.priceKey] : 0;
+    const value = Math.max(0, instrument.units) * price;
+    if (value > 0) {
+      fundMap.set(instrument.fundType, (fundMap.get(instrument.fundType) || 0) + value);
+    }
+  }
 
   const funds: Fund[] = Array.from(fundMap.entries())
     .filter(([, amount]) => amount > 0)
@@ -105,17 +140,26 @@ function calculateCustomerHoldings(
   return { totalValue, funds };
 }
 
+function getKlasseForCustomer(customerType: string, funds: Fund[]): string {
+  if (customerType === 'Ansatt') return 'Klasse A';
+  if (funds.length === 0) return 'Klasse A';
+
+  const fundClasses = funds.map((f) => (f.amount >= 1_000_000 ? 'Klasse B' : 'Klasse C'));
+
+  if (fundClasses.some((c) => c === 'Klasse C')) return 'Klasse C';
+  if (fundClasses.every((c) => c === 'Klasse B')) return 'Klasse B';
+  return 'Klasse A';
+}
+
 function matchesHoldingFilter(customer: Customer, filter: HoldingFilter): boolean {
   if (!filter) return true;
-  const fundsAboveMillion = customer.funds.filter((f) => f.amount >= 1_000_000);
-  const fundsNearMillion = customer.funds.filter(
-    (f) => f.amount >= 900_000 && f.amount < 1_000_000,
-  );
   if (filter === 'sterk') {
-    return customer.klasse === 'Klasse C' && customer.totalBeholdning > 1_000_000;
+    // Total holdings > 1M but no single fund reaches 1M (none qualify for Klasse B)
+    return customer.totalBeholdning > 1_000_000 && customer.funds.every((f) => f.amount < 1_000_000);
   }
   if (filter === 'naer') {
-    return fundsAboveMillion.length === 2 && fundsNearMillion.length >= 1;
+    // Customer has at least one fund between 900k and 1M (currently Klasse C, close to Klasse B)
+    return customer.funds.some((f) => f.amount >= 900_000 && f.amount < 1_000_000);
   }
   return true;
 }
@@ -161,13 +205,8 @@ function CustomersList({
         const trades = tradesData as TradeRecord[];
 
         let customers: Customer[] = investors.map((investor) => {
-          const latestTrade = getLatestTradeForCustomer(investor.customerId, trades);
           const { totalValue, funds } = calculateCustomerHoldings(investor.customerId, trades);
-
-          let klasse = 'Klasse A';
-          if (latestTrade) {
-            klasse = getClassFromShareClass(latestTrade.shareClass);
-          }
+          const klasse = getKlasseForCustomer(investor.customerType, funds);
 
           return {
             id: investor.customerId,
