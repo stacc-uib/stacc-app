@@ -12,7 +12,7 @@ export const getIncomeDateRange = (incomeData: IncomeData): DateRange => {
 
     return {
         from: dates[0] ?? '',
-        to: dates[dates.length - 1] ?? '',
+        to: new Date().toISOString().split('T')[0],
     };
 };
 

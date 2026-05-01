@@ -141,6 +141,10 @@ type ShareClassIncome = {
 function getIncomeDataByShareClass(incomeData: IncomeData): Map<string, ShareClassIncome> {
     const result = new Map<string, ShareClassIncome>();
 
+    if (incomeData.events.length == 0) {
+        return result;
+    }
+
     let firstDate = incomeData.events[0].date ?? "";
     let lastDate = incomeData.events[incomeData.events.length - 1].date ?? "";
 

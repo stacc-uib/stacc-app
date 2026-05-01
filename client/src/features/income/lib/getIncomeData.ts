@@ -48,17 +48,15 @@ export default function getIncomeData(
     let trade_idx = 0;
     const tradesLength = validTrades.length;
 
-    for (const fp of fundPrices) {
+    const fundPricesSorted = fundPrices.toSorted((a,b) => a.date > b.date);
+
+    for (const fp of fundPricesSorted) {
         if (fp.fundName === null ||
            fp.date === null ||
            fp.classA === null ||
            fp.classB === null ||
            fp.classC === null) {
             continue;
-        }
-
-        if (fp.classB == null) {
-            console.log("Hold on...");
         }
 
         while (trade_idx < tradesLength && validTrades[trade_idx].tradeDate! < fp.date) {
@@ -120,6 +118,7 @@ export default function getIncomeData(
             }
         }
     }
+    console.log(incomeEvents);
     return { events: incomeEvents } as IncomeData;
 }
 
