@@ -2,6 +2,10 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { getTradeRegistrationData } from '../lib/getTradeRegistrationData';
 import type { TradeDirection, TradeSettlementStatus } from '../types/trades';
 
+import type { Investor } from '../types/investor';
+import InvestorList from "../components/InvestorList";
+import investors from "../../../mocks/investors.json";
+
 function formatCurrency(value: number) {
   return new Intl.NumberFormat('nb-NO', {
     style: 'currency',
@@ -315,60 +319,6 @@ function DividendsPage() {
             </div>
           ) : null}
 
-          <section className="data-table-card trade-card trade-card--compact">
-            <div className="trade-card__header">
-              <div>
-                <h2 className="data-table-card__title">Velg investor</h2>
-      
-              </div>
-            </div>
-
-            <div className="trade-selector-grid">
-              <label className="trade-field">
-                <span></span>
-                <div className="trade-picker" ref={investorPickerRef}>
-                  <input
-                    type="search"
-                    value={isInvestorPickerOpen ? investorQuery : selectedInvestor?.investorName ?? investorQuery}
-                    onFocus={() => {
-                      setIsInvestorPickerOpen(true);
-                      setInvestorQuery(selectedInvestor?.investorName ?? '');
-                    }}
-                    onChange={(event) => {
-                      setInvestorQuery(event.target.value);
-                      setSelectedInvestorId('');
-                      setIsInvestorPickerOpen(true);
-                    }}
-                    placeholder="Søk etter investor"
-                  />
-                  <span className="trade-picker__arrow" aria-hidden="true">
-                    ▾
-                  </span>
-
-                  {isInvestorPickerOpen ? (
-                    <div className="trade-picker__menu" role="listbox" aria-label="Investorliste">
-                      {filteredInvestors.map((investor) => (
-                        <button
-                          key={investor.customerId}
-                          type="button"
-                          className="trade-picker__option"
-                          onClick={() => handleInvestorSelect(investor.customerId)}
-                        >
-                          <span>{investor.investorName}</span>
-                          <span>{investor.customerId}</span>
-                        </button>
-                      ))}
-
-                      {filteredInvestors.length === 0 ? (
-                        <div className="trade-picker__empty">Ingen investorer matcher søket.</div>
-                      ) : null}
-                    </div>
-                  ) : null}
-                </div>
-              </label>
-            </div>
-          </section>
-
           <div className="trade-registration__layout">
             <div className="trade-registration__main">
               <section className="data-table-card trade-card">
@@ -423,7 +373,7 @@ function DividendsPage() {
                   </label>
 
                   <label className="trade-field">
-                    <span>Beløp</span>
+                    <span>Beløp per andel</span>
                     <input
                       type="text"
                       inputMode="decimal"
@@ -467,122 +417,12 @@ function DividendsPage() {
               </section>
             </div>
 
-            <aside className="trade-registration__aside">
-              {selectedInvestor ? (
-                <>
-                  <section className="data-table-card trade-card trade-sidebar-card trade-sidebar-card--separated">
-                    <div className="trade-card__header">
-                      <div>
-                        <p className="feature-section__eyebrow">Investorinformasjon</p>
-                        <h2 className="data-table-card__title">{selectedInvestor.investorName}</h2>
-                      </div>
-                    </div>
-
-                    <div className="trade-sidebar-card__content">
-                      <dl className="trade-definition-list">
-                        <div>
-                          <dt>Kunde-ID</dt>
-                          <dd>{selectedInvestor.customerId}</dd>
-                        </div>
-                        <div>
-                          <dt>Kundetype</dt>
-                          <dd>{selectedInvestor.investorType}</dd>
-                        </div>
-                        <div>
-                          <dt>Kategori</dt>
-                          <dd>{selectedInvestor.investorCategory}</dd>
-                        </div>
-                        <div>
-                          <dt>Total verdi nå</dt>
-                          <dd>{formatCurrency(holdingsValue)}</dd>
-                        </div>
-                        {projectedValue !== null ? (
-                          <div>
-                            <dt>Verdi etter handel</dt>
-                            <dd style={{ color: projectedValue >= holdingsValue ? '#15803d' : '#b91c1c' }}>
-                              {formatCurrency(projectedValue)}
-                              <span style={{ fontSize: '0.82rem', fontWeight: 400, marginLeft: '0.4rem', color: 'inherit' }}>
-                                ({direction === 'kjop' ? '+' : '-'}{formatCurrency(amountValue)})
-                              </span>
-                            </dd>
-                          </div>
-                        ) : null}
-                      </dl>
-
-                      <div className="trade-sidebar-card__status-row">
-                        <span
-                          className={`status-badge ${
-                            selectedInvestor.pepStatus === 'Ja'
-                              ? 'status-badge--critical'
-                              : 'status-badge--ok'
-                          }`}
-                        >
-                          PEP {selectedInvestor.pepStatus}
-                        </span>
-                        <span
-                          className={`status-badge ${
-                            selectedInvestor.amlRiskLevel === 'Høy'
-                              ? 'status-badge--critical'
-                              : selectedInvestor.amlRiskLevel === 'Medium'
-                                ? 'status-badge--warning'
-                                : 'status-badge--ok'
-                          }`}
-                        >
-                          AML {selectedInvestor.amlRiskLevel}
-                        </span>
-                      </div>
-                    </div>
-                  </section>
-
-                  <section className="data-table-card trade-card trade-sidebar-card trade-sidebar-card--separated">
-                    <div className="trade-card__header">
-                      <div>
-                        <p className="feature-section__eyebrow">Beholdning</p>
-                        <h2 className="data-table-card__title">Eksisterende plasseringer</h2>
-                      </div>
-                    </div>
-
-                    <div className="stack-list">
-                      {selectedInvestor.holdings.length ? (
-                        selectedInvestor.holdings.slice(0, 4).map((holding) => (
-                          <article key={holding.holdingId} className="trade-mini-card">
-                            <div className="stack-card__row stack-card__row--dense">
-                              <h3 className="stack-card__title">{holding.fundName}</h3>
-                              <span className="status-badge status-badge--neutral">
-                                {holding.shareClassLabel}
-                              </span>
-                            </div>
-                            <p className="stack-card__body">{formatNumber(holding.units)} andeler</p>
-                            <p className="stack-card__meta stack-card__meta--strong">
-                              {formatCurrency(holding.estimatedValue)}
-                            </p>
-                          </article>
-                        ))
-                      ) : (
-                        <p className="trade-sidebar-card__empty">
-                          Ingen aktiv beholdning registrert for valgt investor.
-                        </p>
-                      )}
-                    </div>
-                  </section>
-                </>
-              ) : (
-                <section className="data-table-card trade-card trade-sidebar-card trade-sidebar-card--empty-state">
-                  <div className="trade-card__header">
-                    <div>
-                      <p className="feature-section__eyebrow">Investorinformasjon</p>
-                      <h2 className="data-table-card__title">Velg investor</h2>
-                    </div>
-                  </div>
-                  <p className="trade-sidebar-card__empty">
-                    Investorinformasjon og beholdning vises her når du har valgt en investor.
-                  </p>
-                </section>
-              )}
-            </aside>
           </div>
         </div>
       </section>
+    <section className="data-table-card trade-card">
+        <InvestorList investors={investors} />
+    </section>
     </div>
   );
 }
