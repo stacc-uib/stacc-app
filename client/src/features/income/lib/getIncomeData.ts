@@ -48,9 +48,9 @@ export default function getIncomeData(
     let trade_idx = 0;
     const tradesLength = validTrades.length;
 
-    const fundPricesSorted = fundPrices.toSorted((a,b) => a.date > b.date);
+    fundPrices.sort((a,b) => new Date(a.date!).getTime() - new Date(b.date!).getTime());
 
-    for (const fp of fundPricesSorted) {
+    for (const fp of fundPrices) {
         if (fp.fundName === null ||
            fp.date === null ||
            fp.classA === null ||
@@ -118,7 +118,7 @@ export default function getIncomeData(
             }
         }
     }
-    console.log(incomeEvents);
+
     return { events: incomeEvents } as IncomeData;
 }
 

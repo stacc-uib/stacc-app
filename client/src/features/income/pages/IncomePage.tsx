@@ -1,5 +1,6 @@
 import IncomeSubnav from '../components/IncomeSubnav';
 import IncomeTable from '../components/IncomeTable';
+import IncomeOverview from '../components/IncomeOverview';
 import getIncomeData from '../lib/getIncomeData';
 import IncomePeriodFilter from '../components/IncomePeriodFilter';
 import { applyDateRange, getPresetRange, getIncomeDateRange, type Preset } from '../lib/getIncomeDateRange';
@@ -92,7 +93,7 @@ function IncomePage() {
             <h1>Inntekt</h1>
 
             <p className="content-card__description">
-                Placeholder for inntektsanalyse, honorarutvikling og relaterte oversikter.
+                Inntektsoversikt og projeksjoner.
             </p>
 
             <IncomeSubnav
@@ -102,9 +103,7 @@ function IncomePage() {
             />
 
             {activeSubpageId === 'oversikt' ? (
-                <div className="content-card__placeholder">
-                    Placeholder inntekt.
-                </div>
+                <IncomeOverview incomeData={incomeData} />
             ) : null}
 
             {activeSubpageId === 'projeksjoner' ? (

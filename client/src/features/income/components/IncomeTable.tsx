@@ -204,7 +204,7 @@ const IncomeTable = ({incomeData} : {incomeData: IncomeData}) => {
     ];
 
     return (
-        <div className="data-table-card">
+        <div className="data-table-card feature-section__surface">
             <div className="table-scroll">
                 <table className="data-table transactions-table">
                     <IncomeTableHeader incomeTableHeaders={incomeTableHeaders} /> 
