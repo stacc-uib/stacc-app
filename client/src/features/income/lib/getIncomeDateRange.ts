@@ -1,10 +1,6 @@
 import type { Trade } from "../types/trade";
-import IncomeData from "../lib/getIncomeData";
-
-export type DateRange = {
-    from: string;
-    to: string;
-};
+import type { IncomeData } from "../lib/getIncomeData";
+import type { DateRange } from "../types/dateRange";
 
 export type Preset = '1y' | '5y' | '10y' | 'ytd';
 
@@ -20,7 +16,7 @@ export const getIncomeDateRange = (incomeData: IncomeData): DateRange => {
     };
 };
 
-export const applyDateRange = (incomeData: Incomedata, range: DateRange): IncomeData => {
+export const applyDateRange = (incomeData: IncomeData, range: DateRange): IncomeData => {
     let events = incomeData.events.filter((event) => {
         if (range.from && event.date < range.from) return false;
         if (range.to && event.date > range.to) return false;

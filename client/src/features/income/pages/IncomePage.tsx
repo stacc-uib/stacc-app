@@ -2,7 +2,8 @@ import IncomeSubnav from '../components/IncomeSubnav';
 import IncomeTable from '../components/IncomeTable';
 import getIncomeData from '../lib/getIncomeData';
 import IncomePeriodFilter from '../components/IncomePeriodFilter';
-import { applyDateRange, getPresetRange, getIncomeDateRange, type DateRange, type Preset } from '../lib/getIncomeDateRange';
+import { applyDateRange, getPresetRange, getIncomeDateRange, type Preset } from '../lib/getIncomeDateRange';
+import type { DateRange } from "../types/dateRange";
 
 import fundPrices from "../../../mocks/fundPrices.json";
 import investors from "../../../mocks/investors.json";

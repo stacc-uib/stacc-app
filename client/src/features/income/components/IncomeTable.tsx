@@ -1,10 +1,10 @@
-import IncomeData from "../lib/getIncomeData";
+import type { IncomeData } from "../lib/getIncomeData";
 
-const IncomeTableHeader = ({incomeTableHeaders}) => {
+const IncomeTableHeader = ({incomeTableHeaders} : {incomeTableHeaders: string[]}) => {
     return (
         <thead>
             <tr>
-                {incomeTableHeaders.map((label) => (
+                {incomeTableHeaders.map((label: string) => (
                     <th key={label} style={{ textAlign: 'center' }}>
                         {label}
                     </th>
@@ -14,8 +14,8 @@ const IncomeTableHeader = ({incomeTableHeaders}) => {
     ) 
 };
 
-const IncomeTableBodyRowCellText = ({value, isPrimary}) => {
-    if (isPrimary == "true") {
+const IncomeTableBodyRowCellText = ({value, isPrimary} : {value: string, isPrimary: boolean}) => {
+    if (isPrimary) {
         return (
             <td>
                 <div className="table-primary-cell">
@@ -34,15 +34,15 @@ const IncomeTableBodyRowCellText = ({value, isPrimary}) => {
     }
 }
 
-const IncomeTableBodyRowCellInteger = ({value, isPrimary}) => {
-    const formatInteger = (value: number) => {
+const IncomeTableBodyRowCellInteger = ({value, isPrimary} : {value: number, isPrimary: boolean}) => {
+    const formatInteger = (val: number) => {
         return new Intl.NumberFormat('nb-NO', {
-            minimumFractionDigsits: 0,
+            minimumFractionDigits: 0,
             maximumFractionDigits: 0,
-        }).format(value);
+        }).format(val);
     }
 
-    if (isPrimary == "true") {
+    if (isPrimary) {
         return (
             <td style={{ textAlign: 'center' }}>
                 <strong>{formatInteger(value)}</strong>
@@ -58,22 +58,22 @@ const IncomeTableBodyRowCellInteger = ({value, isPrimary}) => {
 
 }
 
-const IncomeTableBodyRowCellPercentage = ({value, isPrimary}) => {
-    const formatPercentageChange = (value: number) =>  {
-        const color = value >= 0 ? 'green' : 'red';
-        const prefix = value >= 0 ? '+' : '';
+const IncomeTableBodyRowCellPercentage = ({value, isPrimary} : {value: number, isPrimary: boolean}) => {
+    const formatPercentageChange = (val: number) =>  {
+        const color: string = val >= 0 ? 'green' : 'red';
+        const prefix: string = val >= 0 ? '+' : '';
 
         const formatted = new Intl.NumberFormat('nb-NO', {
             minimumFractionDigits: 2,
             maximumFractionDigits: 2,
-        }).format(value);
+        }).format(val);
 
         return (
             <span style={{ color: color }}>{prefix}{formatted}%</span>
         )
     }
 
-    if (isPrimary == "true") {
+    if (isPrimary) {
         return (
             <td style={{ textAlign: 'center' }}>
                 <strong>{formatPercentageChange(value)}</strong>
@@ -88,7 +88,7 @@ const IncomeTableBodyRowCellPercentage = ({value, isPrimary}) => {
     }
 }
 
-const IncomeTableBodyRowCellMonetary = ({value, isPrimary}) => {
+const IncomeTableBodyRowCellMonetary = ({value, isPrimary} : {value: number, isPrimary: boolean}) => {
     const formatMonetaryValue = (value: number) => {
         return new Intl.NumberFormat('nb-NO', {
             minimumFractionDigits: 2,
@@ -96,7 +96,7 @@ const IncomeTableBodyRowCellMonetary = ({value, isPrimary}) => {
         }).format(value);
     }
 
-    if (isPrimary == "true") {
+    if (isPrimary) {
         return (
             <td style={{ textAlign: 'right' }}>
                 <strong>{formatMonetaryValue(value)} kr</strong>
@@ -112,7 +112,7 @@ const IncomeTableBodyRowCellMonetary = ({value, isPrimary}) => {
 
 }
 
-const IncomeTableBodyRow = ({fundIncome, isPrimary}) => {
+const IncomeTableBodyRow = ({fundIncome, isPrimary} : {fundIncome: ShareClassIncome, isPrimary: boolean}) => {
 
     const unitsChange = 100 * (fundIncome.units - fundIncome.unitsInitial) / fundIncome.unitsInitial;
     const priceChange = 100 * (fundIncome.price - fundIncome.priceInitial) / fundIncome.priceInitial;
@@ -129,15 +129,7 @@ const IncomeTableBodyRow = ({fundIncome, isPrimary}) => {
     )
 }
 
-const IncomeTableBodySection = ({fundIncome}) => {
-    return (
-        <>
-            <IncomeTableBodyRow fundIncome={fundIncome} isPrimary="true" />
-        </>
-    )
-}
-
-interface ShareClassIncome {
+type ShareClassIncome = {
     name: string;
     units: number;
     unitsInitial: number;
@@ -150,7 +142,7 @@ function getIncomeDataByShareClass(incomeData: IncomeData): Map<string, ShareCla
     const result = new Map<string, ShareClassIncome>();
 
     let firstDate = incomeData.events[0].date ?? "";
-    let lastDate = incomeData.events.at(-1).date ?? "";
+    let lastDate = incomeData.events[incomeData.events.length - 1].date ?? "";
 
     for (const event of incomeData.events) {
         if (!result.has(event.shareClass)) {
@@ -185,20 +177,20 @@ function getIncomeDataByShareClass(incomeData: IncomeData): Map<string, ShareCla
     return result;
 }
 
-const IncomeTableBody = ({incomeData}) => {
-    let byShareClass = getIncomeDataByShareClass(incomeData);
+const IncomeTableBody = ({incomeData} : {incomeData: IncomeData}) => {
+    let byShareClass: Map<string, ShareClassIncome> = getIncomeDataByShareClass(incomeData);
 
     return (
         <tbody>
             {Array.from(byShareClass).map(([shareClass, fundIncome]) => (
-                <IncomeTableBodySection fundIncome={fundIncome} key={shareClass} />
+                <IncomeTableBodyRow fundIncome={fundIncome} isPrimary={true} key={shareClass} />
             ))}
         </tbody>
     );
 }
 
-const IncomeTable = ({incomeData, range}) => {
-    const incomeTableHeaders = [
+const IncomeTable = ({incomeData} : {incomeData: IncomeData}) => {
+    const incomeTableHeaders: string[] = [
         "Fond",
         "Volum",
         "Volumendring",

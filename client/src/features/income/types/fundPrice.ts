@@ -1,7 +1,7 @@
 export type FundPrice = {
-    "fundName": string;
-    "date": string;
-    "classA": number;
-    "classB": number;
-    "classC": number;
+    "fundName": string | null;
+    "date": string | null;
+    "classA": number | null;
+    "classB": number | null;
+    "classC": number | null;
 };

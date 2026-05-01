@@ -1,6 +1,6 @@
-import fundPrices from "../../../mocks/fundPrices.ts";
-import investors from "../../../mocks/investors.ts";
-import trades from "../../../mocks/trades.ts";
+import fundPrices from "../../../mocks/fundPrices.json";
+import investors from "../../../mocks/investors.json";
+import trades from "../../../mocks/trades.json";
 
 import type { FundPrice } from "../types/fundPrice";
 import type { Investor } from "../types/investor";
@@ -9,7 +9,7 @@ import type { Trade } from "../types/trade";
 const CLASS_B_MONTHLY_RATE = (1 + 0.0075) ** (1 / 12) - 1;
 const CLASS_C_MONTHLY_RATE = (1 + 0.01) ** (1 / 12) - 1;
 
-export interface IncomeEvent {
+export type IncomeEvent = {
     date: string;
     customerId: string;
     shareClass: string;
@@ -20,7 +20,7 @@ export interface IncomeEvent {
     incomeType: "management fee" | "dividend";
 }
 
-export interface IncomeData {
+export type IncomeData = {
     events: IncomeEvent[];
 }
 
@@ -33,9 +33,10 @@ export default function getIncomeData(
     fundPrices: FundPrice[]
 ): IncomeData {
     const validTrades = trades.filter((t) =>
-        t.tradeDate != null &&
-        t.customerName != null &&
+        t.tradeDate !== null &&
+        t.customerName !== null &&
         t.customerId !== "None" &&
+        t.units !== null &&
         t.units > 0.0
     );
 
@@ -48,7 +49,7 @@ export default function getIncomeData(
     const tradesLength = validTrades.length;
 
     for (const fp of fundPrices) {
-        if (fp.shareClassName === null ||
+        if (fp.fundName === null ||
            fp.date === null ||
            fp.classA === null ||
            fp.classB === null ||
@@ -60,28 +61,28 @@ export default function getIncomeData(
             console.log("Hold on...");
         }
 
-        while (trade_idx < tradesLength && validTrades[trade_idx].tradeDate < fp.date) {
+        while (trade_idx < tradesLength && validTrades[trade_idx].tradeDate! < fp.date) {
             let currTrade = validTrades[trade_idx];
 
             if (!customerHoldings.has(currTrade.customerId)) {
                 customerHoldings.set(currTrade.customerId, new Map<string, number>());
             }
 
-            let currCustomerHolding = customerHoldings.get(currTrade.customerId);
+            let currCustomerHolding = customerHoldings.get(currTrade.customerId)!;
 
-            if (!currCustomerHolding.has(currTrade.shareClass)) {
-                currCustomerHolding.set(currTrade.shareClass, 0);
+            if (!currCustomerHolding.has(currTrade.shareClass!)) {
+                currCustomerHolding.set(currTrade.shareClass!, 0);
             }
 
-            let currHolding = currCustomerHolding.get(currTrade.shareClass);
+            let currHolding = currCustomerHolding.get(currTrade.shareClass!)!;
 
             if (currTrade.transactionType === "Kjøp") {
-                currCustomerHolding.set(currTrade.shareClass, currHolding + currTrade.units);
+                currCustomerHolding.set(currTrade.shareClass!, currHolding + currTrade.units!);
             } else if (currTrade.transactionType === "Salg") {
-                currCustomerHolding.set(currTrade.shareClass, currHolding - currTrade.units);
+                currCustomerHolding.set(currTrade.shareClass!, currHolding - currTrade.units!);
             } 
 
-            if (currCustomerHolding.get(currTrade.shareClass) < 0) {
+            if (currCustomerHolding.get(currTrade.shareClass!)! < 0) {
                 throw new Error("Total holding went negative...");
             }
 
@@ -91,7 +92,7 @@ export default function getIncomeData(
         // Calculate income events
         for (const [customerId, holdings] of customerHoldings) {
             for (const [shareClass, units] of holdings) {
-                if (shareClass.at(-1) == 'B') {
+                if (shareClass[shareClass.length - 1] == 'B') {
                     incomeEvents.push({
                         date: fp.date,
                         customerId: customerId,
@@ -102,7 +103,7 @@ export default function getIncomeData(
                         amount: units * fp.classB * CLASS_B_MONTHLY_RATE,
                         incomeType: "management fee"
                     } as IncomeEvent);
-                } else if (shareClass.at(-1) == 'C') {
+                } else if (shareClass[shareClass.length - 1] == 'C') {
                     incomeEvents.push({
                         date: fp.date,
                         customerId: customerId,
@@ -113,7 +114,7 @@ export default function getIncomeData(
                         amount: units * fp.classC * CLASS_C_MONTHLY_RATE,
                         incomeType: "management fee"
                     } as IncomeEvent);
-                } else if (shareClass.at(-1) != 'A'){
+                } else if (shareClass[shareClass.length - 1] != 'A'){
                     throw new Error("unexpected share class name");
                 }
             }

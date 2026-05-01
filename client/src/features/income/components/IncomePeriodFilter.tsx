@@ -1,5 +1,6 @@
 import { useCallback, useRef } from 'react';
-import type { DateRange, Preset } from '../lib/getIncomeDateRange';
+import type { Preset } from '../lib/getIncomeDateRange';
+import type { DateRange } from "../types/dateRange";
 
 const presets: { id: Preset; label: string }[] = [
     { id: 'ytd', label: 'YTD' },
@@ -26,7 +27,7 @@ function formatLabel(iso: string) {
     return `${d}.${m}.${y}`;
 }
 
-function IncomePeriodFilter({ range, minDate, maxDate, activePreset, onRangeChange, onPresetSelect, onReset }: Props) {
+const IncomePeriodFilter = ({ range, minDate, maxDate, activePreset, onRangeChange, onPresetSelect, onReset }: Props) => {
     const trackRef = useRef<HTMLDivElement>(null);
     const dragging = useRef<'from' | 'to' | null>(null);
 
