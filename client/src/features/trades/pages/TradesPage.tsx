@@ -63,7 +63,7 @@ function isQuarterStart(dateString: string) {
 
 function TradesPage() {
   const tradeData = useMemo(() => getTradeRegistrationData(), []);
-  const { addTrade } = useTradesContext();
+  const { addTrade, registeredTrades } = useTradesContext();
   const investorPickerRef = useRef<HTMLDivElement | null>(null);
   const [investorQuery, setInvestorQuery] = useState('');
   const [selectedInvestorId, setSelectedInvestorId] = useState('');
@@ -297,7 +297,7 @@ function TradesPage() {
         direction,
       });
       addTrade({
-        id: `trade-${Date.now()}-${Math.random().toString(36).slice(2)}`,
+        id: `trade-${1502 + registeredTrades.length}`,
         customerId: selectedInvestor.customerId,
         customerName: selectedInvestor.investorName,
         fundName: fullFundName,

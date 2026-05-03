@@ -15,8 +15,7 @@ function formatAmount(value: number) {
   }).format(value);
 }
 
-function formatGrowth(pct: number | null) {
-  if (pct === null) return { label: 'Ingen forrige periode', color: '#9ca3af' };
+function formatGrowth(pct: number) {
   const sign = pct >= 0 ? '+' : '';
   const color = pct >= 0 ? '#16a34a' : '#dc2626';
   return { label: `${sign}${pct.toFixed(1).replace('.', ',')} %`, color };
@@ -90,13 +89,15 @@ function PieChart({ data }: { data: TypeDataPoint[] }) {
 
   function slice(count: number) {
     const sweep = (count / total) * 2 * Math.PI;
+    // Avoid degenerate arc for 100% single slice
+    const clampedSweep = Math.min(sweep, 2 * Math.PI - 0.001);
     const x1 = cx + r * Math.cos(angle);
     const y1 = cy + r * Math.sin(angle);
-    angle += sweep;
+    angle += clampedSweep;
     const x2 = cx + r * Math.cos(angle);
     const y2 = cy + r * Math.sin(angle);
-    const large = sweep > Math.PI ? 1 : 0;
-    return { path: `M${cx},${cy} L${x1},${y1} A${r},${r} 0 ${large},1 ${x2},${y2} Z`, midAngle: angle - sweep / 2 };
+    const large = clampedSweep > Math.PI ? 1 : 0;
+    return { path: `M${cx},${cy} L${x1},${y1} A${r},${r} 0 ${large},1 ${x2},${y2} Z`, midAngle: angle - clampedSweep / 2 };
   }
 
   const slices = data.map((d, i) => ({ ...d, color: TYPE_COLORS[i % TYPE_COLORS.length], ...slice(d.count) }));

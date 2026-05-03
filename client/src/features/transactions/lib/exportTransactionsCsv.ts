@@ -7,9 +7,10 @@ function formatDate(iso: string | null) {
 }
 
 export const exportTransactionsCsv = (transactions: Transaction[]) => {
-    const headers = ['Kunde', 'Dato', 'Oppgjørsdato', 'Status', 'Type', 'Antall', 'Kurs', 'Beløp', 'Fond', 'Klasse'];
+    const headers = ['ID', 'Kunde', 'Dato', 'Oppgjørsdato', 'Status', 'Type', 'Antall', 'Kurs', 'Beløp', 'Fond', 'Klasse'];
 
     const rows = transactions.map((tx) => [
+        tx.id,
         tx.customerName ?? '',
         formatDate(tx.tradeDate),
         formatDate(tx.settlementDate),
