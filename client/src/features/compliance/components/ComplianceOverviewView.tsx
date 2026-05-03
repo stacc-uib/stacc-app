@@ -12,14 +12,11 @@ function ComplianceOverviewView({
   onOpenSubpage,
 }: ComplianceOverviewViewProps) {
   return (
-    <div className="compliance-overview">
-      {/* Prioritized tasks (arbeidsflate) */}
+    <div className="arbeidsflate-layout">
       <ComplianceWorkQueueSection
         overview={pageData.workQueue}
         onOpenSubpage={onOpenSubpage}
       />
-
-      {/* Reporting pipeline status + calendar */}
       <ReportingWorkspaceSection
         overview={pageData.reportingWorkspace}
         calendar={pageData.calendar}

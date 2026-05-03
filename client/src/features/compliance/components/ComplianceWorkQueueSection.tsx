@@ -42,6 +42,8 @@ function getDialogContent(item: ComplianceWorkQueueItem, currentOwner: string) {
   };
 }
 
+const QUEUE_DEFAULT_VISIBLE = 5;
+
 const filterOptions: { id: ComplianceWorkQueueFilter; label: string }[] = [
   { id: 'alle', label: 'Alle' },
   { id: 'kritiske', label: 'Kritiske' },
@@ -69,6 +71,7 @@ function ComplianceWorkQueueSection({
   const [completedIds, setCompletedIds] = useState<string[]>([]);
   const [assignedIds, setAssignedIds] = useState<string[]>([]);
   const [dialog, setDialog] = useState<ActionDialogState>(null);
+  const [showAll, setShowAll] = useState(false);
 
   const visibleItems = overview.items.filter((item) => {
     if (completedIds.includes(item.id)) {
@@ -77,6 +80,9 @@ function ComplianceWorkQueueSection({
 
     return activeFilter === 'alle' ? true : item.filterTags.includes(activeFilter);
   });
+
+  const displayItems = showAll ? visibleItems : visibleItems.slice(0, QUEUE_DEFAULT_VISIBLE);
+  const hiddenCount = visibleItems.length - QUEUE_DEFAULT_VISIBLE;
 
   function handlePrimaryAction(item: ComplianceWorkQueueItem) {
     setDialog({ item });
@@ -138,7 +144,7 @@ function ComplianceWorkQueueSection({
               className={`queue-filter${
                 option.id === activeFilter ? ' queue-filter--active' : ''
               }`}
-              onClick={() => setActiveFilter(option.id)}
+              onClick={() => { setActiveFilter(option.id); setShowAll(false); }}
             >
               {option.label}
             </button>
@@ -146,7 +152,7 @@ function ComplianceWorkQueueSection({
         </div>
 
         <div className="stack-list">
-          {visibleItems.map((item) => (
+          {displayItems.map((item) => (
             <article key={item.id} className="queue-card">
               <div className="queue-card__main">
                 <div className="stack-card__row">
@@ -192,6 +198,24 @@ function ComplianceWorkQueueSection({
             </article>
           ) : null}
         </div>
+
+        {hiddenCount > 0 && !showAll ? (
+          <button
+            type="button"
+            className="queue-show-more"
+            onClick={() => setShowAll(true)}
+          >
+            Vis {hiddenCount} til
+          </button>
+        ) : showAll && visibleItems.length > QUEUE_DEFAULT_VISIBLE ? (
+          <button
+            type="button"
+            className="queue-show-more"
+            onClick={() => setShowAll(false)}
+          >
+            Vis færre
+          </button>
+        ) : null}
 
         {dialog ? (() => {
           const currentOwner = assignedIds.includes(dialog.item.id) ? 'Meg' : dialog.item.owner;
