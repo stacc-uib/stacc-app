@@ -1,95 +1,154 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState, Dispatch, SetStateAction } from "react";
 import type { IncomeData } from "../lib/getIncomeData";
+import type { Investor } from "../types/investor";
 
 interface DataPoint {
     label: string;
-    source1: number;
-    source2: number;
-    source3: number;
+    sources: number[];
+    length: number;
 }
 
-function generateDataPoints(incomeData: IncomeData, splitBy: string) {
+function generateDataPoints(incomeData: IncomeData, investors: Investor[], splitBy: string): DataPoint[] {
     let result: DataPoint[] = [];
 
     if (incomeData.events.length === 0) {
         return result;
     }
 
+    const labels = getLabels(splitBy);
+    const n = labels.length;
+
     let currPoint = {
         label: incomeData.events[0].date ?? "",
-        source1: 0,
-        source2: 0,
-        source3: 0
+        sources: Array(n).fill(0),
+        length: n
     };
 
-    if (splitBy === "fund") {
-        for (const event of incomeData.events) {
-            if (currPoint.label !== event.date) {
-                result.push(currPoint);
-                currPoint = {
-                    label: event.date,
-                    source1: 0,
-                    source2: 0,
-                    source3: 0
-                };
-            }
+    for (const event of incomeData.events) {
+        if (currPoint.label !== event.date) {
+            result.push(currPoint);
+            currPoint = {
+                label: event.date,
+                sources: Array(n).fill(0),
+                length: n
+            };
+        }
 
-            if (event.shareClass.includes("Norden")) {
-                currPoint.source1 += event.amount;
-            } else if (event.shareClass.includes("Global")) {
-                currPoint.source2 += event.amount;
-            } else if (event.shareClass.includes("Kreditt")) {
-                currPoint.source3 += event.amount;
+        for (let i = 0; i < n; i++) {
+            if (splitBy === "fund") {
+                if (event.shareClass.includes(labels[i])) {
+                    currPoint.sources[i] += event.amount;
+                    break;
+                }
+            } else if (splitBy === "class") {
+                if (event.shareClass.includes(labels[i])) {
+                    currPoint.sources[i] += event.amount;
+                    break;
+                }
+            } else if (splitBy === "segment") {
+                const customer = investors.find(x => x.customerId === event.customerId)!;
+                if (customer.customerType === labels[i]) {
+                    currPoint.sources[i] += event.amount;
+                    break;
+                }
+            } else if (splitBy === "category") {
+                const customer = investors.find(x => x.customerId === event.customerId)!;
+                if (customer.category === labels[i]) {
+                    currPoint.sources[i] += event.amount;
+                    break;
+                }
             } else {
-                throw new Error("NEINEI");
+                throw new Error("unexpected splitBy");
             }
         }
-        result.push(currPoint);
-    } else {
-        throw new Error("NEI");
     }
+    result.push(currPoint);
+
     return result;
 }
 
-function getCumulativeDataPoints(data: DataPoint[]) {
-    return data.map((point) => ({
-        label: point.label,
-        source1: point.source1,
-        source2: point.source1 + point.source2,
-        source3: point.source1 + point.source2 + point.source3,
-    }));
+function getCumulativeDataPoints(data: DataPoint[]): DataPoint[] {
+    return data.map((point) => {
+        let sum = 0;
+        return {
+            label: point.label,
+            sources: point.sources.map(n => sum += n),
+            length: point.length
+        };
+    });
 }
 
-function getLabels(splitBy: string) {
+function getLabels(splitBy: string): string[] {
     if (splitBy === "fund") {
         return ["Norden", "Global", "Kreditt"];
+    } else if (splitBy === "class") {
+        return ["Klasse B", "Klasse C"];
+    } else if (splitBy === "segment") {
+        return ["Aksjeselskap", "Pensjonskasse", "Ansatt", "Fond", "Fondsforvalter", "Forsikringsselskap", "Privatperson", "Stiftelse"];
+    } else if (splitBy === "category") {
+        return ["Professional", "Retail"];
     } else {
         throw new Error("NEI");
     }
 }
 
-
 function getColors(splitBy: string) {
-    const labels = getLabels(splitBy);
-    return [
-        { fill: "#8884d8", stroke: "#8884d8", label: labels[0]}, 
-        { fill: "#82ca9d", stroke: "#82ca9d", label: labels[1]},
-        { fill: "#ffc658", stroke: "#ffc658", label: labels[2]},
+    const colors = [
+        "#FFD449",  // Yellow
+        "#32DE8A",  // Green
+        "#F5A623",  // Orange-Yellow
+        "#B8E986",  // Light Green
+        "#4A90E2",  // Blue
+        "#7B68EE",  // Purple
+        "#50E3C2",  // Teal
+        "#fb771c",  // Orange
+        "#FF6B6B",   // Coral
     ];
 
-} 
+    const labels = getLabels(splitBy);
 
-const IncomeGraph = ({ incomeData }: { incomeData: IncomeData }) => {
+    return [...Array(labels.length).keys()].map((i) => ({
+        fill: colors[i],
+        stroke: colors[i],
+        label: labels[i]
+    }));
+}
+
+const SplitByButtons = ({splitBy, setSplitBy}: {splitBy: string, setSplitBy: any}) => {
+
+  const buttons = [
+    { label: "Fond", value: "fund" as const },
+    { label: "Fondsklasse", value: "class" as const },
+    { label: "Kundesegment", value: "segment" as const },
+    { label: "Kundekategori", value: "category" as const },
+  ];
+
+  return (
+      <div style={{ display: "flex", gap: "8px", marginBottom: "16px" }}>
+          {buttons.map((button) => (
+              <button
+                  className={`btn btn-light ${splitBy === button.value ? " active" : ""}`}
+                  key={button.value}
+                  onClick={() => setSplitBy(button.value)}
+              >
+                {button.label}
+              </button>
+      ))}
+      </div>
+  );
+};
+
+const IncomeGraph = ({ incomeData, investors }: { incomeData: IncomeData, investors: Investor[] }) => {
     const canvasRef = useRef<HTMLCanvasElement>(null);
     const [containerWidth, setContainerWidth] = useState(0);
     const containerRef = useRef<HTMLDivElement>(null);
 
-    const splitBy = "fund";
-    const data = generateDataPoints(incomeData, splitBy);
-    const cumulativeData = getCumulativeDataPoints(data);
 
-    // Colors for each source
+    const [splitBy, setSplitBy] = useState<"fund" | "class" | "segment" | "category">("fund");
+    const data = generateDataPoints(incomeData, investors, splitBy);
+    const cumulativeData = getCumulativeDataPoints(data);
     const colors = getColors(splitBy);
+    const numCategories = colors.length;
 
     // Update container width on mount and resize
     useEffect(() => {
@@ -114,19 +173,19 @@ const IncomeGraph = ({ incomeData }: { incomeData: IncomeData }) => {
 
         // Set canvas dimensions to match container
         canvas.width = containerWidth;
-        canvas.height = 400; // Fixed height or make responsive too
+        canvas.height = 400;
 
         // Clear canvas
         ctx.clearRect(0, 0, canvas.width, canvas.height);
 
         // Padding and dimensions
         const padding = 60;
-        const graphWidth = canvas.width - 2 * padding;
+        const graphWidth = canvas.width - 2 * padding - 100;
         const graphHeight = canvas.height - 2 * padding;
 
         // Find the maximum cumulative value for scaling
         const maxValue = Math.max(
-            ...cumulativeData.map((point) => point.source3)
+            ...cumulativeData.map((point) => point.sources[point.sources.length - 1])
         );
 
         // Round maxValue to the nearest "nice" number for Y-axis labels
@@ -178,107 +237,83 @@ const IncomeGraph = ({ incomeData }: { incomeData: IncomeData }) => {
                 ctx.textAlign = "right";
                 ctx.font = "12px Arial";
                 ctx.fillText(
-                    value.toLocaleString(),
+                    "kr " + value.toLocaleString(),
                     padding - 10,
                     canvas.height - padding - (i * graphHeight) / yAxisSteps
                 );
             }
         };
 
-        // Draw the stacked area
+        // Draw the stacked area for any number of categories
         const drawStackedArea = () => {
             if (cumulativeData.length === 0) return;
 
-            // Draw source3 (top layer)
-            ctx.beginPath();
-            ctx.moveTo(
-                padding,
-                canvas.height - padding - (cumulativeData[0].source3 * yScale)
-            );
-            cumulativeData.forEach((point, i) => {
-                ctx.lineTo(
-                    padding + i * xScale,
-                    canvas.height - padding - (point.source3 * yScale)
-                );
-            });
-            ctx.lineTo(
-                padding + (data.length - 1) * xScale,
-                canvas.height - padding
-            );
-            for (let i = data.length - 1; i >= 0; i--) {
-                ctx.lineTo(
-                    padding + i * xScale,
-                    canvas.height - padding - (cumulativeData[i].source2 * yScale)
-                );
-            }
-            ctx.closePath();
-            ctx.fillStyle = colors[2].fill;
-            ctx.fill();
-            ctx.strokeStyle = colors[2].stroke;
-            ctx.stroke();
+            // Draw each layer from bottom to top
+            for (let layer = 0; layer < numCategories; layer++) {
+                ctx.beginPath();
 
-            // Draw source2 (middle layer)
-            ctx.beginPath();
-            ctx.moveTo(
-                padding,
-                canvas.height - padding - (cumulativeData[0].source2 * yScale)
-            );
-            cumulativeData.forEach((point, i) => {
-                ctx.lineTo(
-                    padding + i * xScale,
-                    canvas.height - padding - (point.source2 * yScale)
-                );
-            });
-            ctx.lineTo(
-                padding + (data.length - 1) * xScale,
-                canvas.height - padding - (cumulativeData[data.length - 1].source1 * yScale)
-            );
-            for (let i = data.length - 1; i >= 0; i--) {
-                ctx.lineTo(
-                    padding + i * xScale,
-                    canvas.height - padding - (cumulativeData[i].source1 * yScale)
-                );
-            }
-            ctx.closePath();
-            ctx.fillStyle = colors[1].fill;
-            ctx.fill();
-            ctx.strokeStyle = colors[1].stroke;
-            ctx.stroke();
+                // Start at the bottom of the first point
+                if (layer === 0) {
+                    ctx.moveTo(padding, canvas.height - padding);
+                } else {
+                    ctx.moveTo(
+                        padding,
+                        canvas.height - padding - (cumulativeData[0].sources[layer] * yScale)
+                    );
+                }
 
-            // Draw source1 (bottom layer)
-            ctx.beginPath();
-            ctx.moveTo(padding, canvas.height - padding);
-            cumulativeData.forEach((point, i) => {
+                // Draw the top line of this layer
+                cumulativeData.forEach((point, i) => {
+                    ctx.lineTo(
+                        padding + i * xScale,
+                        canvas.height - padding - (point.sources[layer] * yScale)
+                    );
+                });
+
+                // Draw the right side
                 ctx.lineTo(
-                    padding + i * xScale,
-                    canvas.height - padding - (point.source1 * yScale)
+                    padding + (data.length - 1) * xScale,
+                    canvas.height - padding - (cumulativeData[data.length - 1].sources[layer - 1] * yScale)
                 );
-            });
-            ctx.lineTo(
-                padding + (data.length - 1) * xScale,
-                canvas.height - padding
-            );
-            ctx.closePath();
-            ctx.fillStyle = colors[0].fill;
-            ctx.fill();
-            ctx.strokeStyle = colors[0].stroke;
-            ctx.stroke();
+
+                // Draw the bottom line (backwards)
+                for (let i = data.length - 1; i >= 0; i--) {
+                    const prevLayer = layer > 0 ? layer - 1 : -1;
+                    const yPos = prevLayer >= 0
+                        ? cumulativeData[i].sources[prevLayer] * yScale
+                        : 0;
+                    ctx.lineTo(
+                        padding + i * xScale,
+                        canvas.height - padding - yPos
+                    );
+                }
+
+                ctx.closePath();
+                ctx.fillStyle = colors[layer].fill;
+                ctx.fill();
+                ctx.strokeStyle = colors[layer].stroke;
+                ctx.stroke();
+            }
         };
 
         // Draw legend
         const drawLegend = () => {
-            const legendX = canvas.width - padding - 120;
+            const legendX = canvas.width - padding - 80;
             const legendYStart = padding + 10;
             const legendItemHeight = 20;
             const legendItemSpacing = 10;
+
+            // Calculate legend dimensions
+            const legendWidth = 140;
+            const legendHeight = (legendItemHeight + legendItemSpacing) * numCategories + 10;
 
             // Draw background
             ctx.fillStyle = "rgba(255, 255, 255, 0.8)";
             ctx.fillRect(
                 legendX - 10,
                 legendYStart - 10,
-                140,
-                (legendItemHeight + legendItemSpacing) * colors.length + 10
+                legendWidth,
+                legendHeight
             );
 
             // Draw border
@@ -287,8 +322,8 @@ const IncomeGraph = ({ incomeData }: { incomeData: IncomeData }) => {
             ctx.strokeRect(
                 legendX - 10,
                 legendYStart - 10,
-                140,
-                (legendItemHeight + legendItemSpacing) * colors.length + 10
+                legendWidth,
+                legendHeight
             );
 
             colors.forEach((color, i) => {
@@ -318,10 +353,11 @@ const IncomeGraph = ({ incomeData }: { incomeData: IncomeData }) => {
         drawAxes();
         drawStackedArea();
         drawLegend();
-    }, [incomeData, containerWidth]);
+    }, [incomeData, containerWidth, numCategories]);
 
     return (
         <div className="data-table-card feature-section__surface" ref={containerRef}>
+            <SplitByButtons splitBy={splitBy} setSplitBy={setSplitBy as any} />
             <canvas
                 ref={canvasRef}
                 style={{ width: '100%', height: '400px' }}

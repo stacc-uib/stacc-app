@@ -60,6 +60,10 @@ const IncomeTableBodyRowCellInteger = ({value, isPrimary} : {value: number, isPr
 
 const IncomeTableBodyRowCellPercentage = ({value, isPrimary} : {value: number, isPrimary: boolean}) => {
     const formatPercentageChange = (val: number) =>  {
+        if (val.toFixed(2) === "0.00") {
+            return <span>0,00%</span>;
+        }
+
         const color: string = val >= 0 ? 'green' : 'red';
         const prefix: string = val >= 0 ? '+' : '';
 
@@ -114,8 +118,8 @@ const IncomeTableBodyRowCellMonetary = ({value, isPrimary} : {value: number, isP
 
 const IncomeTableBodyRow = ({fundIncome, isPrimary} : {fundIncome: ShareClassIncome, isPrimary: boolean}) => {
 
-    const unitsChange = 100 * (fundIncome.units - fundIncome.unitsInitial) / fundIncome.unitsInitial;
-    const priceChange = 100 * (fundIncome.price - fundIncome.priceInitial) / fundIncome.priceInitial;
+    const unitsChange = fundIncome.units !== fundIncome.unitsInitial ? 100 * (fundIncome.units - fundIncome.unitsInitial) / fundIncome.unitsInitial : 0;
+    const priceChange = fundIncome.price !== fundIncome.priceInitial ? 100 * (fundIncome.price - fundIncome.priceInitial) / fundIncome.priceInitial : 0;
 
     return (
         <tr>

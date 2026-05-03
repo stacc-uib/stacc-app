@@ -122,7 +122,7 @@ function IncomePage() {
                         onPresetSelect={handlePresetSelect}
                         onReset={handleReset}
                     />
-                    <IncomeGraph incomeData={filteredIncomeData} />
+                    <IncomeGraph incomeData={filteredIncomeData} investors={investors} />
                     </>
             ) : null}
 
