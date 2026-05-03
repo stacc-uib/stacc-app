@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { statusBadgeClass } from '../../../shared/lib/statusBadge';
 import type {
   ComplianceSubpageId,
   ComplianceWorkQueueFilter,
@@ -21,15 +22,9 @@ const filterOptions: { id: ComplianceWorkQueueFilter; label: string }[] = [
 ];
 
 function getPriorityClassName(priority: ComplianceWorkQueueItem['priority']) {
-  if (priority === 'Kritisk') {
-    return 'status-badge status-badge--critical';
-  }
-
-  if (priority === 'Høy') {
-    return 'status-badge status-badge--warning';
-  }
-
-  return 'status-badge status-badge--neutral';
+  if (priority === 'Kritisk') return statusBadgeClass('critical');
+  if (priority === 'Høy') return statusBadgeClass('warning');
+  return statusBadgeClass('neutral');
 }
 
 function ComplianceWorkQueueSection({

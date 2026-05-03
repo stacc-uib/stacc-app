@@ -1,4 +1,5 @@
 ﻿import { useMemo, useState } from 'react';
+import { statusBadgeClass } from '../../../shared/lib/statusBadge';
 import type { AmlPepFollowUpRow, AmlPepOverview } from '../types/compliance';
 
 type AmlPepMonitoringSectionProps = {
@@ -29,23 +30,13 @@ function getBadgeClassName(
     | AmlPepFollowUpRow['amlRiskLevel']
     | 'Oppdatert',
 ) {
-  if (
-    value === 'Forfalt' ||
-    value === 'Mangler dokumentasjon' ||
-    value === 'Høy'
-  ) {
-    return 'status-badge status-badge--critical';
+  if (value === 'Forfalt' || value === 'Mangler dokumentasjon' || value === 'Høy') {
+    return statusBadgeClass('critical');
   }
-
-  if (
-    value === 'Forfaller snart' ||
-    value === 'Mangler oppdatering' ||
-    value === 'Medium'
-  ) {
-    return 'status-badge status-badge--warning';
+  if (value === 'Forfaller snart' || value === 'Mangler oppdatering' || value === 'Medium') {
+    return statusBadgeClass('warning');
   }
-
-  return 'status-badge status-badge--ok';
+  return statusBadgeClass('ok');
 }
 
 function getTimelineForRow(row: AmlPepFollowUpRow, isUpdated: boolean): ReviewTimelineItem[] {

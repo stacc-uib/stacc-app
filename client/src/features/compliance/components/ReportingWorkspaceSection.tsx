@@ -1,11 +1,10 @@
 import { useMemo, useState } from 'react';
+import { statusBadgeClass } from '../../../shared/lib/statusBadge';
 import type {
   ComplianceCalendarCategory,
   ComplianceCalendarEvent,
   ComplianceCalendarOverview,
-  ReportingValidationCheck,
   ReportingWorkspaceOverview,
-  ReportingWorkspaceRun,
 } from '../types/compliance';
 
 type ReportingWorkspaceSectionProps = {
@@ -47,14 +46,6 @@ function getEventsByDate(events: ComplianceCalendarEvent[]) {
   return map;
 }
 
-function getToneClassName(
-  tone: ReportingWorkspaceRun['statusTone'] | ReportingValidationCheck['status'],
-) {
-  if (tone === 'critical') return 'status-badge status-badge--critical';
-  if (tone === 'warning') return 'status-badge status-badge--warning';
-  if (tone === 'ok') return 'status-badge status-badge--ok';
-  return 'status-badge status-badge--neutral';
-}
 
 function ReportingWorkspaceSection({ overview, calendar, onNavigateToInvestors }: ReportingWorkspaceSectionProps) {
   const availableMonths = useMemo(
@@ -183,7 +174,7 @@ function ReportingWorkspaceSection({ overview, calendar, onNavigateToInvestors }
         {overview.runs.map((run) => (
           <div key={run.id} className="report-run-row">
             <span className="report-run-row__name">{run.name}</span>
-            <span className={getToneClassName(run.statusTone)}>{run.statusLabel}</span>
+            <span className={statusBadgeClass(run.statusTone)}>{run.statusLabel}</span>
             <span className="report-run-row__meta">{run.periodLabel} · {run.nextAction}</span>
           </div>
         ))}
@@ -206,7 +197,7 @@ function ReportingWorkspaceSection({ overview, calendar, onNavigateToInvestors }
               : undefined}
           >
             <span className="validation-check-row__label">{check.label}</span>
-            <span className={getToneClassName(check.status)}>
+            <span className={statusBadgeClass(check.status)}>
               {check.status === 'ok' ? 'Klar' : check.status === 'warning' ? 'Avventer' : 'Blokkerer'}
             </span>
           </div>

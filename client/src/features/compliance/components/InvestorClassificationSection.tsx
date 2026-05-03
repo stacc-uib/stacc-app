@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react';
 import InvestorPicker from '../../../shared/components/InvestorPicker';
 import type { InvestorPickerItem } from '../../../shared/components/InvestorPicker';
 import { getClassificationStatus } from '../../../shared/lib/getClassificationStatus';
+import { statusBadgeClass } from '../../../shared/lib/statusBadge';
 import type {
   CompliancePageData,
   IndustryClassificationOption,
@@ -50,12 +51,12 @@ function getStatusClassName(status: InvestorClassificationStatus) {
   switch (status) {
     case 'pep-forfalt':
     case 'ikke-profesjonell':
-      return 'status-badge status-badge--critical';
+      return statusBadgeClass('critical');
     case 'mangler-naering':
     case 'pep-forfaller-snart':
-      return 'status-badge status-badge--warning';
+      return statusBadgeClass('warning');
     default:
-      return 'status-badge status-badge--ok';
+      return statusBadgeClass('ok');
   }
 }
 
