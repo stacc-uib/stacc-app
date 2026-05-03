@@ -1,5 +1,6 @@
 import investors from '../../mocks/investors.json';
 import { investorComplianceDetails } from '../../features/compliance/mocks/investorComplianceDetails';
+import { getClassificationStatus } from '../lib/getClassificationStatus';
 import { formatDateLabel } from '../utils/formatDateLabel';
 import type { CustomerComplianceData, InvestorClassificationStatus } from '../types/compliance';
 
@@ -17,36 +18,6 @@ const statusLabelByType: Record<InvestorClassificationStatus, string> = {
   'pep-forfalt': 'PEP forfalt',
   'ikke-profesjonell': 'Ikke-profesjonell',
 };
-
-function getClassificationStatus(
-  investorCategory: InvestorRecord['category'],
-  industryGroup: string | null,
-  pepNextReviewDate: string,
-): InvestorClassificationStatus {
-  const today = new Date('2026-03-30');
-  const reviewDate = new Date(pepNextReviewDate);
-  const diffInDays = Math.ceil(
-    (reviewDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24),
-  );
-
-  if (!industryGroup) {
-    return 'mangler-naering';
-  }
-
-  if (investorCategory !== 'Professional') {
-    return 'ikke-profesjonell';
-  }
-
-  if (diffInDays < 0) {
-    return 'pep-forfalt';
-  }
-
-  if (diffInDays <= 14) {
-    return 'pep-forfaller-snart';
-  }
-
-  return 'ok';
-}
 
 const detailByCustomerId = new Map(
   investorComplianceDetails.map((detail) => [detail.customerId, detail]),
@@ -68,7 +39,7 @@ export function getCustomerComplianceData(customerId: string): CustomerComplianc
   }
 
   const classificationStatus = getClassificationStatus(
-    investor.category,
+    investor.category === 'Professional',
     detail.industryGroup,
     detail.pepNextReviewDate,
   );

@@ -1,6 +1,6 @@
 ﻿import { useEffect, useState } from 'react';
-import ComplianceInvestorsView from '../components/ComplianceInvestorsView';
 import ComplianceOverviewView from '../components/ComplianceOverviewView';
+import InvestorClassificationSection from '../components/InvestorClassificationSection';
 import ComplianceSubnav from '../components/ComplianceSubnav';
 import { getCompliancePageData } from '../lib/getCompliancePageData';
 import { getComplianceDashboardData } from '../lib/getComplianceDashboardData';
@@ -115,7 +115,7 @@ function CompliancePage() {
       ) : null}
 
       {activeSubpageId === 'investorer' ? (
-        <ComplianceInvestorsView pageData={pageData} />
+        <InvestorClassificationSection pageData={pageData} />
       ) : null}
     </div>
   );

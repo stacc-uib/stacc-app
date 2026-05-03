@@ -1,6 +1,7 @@
 ﻿import { useMemo, useState } from 'react';
 import InvestorPicker from '../../../shared/components/InvestorPicker';
 import type { InvestorPickerItem } from '../../../shared/components/InvestorPicker';
+import { getClassificationStatus } from '../../../shared/lib/getClassificationStatus';
 import type {
   CompliancePageData,
   InvestorClassificationStatus,
@@ -54,17 +55,9 @@ function getStatusClassName(status: InvestorClassificationStatus) {
   }
 }
 
-function getReportingReadinessClassName(
-  readiness: InvestorRegistryRow['reportingReadiness'],
-) {
-  return readiness === 'Klar'
-    ? 'status-badge status-badge--ok'
-    : 'status-badge status-badge--warning';
-}
-
 function toDateFromLabel(dateLabel: string) {
   const [day, month, year] = dateLabel.split('.').map(Number);
-  return new Date(year, month - 1, day);
+  return `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
 }
 
 function deriveClassificationStatus(
@@ -72,29 +65,11 @@ function deriveClassificationStatus(
   industryGroup: InvestorRegistryRow['industryGroup'],
   nextPepCheckLabel: string,
 ): InvestorClassificationStatus {
-  if (investorClass === 'Ikke-profesjonell') {
-    return 'ikke-profesjonell';
-  }
-
-  if (!industryGroup) {
-    return 'mangler-naering';
-  }
-
-  const today = new Date('2026-03-30');
-  const nextReviewDate = toDateFromLabel(nextPepCheckLabel);
-  const diffInDays = Math.ceil(
-    (nextReviewDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24),
+  return getClassificationStatus(
+    investorClass === 'Profesjonell',
+    industryGroup,
+    toDateFromLabel(nextPepCheckLabel),
   );
-
-  if (diffInDays < 0) {
-    return 'pep-forfalt';
-  }
-
-  if (diffInDays <= 14) {
-    return 'pep-forfaller-snart';
-  }
-
-  return 'ok';
 }
 
 function getRegistryRows(
@@ -306,15 +281,12 @@ function InvestorClassificationSection({
               <thead>
                 <tr>
                   <th>Investor</th>
-                  <th>Kundetype</th>
+                  <th>Type</th>
                   <th>Kategori</th>
                   <th>PEP</th>
-                  <th>Siste PEP-kontroll</th>
                   <th>Neste PEP-kontroll</th>
                   <th>Næring</th>
-                  <th>Compliance status</th>
-                  <th>Manglende felt</th>
-                  <th>Rapporteringsklar</th>
+                  <th>Status</th>
                 </tr>
               </thead>
               <tbody>
@@ -337,7 +309,6 @@ function InvestorClassificationSection({
                     <td>{row.investorType}</td>
                     <td>{row.investorClass}</td>
                     <td>{row.pepStatus}</td>
-                    <td>{row.lastPepCheckLabel}</td>
                     <td>{row.nextPepCheckLabel}</td>
                     <td>{row.industryGroup ?? 'Mangler'}</td>
                     <td>
@@ -345,32 +316,12 @@ function InvestorClassificationSection({
                         {statusLabelByType[row.complianceStatus]}
                       </span>
                     </td>
-                    <td>
-                      {row.missingFields.length > 0 ? (
-                        <div className="compliance-registry__tag-list">
-                          {row.missingFields.map((field) => (
-                            <span key={field} className="status-badge status-badge--warning">
-                              {field}
-                            </span>
-                          ))}
-                        </div>
-                      ) : (
-                        <span className="status-badge status-badge--ok">Komplett</span>
-                      )}
-                    </td>
-                    <td>
-                      <span
-                        className={getReportingReadinessClassName(row.reportingReadiness)}
-                      >
-                        {row.reportingReadiness}
-                      </span>
-                    </td>
                   </tr>
                 ))}
 
                 {visibleRows.length === 0 ? (
                   <tr>
-                    <td colSpan={10} className="compliance-registry__empty">
+                    <td colSpan={7} className="compliance-registry__empty">
                       Ingen investorer matcher søket eller det valgte filteret.
                     </td>
                   </tr>

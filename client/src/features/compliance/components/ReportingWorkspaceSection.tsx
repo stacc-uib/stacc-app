@@ -11,6 +11,7 @@ import type {
 type ReportingWorkspaceSectionProps = {
   overview: ReportingWorkspaceOverview;
   calendar: ComplianceCalendarOverview;
+  onNavigateToInvestors?: () => void;
 };
 
 const categoryLabels: Record<ComplianceCalendarCategory, string> = {
@@ -64,7 +65,7 @@ function getToneClassName(
   return 'status-badge status-badge--neutral';
 }
 
-function ReportingWorkspaceSection({ overview, calendar }: ReportingWorkspaceSectionProps) {
+function ReportingWorkspaceSection({ overview, calendar, onNavigateToInvestors }: ReportingWorkspaceSectionProps) {
   const availableMonths = useMemo(
     () =>
       Array.from(new Set(calendar.events.map((e) => toMonthKey(e.date)))).map(
@@ -147,7 +148,12 @@ function ReportingWorkspaceSection({ overview, calendar }: ReportingWorkspaceSec
 
             <div className="stack-list">
               {overview.validationChecks.map((check) => (
-                <article key={check.id} className="stack-card">
+                <article
+                  key={check.id}
+                  className={`stack-card${check.status !== 'ok' && onNavigateToInvestors ? ' stack-card--clickable' : ''}`}
+                  onClick={check.status !== 'ok' && onNavigateToInvestors ? onNavigateToInvestors : undefined}
+                  style={check.status !== 'ok' && onNavigateToInvestors ? { cursor: 'pointer' } : undefined}
+                >
                   <div className="stack-card__row">
                     <h3 className="stack-card__title">{check.label}</h3>
                     <span className={getToneClassName(check.status)}>
@@ -158,7 +164,12 @@ function ReportingWorkspaceSection({ overview, calendar }: ReportingWorkspaceSec
                           : 'Blokkerer'}
                     </span>
                   </div>
-                  <p className="stack-card__body">{check.detail}</p>
+                  <p className="stack-card__body">
+                    {check.detail}
+                    {check.status !== 'ok' && onNavigateToInvestors ? (
+                      <span className="stack-card__link"> → Vis investorer</span>
+                    ) : null}
+                  </p>
                 </article>
               ))}
             </div>

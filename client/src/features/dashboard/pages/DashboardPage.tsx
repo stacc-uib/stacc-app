@@ -219,8 +219,17 @@ function DashboardPage() {
   const netFlowKpi = fundOverview.flowSection.kpis.find((k) => k.id === 'net-flow');
   const top5 = fundOverview.shareholderSection.rows.slice(0, 5);
   const pepOverdue = complianceStats.metrics.find((m) => m.id === 'pep-overdue');
+  const pepDueSoon = complianceStats.metrics.find((m) => m.id === 'pep-due-soon');
   const missingData = complianceStats.metrics.find((m) => m.id === 'missing-required-data');
+  const reportingReady = complianceStats.metrics.find((m) => m.id === 'reporting-ready');
   const nextPriority = complianceStats.priorityItems[0];
+
+  // Compliance health: red if any critical, yellow if any warning, green otherwise
+  const hasCritical = complianceStats.metrics.some((m) => m.tone === 'critical');
+  const hasWarning = complianceStats.metrics.some((m) => m.tone === 'warning');
+  const complianceHealth = hasCritical ? 'critical' : hasWarning ? 'warning' : 'ok';
+  const complianceHealthLabel = hasCritical ? 'Krever handling' : hasWarning ? 'Avvik' : 'Alt i orden';
+  const complianceHealthColor = toneColor[complianceHealth];
 
   return (
     <div className="content-card">
@@ -260,18 +269,22 @@ function DashboardPage() {
           </SummaryCard>
         </div>
         <div className="col-12 col-md-4">
-          <SummaryCard title="Compliance" description="PEP-kontroll og neste aktivitet">
+          <SummaryCard title="Compliance" description="Samlet status og neste oppgave">
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.2rem 0', marginBottom: '0.25rem' }}>
+              <span style={{ width: 10, height: 10, borderRadius: '50%', background: complianceHealthColor, flexShrink: 0 }} />
+              <span style={{ fontSize: '0.82rem', fontWeight: 600, color: complianceHealthColor }}>{complianceHealthLabel}</span>
+            </div>
             {pepOverdue && (
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0.2rem 0' }}>
-                <span style={{ fontSize: '0.78rem', color: '#6b7280' }}>{pepOverdue.label}</span>
-                <ToneTag tone={pepOverdue.tone} label={pepOverdue.value} />
-              </div>
+              <StatRow label={pepOverdue.label} value={pepOverdue.value} />
+            )}
+            {pepDueSoon && Number(pepDueSoon.value) > 0 && (
+              <StatRow label={pepDueSoon.label} value={pepDueSoon.value} />
             )}
             {missingData && (
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0.2rem 0' }}>
-                <span style={{ fontSize: '0.78rem', color: '#6b7280' }}>{missingData.label}</span>
-                <ToneTag tone={missingData.tone} label={missingData.value} />
-              </div>
+              <StatRow label={missingData.label} value={missingData.value} />
+            )}
+            {reportingReady && (
+              <StatRow label={reportingReady.label} value={reportingReady.value} />
             )}
             {nextPriority && (
               <div
@@ -291,6 +304,23 @@ function DashboardPage() {
                 </p>
               </div>
             )}
+            <button
+              type="button"
+              onClick={() => { window.location.hash = '#rapporter/oversikt'; }}
+              style={{
+                marginTop: '0.5rem',
+                background: 'none',
+                border: 'none',
+                padding: 0,
+                fontSize: '0.78rem',
+                fontWeight: 600,
+                color: '#111827',
+                cursor: 'pointer',
+                opacity: 0.7,
+              }}
+            >
+              Åpne arbeidskø →
+            </button>
           </SummaryCard>
         </div>
         <div className="col-12 col-md-4">

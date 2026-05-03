@@ -23,6 +23,7 @@ function ComplianceOverviewView({
       <ReportingWorkspaceSection
         overview={pageData.reportingWorkspace}
         calendar={pageData.calendar}
+        onNavigateToInvestors={() => onOpenSubpage('investorer')}
       />
     </div>
   );
