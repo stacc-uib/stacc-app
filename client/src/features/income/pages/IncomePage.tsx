@@ -1,5 +1,7 @@
 import IncomeSubnav from '../components/IncomeSubnav';
 import IncomeTable from '../components/IncomeTable';
+import IncomeGraph from '../components/IncomeGraph';
+import IncomeOverview from '../components/IncomeOverview';
 import getIncomeData from '../lib/getIncomeData';
 import IncomePeriodFilter from '../components/IncomePeriodFilter';
 import { applyDateRange, getPresetRange, getIncomeDateRange, type Preset } from '../lib/getIncomeDateRange';
@@ -18,13 +20,13 @@ const incomeSubnavItems = [
         description: '',
     },
     {
-        id: 'fondsinntekter',
-        label: 'Fondsinntekter',
+        id: 'tabell',
+        label: 'Tabell',
         description: '',
     },
     {
-        id: 'projeksjoner',
-        label: 'Projeksjoner',
+        id: 'grafer',
+        label: 'Grafer',
         description: '',
     },
 ] as const;
@@ -92,7 +94,7 @@ function IncomePage() {
             <h1>Inntekt</h1>
 
             <p className="content-card__description">
-                Placeholder for inntektsanalyse, honorarutvikling og relaterte oversikter.
+                Inntektsoversikt og projeksjoner.
             </p>
 
             <IncomeSubnav
@@ -102,18 +104,29 @@ function IncomePage() {
             />
 
             {activeSubpageId === 'oversikt' ? (
-                <div className="content-card__placeholder">
-                    Placeholder inntekt.
-                </div>
+                <IncomeOverview 
+                    incomeData={incomeData} 
+                    trades={trades}
+                    fundPrices={fundPrices}
+                />
             ) : null}
 
-            {activeSubpageId === 'projeksjoner' ? (
-                <div className="content-card__placeholder">
-                    Placeholder inntekt.
-                </div>
+            {activeSubpageId === 'grafer' ? (
+                <>
+                    <IncomePeriodFilter
+                        range={range}
+                        minDate={minDate}
+                        maxDate={maxDate}
+                        activePreset={activePreset}
+                        onRangeChange={handleRangeChange}
+                        onPresetSelect={handlePresetSelect}
+                        onReset={handleReset}
+                    />
+                    <IncomeGraph incomeData={filteredIncomeData} investors={investors} />
+                    </>
             ) : null}
 
-            {activeSubpageId === 'fondsinntekter' ? (
+            {activeSubpageId === 'tabell' ? (
                 <>
                     <IncomePeriodFilter
                         range={range}

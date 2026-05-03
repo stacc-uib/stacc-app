@@ -6,8 +6,8 @@ import type { FundPrice } from "../types/fundPrice";
 import type { Investor } from "../types/investor";
 import type { Trade } from "../types/trade";
 
-const CLASS_B_MONTHLY_RATE = (1 + 0.0075) ** (1 / 12) - 1;
-const CLASS_C_MONTHLY_RATE = (1 + 0.01) ** (1 / 12) - 1;
+const CLASS_B_MONTHLY_RATE = 0.0075 / 12;
+const CLASS_C_MONTHLY_RATE = 0.01 / 12;
 
 export type IncomeEvent = {
     date: string;
@@ -17,7 +17,7 @@ export type IncomeEvent = {
     price: number;
     feeRate: number;
     amount: number;
-    incomeType: "management fee" | "dividend";
+    incomeType: "management fee";
 }
 
 export type IncomeData = {
@@ -48,21 +48,18 @@ export default function getIncomeData(
     let trade_idx = 0;
     const tradesLength = validTrades.length;
 
+    fundPrices.sort((a,b) => new Date(a.date!).getTime() - new Date(b.date!).getTime());
+    fundPrices.filter((fp) => {
+        fp.fundName !== null &&
+        fp.date !== null &&
+        fp.classA !== null &&
+        fp.classB !== null &&
+        fp.classC !== null
+    });
+
     for (const fp of fundPrices) {
-        if (fp.fundName === null ||
-           fp.date === null ||
-           fp.classA === null ||
-           fp.classB === null ||
-           fp.classC === null) {
-            continue;
-        }
-
-        if (fp.classB == null) {
-            console.log("Hold on...");
-        }
-
-        while (trade_idx < tradesLength && validTrades[trade_idx].tradeDate! < fp.date) {
-            let currTrade = validTrades[trade_idx];
+        while (trade_idx < tradesLength && validTrades[trade_idx].tradeDate! < fp.date!) {
+            let currTrade = validTrades[trade_idx++];
 
             if (!customerHoldings.has(currTrade.customerId)) {
                 customerHoldings.set(currTrade.customerId, new Map<string, number>());
@@ -85,33 +82,35 @@ export default function getIncomeData(
             if (currCustomerHolding.get(currTrade.shareClass!)! < 0) {
                 throw new Error("Total holding went negative...");
             }
-
-            trade_idx += 1;
         }
 
         // Calculate income events
         for (const [customerId, holdings] of customerHoldings) {
             for (const [shareClass, units] of holdings) {
+                if (!shareClass.includes(fp.fundName!)) {
+                    continue;
+                }
+
                 if (shareClass[shareClass.length - 1] == 'B') {
                     incomeEvents.push({
-                        date: fp.date,
+                        date: fp.date!,
                         customerId: customerId,
                         shareClass: shareClass,
                         units: units,
-                        price: fp.classB,
+                        price: fp.classB!,
                         feeRate: CLASS_B_MONTHLY_RATE,
-                        amount: units * fp.classB * CLASS_B_MONTHLY_RATE,
+                        amount: units * fp.classB! * CLASS_B_MONTHLY_RATE,
                         incomeType: "management fee"
                     } as IncomeEvent);
                 } else if (shareClass[shareClass.length - 1] == 'C') {
                     incomeEvents.push({
-                        date: fp.date,
+                        date: fp.date!,
                         customerId: customerId,
                         shareClass: shareClass,
                         units: units,
-                        price: fp.classC,
+                        price: fp.classC!,
                         feeRate: CLASS_C_MONTHLY_RATE,
-                        amount: units * fp.classC * CLASS_C_MONTHLY_RATE,
+                        amount: units * fp.classC! * CLASS_C_MONTHLY_RATE,
                         incomeType: "management fee"
                     } as IncomeEvent);
                 } else if (shareClass[shareClass.length - 1] != 'A'){
@@ -120,6 +119,7 @@ export default function getIncomeData(
             }
         }
     }
+
     return { events: incomeEvents } as IncomeData;
 }
 
