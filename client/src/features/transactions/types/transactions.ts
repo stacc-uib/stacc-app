@@ -6,6 +6,7 @@ export type Transaction = {
   shareClass: string | null;
   tradeDate: string | null;
   settlementDate: string | null;
+  settlementStatus?: 'ikke-oppgjort' | 'delvis-oppgjort' | 'oppgjort';
   transactionType: "Andre kostnader" | "Kildeskatt" | "Kjøp" | "Kostnadsførte kjøpsomk." | "Realisert valutatap (Disagio)" | "Salg" | "Tildelt ved aksjesplitt" | "Urealisert gevinst" | "Urealisert tap" | "Utbytte" | null;
   units: number | null;
   price: number | null;

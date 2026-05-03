@@ -2,8 +2,8 @@ import type { Transaction } from "../types/transactions";
 import { applyDateRange } from "./getTransactionsDateRange";
 
 export type TransactionsGrowth = {
-    countGrowthPct: number | null;
-    amountGrowthPct: number | null;
+    countGrowthPct: number;
+    amountGrowthPct: number;
 };
 
 export const getTransactionsGrowth = (
@@ -24,11 +24,11 @@ export const getTransactionsGrowth = (
 
     const countGrowthPct = firstHalf.length > 0
         ? ((secondHalf.length - firstHalf.length) / firstHalf.length) * 100
-        : null;
+        : secondHalf.length > 0 ? 100 : 0;
 
     const amountGrowthPct = firstAmount > 0
         ? ((secondAmount - firstAmount) / firstAmount) * 100
-        : null;
+        : secondAmount > 0 ? 100 : 0;
 
     return { countGrowthPct, amountGrowthPct };
 };

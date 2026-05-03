@@ -8,9 +8,31 @@ import { getTransactionsChartData } from '../lib/getTransactionsChartData';
 import { getTransactionsGrowth } from '../lib/getTransactionsGrowth';
 import { getTransactionsKpi } from '../lib/getTransactionsKpi';
 import { getTransactionsPageData } from '../lib/getTransactionsPageData';
+import { useTradesContext } from '../../trades/TradesContext';
+import type { Transaction } from '../types/transactions';
 
 function TransactionsPage() {
-  const { transactions } = getTransactionsPageData();
+  const { transactions: staticTransactions } = getTransactionsPageData();
+  const { registeredTrades } = useTradesContext();
+
+  const transactions = useMemo((): Transaction[] => {
+    const newTrades: Transaction[] = registeredTrades.map((t) => ({
+      id: t.id,
+      customerId: t.customerId,
+      customerName: t.customerName,
+      fundName: t.fundName,
+      shareClass: t.shareClass,
+      tradeDate: t.tradeDate,
+      settlementDate: t.settlementStatus === 'oppgjort' ? t.settlementDate : null,
+      settlementStatus: t.settlementStatus,
+      transactionType: t.transactionType as Transaction['transactionType'],
+      units: t.units,
+      price: t.price,
+      amount: t.amount,
+      unitEffect: t.unitEffect,
+    }));
+    return [...newTrades, ...staticTransactions];
+  }, [registeredTrades, staticTransactions]);
   const { from: minDate, to: maxDate } = getTransactionsDateRange(transactions);
 
   const [range, setRange] = useState<DateRange>({ from: minDate, to: maxDate });
