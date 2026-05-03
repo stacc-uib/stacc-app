@@ -1,6 +1,14 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { getTradeRegistrationData } from '../lib/getTradeRegistrationData';
+import { useTradesContext } from '../TradesContext';
 import type { TradeDirection, TradeSettlementStatus } from '../types/trades';
+
+// Maps fund id to the full fund name used in fundPrices.json / trades.json
+const FUND_ID_TO_FULL_NAME: Record<string, string> = {
+  'escali-global': 'Escali Global AS',
+  'escali-norden': 'Escali Norden AS',
+  'escali-kreditt': 'Escali Kreditt AS',
+};
 
 function formatCurrency(value: number) {
   return new Intl.NumberFormat('nb-NO', {
@@ -55,6 +63,7 @@ function isQuarterStart(dateString: string) {
 
 function TradesPage() {
   const tradeData = useMemo(() => getTradeRegistrationData(), []);
+  const { addTrade, registeredTrades } = useTradesContext();
   const investorPickerRef = useRef<HTMLDivElement | null>(null);
   const [investorQuery, setInvestorQuery] = useState('');
   const [selectedInvestorId, setSelectedInvestorId] = useState('');
@@ -70,6 +79,7 @@ function TradesPage() {
     useState<TradeSettlementStatus>('ikke-oppgjort');
   const [referenceText, setReferenceText] = useState('');
   const [lastActionMessage, setLastActionMessage] = useState('');
+  const [tradeDone, setTradeDone] = useState<{ summary: string; direction: TradeDirection } | null>(null);
 
   const filteredInvestors = useMemo(() => {
     const normalizedQuery = investorQuery.trim().toLowerCase();
@@ -278,6 +288,30 @@ function TradesPage() {
         direction === 'kjop' ? 'kjøp' : 'salg'
       } ${formatNumber(unitsValue)} andeler i ${selectedFund.shortName} ${selectedClass.label.toLowerCase()}.`,
     );
+
+    if (action === 'bekreftet') {
+      const fullFundName = FUND_ID_TO_FULL_NAME[selectedFund.id] ?? selectedFund.shortName;
+      const shareClassLabel = `${fullFundName} - ${selectedClass.label}`;
+      setTradeDone({
+        summary: `${selectedInvestor.investorName} — ${direction === 'kjop' ? 'Kjøp' : 'Salg'} ${formatNumber(unitsValue)} andeler i ${selectedFund.shortName} ${selectedClass.label.toLowerCase()} til ${formatCurrency(amountValue)}`,
+        direction,
+      });
+      addTrade({
+        id: `trade-${1502 + registeredTrades.length}`,
+        customerId: selectedInvestor.customerId,
+        customerName: selectedInvestor.investorName,
+        fundName: fullFundName,
+        shareClass: shareClassLabel,
+        tradeDate: tradeDate,
+        settlementDate: tradeDate,
+        transactionType: direction === 'kjop' ? 'Kjøp' : 'Salg',
+        units: unitsValue,
+        price: priceValue,
+        amount: amountValue,
+        unitEffect: direction === 'kjop' ? unitsValue : -unitsValue,
+        settlementStatus: settlementStatus,
+      });
+    }
   }
 
   function handleReset() {
@@ -291,6 +325,9 @@ function TradesPage() {
     setSettlementStatus('ikke-oppgjort');
     setReferenceText('');
     setLastActionMessage('');
+    setSelectedInvestorId('');
+    setInvestorQuery('');
+    setTradeDone(null);
   }
 
   function handleInvestorSelect(customerId: string) {
@@ -299,6 +336,38 @@ function TradesPage() {
     setSelectedInvestorId(customerId);
     setInvestorQuery(investor?.investorName ?? '');
     setIsInvestorPickerOpen(false);
+  }
+
+  if (tradeDone) {
+    return (
+      <div className="content-card">
+        <p className="content-card__eyebrow">Handler og andelseierregister</p>
+        <h1>Registrer ny handel</h1>
+        <section className="feature-section feature-section--trade-registration">
+          <div className="feature-section__surface trade-registration">
+            <div className="trade-done-screen">
+              <div className="trade-done-screen__icon" aria-hidden="true">
+                <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg" width="56" height="56">
+                  <circle cx="24" cy="24" r="24" fill="#dcfce7" />
+                  <path d="M14 25l7 7 13-14" stroke="#15803d" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+              </div>
+              <h2 className="trade-done-screen__title">Handel registrert!</h2>
+              <p className="trade-done-screen__summary">{tradeDone.summary}</p>
+              <div className="trade-done-screen__actions">
+                <button
+                  type="button"
+                  className="queue-action queue-action--primary"
+                  onClick={handleReset}
+                >
+                  Registrer ny handel
+                </button>
+              </div>
+            </div>
+          </div>
+        </section>
+      </div>
+    );
   }
 
   return (

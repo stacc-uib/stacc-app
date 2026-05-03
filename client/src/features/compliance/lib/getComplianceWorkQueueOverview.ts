@@ -58,6 +58,7 @@ export function getComplianceWorkQueueOverview(
       actionLabel: 'Gjennomgå',
       actionType: 'gjennomga',
       targetSubpageId: 'investorer',
+      customerId: row.customerId,
       summary: `Status ${row.reviewStatus.toLowerCase()} med ${row.amlRiskLevel.toLowerCase()} risiko og dokumentasjon: ${row.documentationStatus.toLowerCase()}.`,
       filterTags: [
         'alle',
@@ -104,6 +105,7 @@ export function getComplianceWorkQueueOverview(
         actionLabel: 'Åpne sak',
         actionType: 'apne-sak',
         targetSubpageId: 'investorer',
+        customerId: row.customerId,
         summary: `Investor er markert som ${row.investorCategory.toLowerCase()} med status ${formatClassificationStatus(row.classificationStatus)}.`,
         filterTags: [
           'alle',

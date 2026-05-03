@@ -1,4 +1,4 @@
-﻿import type { ComponentType } from 'react';
+﻿﻿﻿import type { ComponentType } from 'react';
 import CompliancePage from '../../features/compliance/pages/CompliancePage';
 import CustomersPage from '../../features/customers/pages/CustomersPage';
 import DashboardPage from '../../features/dashboard/pages/DashboardPage';
@@ -217,14 +217,13 @@ function TradeIcon() {
 
 function DividendIcon() {
   return (
-    <svg viewBox="0 0 24 24" aria-hidden="true" className="app-icon">
-      <path
-        d="M12 5v14M8.5 8.5c0-1.7 1.5-3 3.5-3s3.5 1.3 3.5 3-1.5 3-3.5 3-3.5 1.3-3.5 3 1.5 3 3.5 3 3.5-1.3 3.5-3"
+    <svg viewBox="-4 -4 24 24" aria-hidden="true" className="app-icon">
+      <path 
+        d="M12.136.326A1.5 1.5 0 0 1 14 1.78V3h.5A1.5 1.5 0 0 1 16 4.5v9a1.5 1.5 0 0 1-1.5 1.5h-13A1.5 1.5 0 0 1 0 13.5v-9a1.5 1.5 0 0 1 1.432-1.499zM5.562 3H13V1.78a.5.5 0 0 0-.621-.484zM1.5 4a.5.5 0 0 0-.5.5v9a.5.5 0 0 0 .5.5h13a.5.5 0 0 0 .5-.5v-9a.5.5 0 0 0-.5-.5z"
         fill="none"
         stroke="currentColor"
         strokeLinecap="round"
-        strokeLinejoin="round"
-        strokeWidth="1.8"
+        strokeWidth="1"
       />
     </svg>
   );

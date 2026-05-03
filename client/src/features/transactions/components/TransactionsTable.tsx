@@ -158,6 +158,7 @@ function TransactionsTable({ transactions }: Props) {
         <table className="data-table compliance-registry__table" style={{ fontSize: '0.82rem', minWidth: 'unset' }}>
           <thead>
             <tr>
+              <th>ID</th>
               <th>Kunde</th>
               <th>Dato</th>
               <th>Fond</th>
@@ -172,10 +173,15 @@ function TransactionsTable({ transactions }: Props) {
           <tbody>
             {visible.map((tx) => (
               <tr key={tx.id}>
+                <td style={{ color: '#9ca3af', fontSize: '0.75rem' }}>{tx.id.replace('trade-', '').split('-')[0]}</td>
                 <td>
-                  <div className="table-primary-cell">
-                    <strong>{tx.customerName}</strong>
-                  </div>
+                  <button
+                    type="button"
+                    onClick={() => { window.location.hash = `#kundeoversikt/${tx.customerId}`; }}
+                    style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', textAlign: 'left' }}
+                  >
+                    <strong style={{ color: '#111827' }}>{tx.customerName}</strong>
+                  </button>
                 </td>
                 <td>{formatDate(tx.tradeDate ?? '')}</td>
                 <td>{tx.fundName ?? ''}</td>
@@ -185,16 +191,23 @@ function TransactionsTable({ transactions }: Props) {
                 <td style={{ textAlign: 'right' }}>{formatNumber(tx.price ?? 0)}</td>
                 <td style={{ textAlign: 'right' }}>{formatNumber(tx.amount ?? 0)}</td>
                 <td>
-                  <span className={`status-badge ${tx.settlementDate ? 'status-badge--ok' : 'status-badge--neutral'}`}>
-                    {tx.settlementDate ? 'Oppgjort' : 'Ikke oppgjort'}
-                  </span>
+                  {(() => {
+                    const status = tx.settlementStatus ?? (tx.settlementDate ? 'oppgjort' : 'ikke-oppgjort');
+                    const badge =
+                      status === 'oppgjort'
+                        ? { label: 'Oppgjort', cls: 'status-badge--ok' }
+                        : status === 'delvis-oppgjort'
+                        ? { label: 'Delvis oppgjort', cls: 'status-badge--warning' }
+                        : { label: 'Ikke oppgjort', cls: 'status-badge--critical' };
+                    return <span className={`status-badge ${badge.cls}`}>{badge.label}</span>;
+                  })()}
                 </td>
               </tr>
             ))}
 
             {visible.length === 0 && (
               <tr>
-                <td colSpan={9} style={{ textAlign: 'center', padding: '2rem', color: '#6b7280' }}>
+                <td colSpan={10} style={{ textAlign: 'center', padding: '2rem', color: '#6b7280' }}>
                   Ingen transaksjoner funnet
                 </td>
               </tr>

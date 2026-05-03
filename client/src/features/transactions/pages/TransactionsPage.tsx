@@ -8,15 +8,47 @@ import { getTransactionsChartData } from '../lib/getTransactionsChartData';
 import { getTransactionsGrowth } from '../lib/getTransactionsGrowth';
 import { getTransactionsKpi } from '../lib/getTransactionsKpi';
 import { getTransactionsPageData } from '../lib/getTransactionsPageData';
+import { useTradesContext } from '../../trades/TradesContext';
+import type { Transaction } from '../types/transactions';
 
 function TransactionsPage() {
-  const { transactions } = getTransactionsPageData();
+  const { transactions: staticTransactions } = getTransactionsPageData();
+  const { registeredTrades } = useTradesContext();
+
+  const transactions = useMemo((): Transaction[] => {
+    const newTrades: Transaction[] = registeredTrades.map((t) => ({
+      id: t.id,
+      customerId: t.customerId,
+      customerName: t.customerName,
+      fundName: t.fundName,
+      shareClass: t.shareClass,
+      tradeDate: t.tradeDate,
+      settlementDate: t.settlementStatus === 'oppgjort' ? t.settlementDate : null,
+      settlementStatus: t.settlementStatus,
+      transactionType: t.transactionType as Transaction['transactionType'],
+      units: t.units,
+      price: t.price,
+      amount: t.amount,
+      unitEffect: t.unitEffect,
+    }));
+    return [...newTrades, ...staticTransactions];
+  }, [registeredTrades, staticTransactions]);
   const { from: minDate, to: maxDate } = getTransactionsDateRange(transactions);
 
   const [range, setRange] = useState<DateRange>({ from: minDate, to: maxDate });
   const [activePreset, setActivePreset] = useState<Preset | null>(null);
+  const [fundFilter, setFundFilter] = useState('');
 
-  const filtered = useMemo(() => applyDateRange(transactions, range), [transactions, range]);
+  const funds = useMemo(() =>
+    Array.from(new Set(transactions.map((tx) => tx.fundName as string))).sort(),
+    [transactions]
+  );
+
+  const filtered = useMemo(() => {
+    const byDate = applyDateRange(transactions, range);
+    return fundFilter ? byDate.filter((tx) => tx.fundName === fundFilter) : byDate;
+  }, [transactions, range, fundFilter]);
+
   const kpi = useMemo(() => getTransactionsKpi(filtered), [filtered]);
   const chartData = useMemo(() => getTransactionsChartData(filtered), [filtered]);
   const growth = useMemo(() => getTransactionsGrowth(filtered, range.from, range.to), [filtered, range]);
@@ -34,14 +66,15 @@ function TransactionsPage() {
   function handleReset() {
     setActivePreset(null);
     setRange({ from: minDate, to: maxDate });
+    setFundFilter('');
   }
 
   return (
     <div className="content-card">
-      <p className="content-card__eyebrow">Transactions</p>
+      <p className="content-card__eyebrow">Transaksjoner</p>
       <h1>Transaksjoner</h1>
       <p className="content-card__description">
-        Transaksjonsoversikt og utvikling på tvers av fond og kunder.
+        Transaksjoner på tvers av fond og kunder.
       </p>
 
       <TransactionsPeriodFilter
@@ -49,8 +82,11 @@ function TransactionsPage() {
         minDate={minDate}
         maxDate={maxDate}
         activePreset={activePreset}
+        funds={funds}
+        fundFilter={fundFilter}
         onRangeChange={handleRangeChange}
         onPresetSelect={handlePresetSelect}
+        onFundChange={setFundFilter}
         onReset={handleReset}
       />
       <TransactionsKpiRow kpi={kpi} />

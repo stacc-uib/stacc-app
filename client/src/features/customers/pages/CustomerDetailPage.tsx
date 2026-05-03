@@ -1,9 +1,11 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
+import fundPricesData from '../../../mocks/fundPrices.json';
 import investorsData from '../../../mocks/investors.json';
 import tradesData from '../../../mocks/trades.json';
-import CustomerDetailFundFilter from '../components/CustomerDetailFundFilter';
-import CustomerDetailTypeFilter from '../components/CustomerDetailTypeFilter';
-import CustomerDetailYearFilter from '../components/CustomerDetailYearFilter';
+import MultiSelectFilter from '../../../shared/components/MultiSelectFilter';
+import { getCustomerComplianceData } from '../../../shared/lib/getCustomerComplianceData';
+import { formatCurrency, formatDate } from '../../../shared/utils/format';
+import { useTradesContext } from '../../trades/TradesContext';
 import ActivityPageSizeSelector, { PageSize } from '../components/ActivityPageSizeSelector';
 import '../components/customerDetail.css';
 
@@ -31,18 +33,38 @@ type InvestorRecord = {
   email: string | null;
 };
 
+type FundPriceRecord = {
+  fundName: string;
+  date: string;
+  classA: number;
+  classB: number;
+  classC: number;
+};
+
+const latestPriceByFund = new Map<string, { classA: number; classB: number; classC: number }>();
+const latestDateByFund = new Map<string, string>();
+for (const record of fundPricesData as FundPriceRecord[]) {
+  const prev = latestDateByFund.get(record.fundName);
+  if (!prev || record.date > prev) {
+    latestDateByFund.set(record.fundName, record.date);
+    latestPriceByFund.set(record.fundName, {
+      classA: record.classA,
+      classB: record.classB,
+      classC: record.classC,
+    });
+  }
+}
+
+function getShareClassPriceKey(shareClass: string): 'classA' | 'classB' | 'classC' {
+  if (shareClass.includes('Klasse B')) return 'classB';
+  if (shareClass.includes('Klasse C')) return 'classC';
+  return 'classA';
+}
+
 function getFundType(fundName: string): FundType {
   if (fundName.includes('Norden')) return 'Norden';
   if (fundName.includes('Kreditt')) return 'Kreditt';
   return 'Global';
-}
-
-function formatCurrency(n: number) {
-  return n.toLocaleString('nb-NO', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-}
-
-function formatDate(d: string) {
-  return new Date(d).toLocaleDateString('nb-NO', { year: 'numeric', month: '2-digit', day: '2-digit' });
 }
 
 // ---- SVG Pie Chart ----
@@ -62,23 +84,13 @@ function PieChart({ slices }: { slices: Slice[] }) {
 
   if (total === 0) return <p className="cd-pie-empty">Ingen data</p>;
 
-  // Single slice: draw a full circle instead of an arc (arc with identical start/end is invisible)
   if (slices.length === 1) {
     return (
       <div className="cd-pie-container">
         <svg viewBox="0 0 220 220" className="cd-pie-svg" aria-label="Fondfordeling">
           <circle cx={CX} cy={CY} r={R} fill={FUND_COLORS[slices[0].type]} />
         </svg>
-        <ul className="cd-pie-legend">
-          {slices.map((sl) => (
-            <li key={sl.type} className="cd-pie-legend-item">
-              <span className="cd-pie-dot" style={{ background: FUND_COLORS[sl.type] }} />
-              <span className="cd-pie-legend-label">{sl.type}</span>
-              <span className="cd-pie-legend-pct">{sl.pct.toFixed(1)}%</span>
-              <span className="cd-pie-legend-amount">{sl.value.toLocaleString('nb-NO', { minimumFractionDigits: 0, maximumFractionDigits: 0 })} kr</span>
-            </li>
-          ))}
-        </ul>
+        <PieLegend slices={slices} />
       </div>
     );
   }
@@ -96,7 +108,6 @@ function PieChart({ slices }: { slices: Slice[] }) {
       d: `M ${CX} ${CY} L ${x1} ${y1} A ${R} ${R} 0 ${largeArc} 1 ${x2} ${y2} Z`,
       color: FUND_COLORS[sl.type],
       type: sl.type,
-      pct: sl.pct,
     };
   });
 
@@ -107,46 +118,113 @@ function PieChart({ slices }: { slices: Slice[] }) {
           <path key={p.type} d={p.d} fill={p.color} stroke="#fff" strokeWidth="2" />
         ))}
       </svg>
-      <ul className="cd-pie-legend">
-        {slices.map((sl) => (
-          <li key={sl.type} className="cd-pie-legend-item">
-            <span className="cd-pie-dot" style={{ background: FUND_COLORS[sl.type] }} />
-            <span className="cd-pie-legend-label">{sl.type}</span>
-            <span className="cd-pie-legend-pct">{sl.pct.toFixed(1)}%</span>
-            <span className="cd-pie-legend-amount">{sl.value.toLocaleString('nb-NO', { minimumFractionDigits: 0, maximumFractionDigits: 0 })} kr</span>
-          </li>
-        ))}
-      </ul>
+      <PieLegend slices={slices} />
     </div>
   );
+}
+
+function PieLegend({ slices }: { slices: Slice[] }) {
+  return (
+    <ul className="cd-pie-legend">
+      {slices.map((sl) => (
+        <li key={sl.type} className="cd-pie-legend-item">
+          <span className="cd-pie-dot" style={{ background: FUND_COLORS[sl.type] }} />
+          <span className="cd-pie-legend-label">{sl.type}</span>
+          <span className="cd-pie-legend-pct">{sl.pct.toFixed(1)}%</span>
+          <span className="cd-pie-legend-amount">
+            {sl.value.toLocaleString('nb-NO', {
+              minimumFractionDigits: 0,
+              maximumFractionDigits: 0,
+            })}{' '}
+            kr
+          </span>
+        </li>
+      ))}
+    </ul>
+  );
+}
+
+// ---- Mock contact generators ----
+function mockEmail(name: string): string {
+  const normalized = name
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-z0-9\s]/g, '')
+    .trim();
+  const parts = normalized.split(/\s+/);
+  const local = parts.length >= 2 ? `${parts[0]}.${parts[parts.length - 1]}` : parts[0];
+  return `${local}@outlook.com`;
+}
+
+function mockPhone(customerId: string): string {
+  const digits = customerId.replace(/\D/g, '').padEnd(7, '0').slice(0, 7);
+  return `+47 ${digits.slice(0, 3)} ${digits.slice(3, 5)} ${digits.slice(5, 7)}`;
+}
+
+// ---- Compliance badge helper ----
+function getComplianceBadgeClass(status: string): string {
+  switch (status) {
+    case 'pep-forfalt':
+    case 'ikke-profesjonell':
+      return 'status-badge status-badge--critical';
+    case 'mangler-naering':
+    case 'pep-forfaller-snart':
+      return 'status-badge status-badge--warning';
+    default:
+      return 'status-badge status-badge--ok';
+  }
 }
 
 // ---- Main component ----
 function CustomerDetailPage({ customerId }: { customerId: string }) {
   const investor = (investorsData as InvestorRecord[]).find(
-    (inv) => inv.customerId === customerId
+    (inv) => inv.customerId === customerId,
   );
+
+  const { registeredTrades } = useTradesContext();
 
   const trades = useMemo(
     () =>
-      (tradesData as TradeRecord[])
-        .filter((t) => t.customerId === customerId)
-        .sort((a, b) => new Date(b.tradeDate).getTime() - new Date(a.tradeDate).getTime()),
-    [customerId]
+      [
+        ...(registeredTrades
+          .filter((t) => t.customerId === customerId)
+          .map((t) => ({
+            id: t.id,
+            customerId: t.customerId,
+            fundName: t.fundName,
+            shareClass: t.shareClass,
+            tradeDate: t.tradeDate,
+            transactionType: t.transactionType,
+            units: t.units,
+            price: t.price,
+            amount: t.amount,
+            unitEffect: t.unitEffect,
+            settlementStatus: t.settlementStatus,
+          }))),
+        ...(tradesData as TradeRecord[]).filter((t) => t.customerId === customerId),
+      ].sort((a, b) => new Date(b.tradeDate).getTime() - new Date(a.tradeDate).getTime()),
+    [customerId, registeredTrades],
+  );
+
+  // Only settled trades affect holdings; static mock trades are assumed oppgjort
+  const settledTrades = useMemo(
+    () => trades.filter((t) => !('settlementStatus' in t) || (t as { settlementStatus?: string }).settlementStatus === 'oppgjort'),
+    [trades],
   );
 
   const allFundOptions = useMemo(() => {
-    const funds = new Set(trades.map(t => t.fundName));
+    const funds = new Set(trades.map((t) => t.fundName));
     return Array.from(funds).sort();
   }, [trades]);
 
   const allTypeOptions = useMemo(() => {
-    const types = new Set(trades.map(t => t.transactionType));
+    const types = new Set(trades.map((t) => t.transactionType));
     return Array.from(types).sort();
   }, [trades]);
 
   const allYearOptions = useMemo(() => {
-    const years = new Set(trades.map(t => String(new Date(t.tradeDate).getFullYear())));
+    const years = new Set(trades.map((t) => String(new Date(t.tradeDate).getFullYear())));
     return Array.from(years).sort((a, b) => Number(b) - Number(a));
   }, [trades]);
 
@@ -155,43 +233,82 @@ function CustomerDetailPage({ customerId }: { customerId: string }) {
   const [selectedYears, setSelectedYears] = useState<string[]>([]);
   const [pageSize, setPageSize] = useState<PageSize>(10);
 
-  useEffect(() => { setSelectedFunds([...allFundOptions]); }, [allFundOptions]);
-  useEffect(() => { setSelectedTypes([...allTypeOptions]); }, [allTypeOptions]);
-  useEffect(() => { setSelectedYears([...allYearOptions]); }, [allYearOptions]);
+  useEffect(() => {
+    setSelectedFunds([...allFundOptions]);
+  }, [allFundOptions]);
+  useEffect(() => {
+    setSelectedTypes([...allTypeOptions]);
+  }, [allTypeOptions]);
+  useEffect(() => {
+    setSelectedYears([...allYearOptions]);
+  }, [allYearOptions]);
 
   const visibleTrades = useMemo(() => {
     const activeFunds = selectedFunds.length === 0 ? allFundOptions : selectedFunds;
     const activeTypes = selectedTypes.length === 0 ? allTypeOptions : selectedTypes;
     const activeYears = selectedYears.length === 0 ? allYearOptions : selectedYears;
-    return trades.filter(t =>
-      activeFunds.includes(t.fundName) &&
-      activeTypes.includes(t.transactionType) &&
-      activeYears.includes(String(new Date(t.tradeDate).getFullYear()))
+    return trades.filter(
+      (t) =>
+        activeFunds.includes(t.fundName) &&
+        activeTypes.includes(t.transactionType) &&
+        activeYears.includes(String(new Date(t.tradeDate).getFullYear())),
     );
   }, [trades, selectedFunds, selectedTypes, selectedYears, allFundOptions, allTypeOptions, allYearOptions]);
 
   const fundHoldings = useMemo(() => {
-    const map = new Map<FundType, number>();
-    trades.forEach((t) => {
-      const ft = getFundType(t.fundName);
-      const isSalg = t.transactionType.toLowerCase() === 'salg';
-      const value = isSalg ? -t.amount : t.amount;
-      map.set(ft, (map.get(ft) ?? 0) + value);
+    // Accumulate units per instrument (shareClass), then value by latest NAV price
+    // Only settled trades count toward holdings
+    const instrumentUnits = new Map<string, { fundType: FundType; fundName: string; priceKey: 'classA' | 'classB' | 'classC'; units: number }>();
+    settledTrades.forEach((t) => {
+      const key = t.shareClass;
+      const existing = instrumentUnits.get(key);
+      if (existing) {
+        existing.units += t.unitEffect;
+      } else {
+        instrumentUnits.set(key, {
+          fundType: getFundType(t.fundName),
+          fundName: t.fundName,
+          priceKey: getShareClassPriceKey(t.shareClass),
+          units: t.unitEffect,
+        });
+      }
     });
+
+    const map = new Map<FundType, number>();
+    for (const instrument of instrumentUnits.values()) {
+      const prices = latestPriceByFund.get(instrument.fundName);
+      const price = prices ? prices[instrument.priceKey] : 0;
+      const value = Math.max(0, instrument.units) * price;
+      if (value > 0) {
+        map.set(instrument.fundType, (map.get(instrument.fundType) ?? 0) + value);
+      }
+    }
+
     const filtered = Array.from(map.entries()).filter(([, v]) => v > 0);
     const total = filtered.reduce((s, [, v]) => s + v, 0);
-    return filtered.map(([type, value]) => ({ type, value, pct: total > 0 ? (value / total) * 100 : 0 }));
-  }, [trades]);
+    return filtered.map(([type, value]) => ({
+      type,
+      value,
+      pct: total > 0 ? (value / total) * 100 : 0,
+    }));
+  }, [settledTrades]);
 
   const totalBeholdning = fundHoldings.reduce((s, f) => s + f.value, 0);
 
+  const complianceData = useMemo(
+    () => getCustomerComplianceData(customerId),
+    [customerId],
+  );
+
   const klasse = useMemo(() => {
-    if (trades.length === 0) return 'Klasse A';
-    const latest = trades[0];
-    if (latest.shareClass.includes('Klasse B')) return 'Klasse B';
-    if (latest.shareClass.includes('Klasse C')) return 'Klasse C';
+    if (!investor) return 'Klasse A';
+    if (investor.customerType === 'Ansatt') return 'Klasse A';
+    if (fundHoldings.length === 0) return 'Klasse A';
+    const fundClasses = fundHoldings.map((f) => (f.value >= 1_000_000 ? 'Klasse B' : 'Klasse C'));
+    if (fundClasses.some((c) => c === 'Klasse C')) return 'Klasse C';
+    if (fundClasses.every((c) => c === 'Klasse B')) return 'Klasse B';
     return 'Klasse A';
-  }, [trades]);
+  }, [investor, fundHoldings]);
 
   function goBack() {
     window.location.hash = '#kundeoversikt';
@@ -200,7 +317,9 @@ function CustomerDetailPage({ customerId }: { customerId: string }) {
   if (!investor) {
     return (
       <div className="cd-not-found">
-        <button className="cd-back-btn" onClick={goBack}>← Tilbake</button>
+        <button className="cd-back-btn" onClick={goBack}>
+          ← Tilbake
+        </button>
         <p>Kunde ikke funnet.</p>
       </div>
     );
@@ -208,12 +327,13 @@ function CustomerDetailPage({ customerId }: { customerId: string }) {
 
   return (
     <div className="cd-page">
-      <button className="cd-back-btn" onClick={goBack}>← Tilbake til kunder</button>
+      <button className="cd-back-btn" onClick={goBack}>
+        ← Tilbake til kunder
+      </button>
 
       <div className="cd-layout">
         {/* Left column */}
         <div className="cd-left">
-          {/* Info card */}
           <div className="cd-card">
             <h2 className="cd-card-title">{investor.name}</h2>
             <dl className="cd-info-list">
@@ -235,23 +355,61 @@ function CustomerDetailPage({ customerId }: { customerId: string }) {
               </div>
               <div className="cd-info-row">
                 <dt>Telefon</dt>
-                <dd>{investor.phone ?? '—'}</dd>
+                <dd>{investor.phone ?? mockPhone(investor.customerId)}</dd>
               </div>
               <div className="cd-info-row">
                 <dt>Epost</dt>
-                <dd>{investor.email ?? '—'}</dd>
-              </div>
-              <div className="cd-info-row">
-                <dt>PEP-status</dt>
-                <dd>Ikke PEP</dd>
+                <dd>{investor.email ?? mockEmail(investor.name)}</dd>
               </div>
             </dl>
           </div>
 
-          {/* Pie chart card */}
           <div className="cd-card">
             <h3 className="cd-section-title">Fondsfordeling</h3>
             <PieChart slices={fundHoldings} />
+          </div>
+
+          <div className="cd-card">
+            <h3 className="cd-card-title">Compliance</h3>
+            {complianceData ? (
+              <>
+                <dl className="cd-info-list">
+                  <div className="cd-info-row">
+                    <dt>PEP-status</dt>
+                    <dd>{complianceData.pepStatus}</dd>
+                  </div>
+                  <div className="cd-info-row">
+                    <dt>AML-risikonivå</dt>
+                    <dd>{complianceData.amlRiskLevel}</dd>
+                  </div>
+                  <div className="cd-info-row">
+                    <dt>Klassifisering</dt>
+                    <dd>
+                      <span className={getComplianceBadgeClass(complianceData.classificationStatus)}>
+                        {complianceData.classificationLabel}
+                      </span>
+                    </dd>
+                  </div>
+                  <div className="cd-info-row">
+                    <dt>Dokumentasjon</dt>
+                    <dd>{complianceData.documentationStatus}</dd>
+                  </div>
+                  <div className="cd-info-row">
+                    <dt>Neste PEP-gjennomgang</dt>
+                    <dd>{complianceData.nextPepReviewLabel}</dd>
+                  </div>
+                </dl>
+                <button
+                  className="cd-back-btn"
+                  style={{ marginTop: '1rem', marginBottom: 0 }}
+                  onClick={() => { window.location.hash = '#rapporter/investorer'; }}
+                >
+                  Se compliance-detaljer →
+                </button>
+              </>
+            ) : (
+              <p className="cd-empty">Ingen compliancedata tilgjengelig</p>
+            )}
           </div>
         </div>
 
@@ -273,24 +431,30 @@ function CustomerDetailPage({ customerId }: { customerId: string }) {
                 <thead>
                   <tr>
                     <th className="th-fondstyper">
-                      <CustomerDetailYearFilter
+                      <MultiSelectFilter
+                        label="Dato"
                         options={allYearOptions}
                         selected={selectedYears}
                         onChange={setSelectedYears}
+                        ariaLabel="Filtrer år"
                       />
                     </th>
                     <th className="th-fondstyper">
-                      <CustomerDetailTypeFilter
+                      <MultiSelectFilter
+                        label="Type"
                         options={allTypeOptions}
                         selected={selectedTypes}
                         onChange={setSelectedTypes}
+                        ariaLabel="Filtrer type"
                       />
                     </th>
                     <th className="th-fondstyper">
-                      <CustomerDetailFundFilter
+                      <MultiSelectFilter
+                        label="Fond"
                         options={allFundOptions}
                         selected={selectedFunds}
                         onChange={setSelectedFunds}
+                        ariaLabel="Filtrer fond"
                       />
                     </th>
                     <th className="td-right">Antall</th>
@@ -299,24 +463,37 @@ function CustomerDetailPage({ customerId }: { customerId: string }) {
                   </tr>
                 </thead>
                 <tbody>
-                  {(pageSize === 'all' ? visibleTrades : visibleTrades.slice(0, pageSize)).map((t) => {
-                    const isFinancial = t.transactionType !== 'Telefon' && t.transactionType !== 'Epost';
-                    const beløp = isFinancial ? t.units * t.price : null;
-                    return (
-                    <tr key={t.id}>
-                      <td>{formatDate(t.tradeDate)}</td>
-                      <td>
-                        <span className={`cd-badge cd-badge--${t.transactionType === 'Kjøp' ? 'buy' : 'sell'}`}>
-                          {t.transactionType}
-                        </span>
-                      </td>
-                      <td>{isFinancial ? t.fundName : '—'}</td>
-                      <td className="td-right">{isFinancial ? t.units.toLocaleString('nb-NO', { maximumFractionDigits: 4 }) : '—'}</td>
-                      <td className="td-right">{isFinancial ? t.price.toLocaleString('nb-NO', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '—'}</td>
-                      <td className="td-right">{beløp !== null ? formatCurrency(beløp) : '—'}</td>
-                    </tr>
-                    );
-                  })}
+                  {(pageSize === 'all' ? visibleTrades : visibleTrades.slice(0, pageSize)).map(
+                    (t) => {
+                      const isFinancial =
+                        t.transactionType !== 'Telefon' && t.transactionType !== 'Epost';
+                      const beløp = isFinancial ? t.units * t.price : null;
+                      return (
+                        <tr key={t.id}>
+                          <td>{formatDate(t.tradeDate)}</td>
+                          <td>
+                            <span
+                              className={`cd-badge cd-badge--${t.transactionType === 'Kjøp' ? 'buy' : 'sell'}`}
+                            >
+                              {t.transactionType}
+                            </span>
+                          </td>
+                          <td>{isFinancial ? t.fundName : '—'}</td>
+                          <td className="td-right">
+                            {isFinancial
+                              ? t.units.toLocaleString('nb-NO', { maximumFractionDigits: 4 })
+                              : '—'}
+                          </td>
+                          <td className="td-right">
+                            {isFinancial ? formatCurrency(t.price) : '—'}
+                          </td>
+                          <td className="td-right">
+                            {beløp !== null ? formatCurrency(beløp) : '—'}
+                          </td>
+                        </tr>
+                      );
+                    },
+                  )}
                 </tbody>
                 <tfoot>
                   <tr>

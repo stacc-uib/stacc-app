@@ -156,6 +156,7 @@ export type ComplianceWorkQueueItem = {
   actionLabel: string;
   actionType: 'apne-sak' | 'gjennomga' | 'fullfor';
   targetSubpageId: ComplianceSubpageId;
+  customerId?: string;
   summary: string;
   filterTags: ComplianceWorkQueueFilter[];
 };

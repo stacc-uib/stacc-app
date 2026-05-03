@@ -1,4 +1,6 @@
 ﻿import { useMemo, useState } from 'react';
+import InvestorPicker from '../../../shared/components/InvestorPicker';
+import type { InvestorPickerItem } from '../../../shared/components/InvestorPicker';
 import type {
   CompliancePageData,
   InvestorClassificationStatus,
@@ -154,9 +156,25 @@ function InvestorClassificationSection({
 }: InvestorClassificationSectionProps) {
   const [activeFilter, setActiveFilter] = useState<RegistryFilter>('alle');
   const [searchQuery, setSearchQuery] = useState('');
+  const [selectedInvestorId, setSelectedInvestorId] = useState('');
   const rows = useMemo(() => getRegistryRows(pageData), [pageData]);
 
+  const investorPickerItems: InvestorPickerItem[] = useMemo(
+    () =>
+      rows.map((row) => ({
+        id: row.customerId,
+        label: row.investorName,
+        secondaryLabel: row.customerId,
+      })),
+    [rows],
+  );
+
   const visibleRows = useMemo(() => {
+    // When an investor is selected from the picker, show only that investor
+    if (selectedInvestorId) {
+      return rows.filter((row) => row.customerId === selectedInvestorId);
+    }
+
     const normalizedSearch = searchQuery.trim().toLowerCase();
 
     return rows
@@ -197,7 +215,7 @@ function InvestorClassificationSection({
           left.investorName.localeCompare(right.investorName, 'nb')
         );
       });
-  }, [activeFilter, rows, searchQuery]);
+  }, [activeFilter, rows, searchQuery, selectedInvestorId]);
 
   const missingDataCount = rows.filter((row) => row.missingFields.length > 0).length;
   const pepFollowUpCount = rows.filter(
@@ -261,11 +279,16 @@ function InvestorClassificationSection({
 
             <label className="compliance-registry__search">
               <span>Søk i registeret</span>
-              <input
-                type="search"
-                value={searchQuery}
-                onChange={(event) => setSearchQuery(event.target.value)}
+              <InvestorPicker
+                items={investorPickerItems}
+                selectedId={selectedInvestorId}
+                onSelect={(id) => {
+                  setSelectedInvestorId(id);
+                  if (!id) setSearchQuery('');
+                }}
                 placeholder="Navn, type, kategori eller næring"
+                ariaLabel="Søk i investorregisteret"
+                emptyText="Ingen investorer matcher søket."
               />
             </label>
           </div>
@@ -312,7 +335,15 @@ function InvestorClassificationSection({
                   <tr key={row.customerId}>
                     <td>
                       <div className="table-primary-cell">
-                        <strong>{row.investorName}</strong>
+                        <button
+                          type="button"
+                          className="compliance-customer-link"
+                          onClick={() => {
+                            window.location.hash = `kundeoversikt/${row.customerId}`;
+                          }}
+                        >
+                          <strong>{row.investorName}</strong>
+                        </button>
                         <span>Kunde-ID {row.customerId}</span>
                       </div>
                     </td>
