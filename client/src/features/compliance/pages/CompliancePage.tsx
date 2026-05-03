@@ -27,6 +27,13 @@ function getComplianceSubpageIdFromHash() {
     : 'oversikt';
 }
 
+function getInitialInvestorIdFromHash() {
+  const hash = window.location.hash.replace(/^#/, '');
+  const [, subpageId, customerId] = hash.split('/');
+  if (subpageId === 'investorer' && customerId) return customerId;
+  return '';
+}
+
 function getMetricClassName(tone?: 'ok' | 'warning' | 'critical') {
   if (tone === 'critical') return 'status-badge status-badge--critical';
   if (tone === 'warning') return 'status-badge status-badge--warning';
@@ -115,7 +122,10 @@ function CompliancePage() {
       ) : null}
 
       {activeSubpageId === 'investorer' ? (
-        <InvestorClassificationSection pageData={pageData} />
+        <InvestorClassificationSection
+          pageData={pageData}
+          initialSelectedId={getInitialInvestorIdFromHash()}
+        />
       ) : null}
     </div>
   );

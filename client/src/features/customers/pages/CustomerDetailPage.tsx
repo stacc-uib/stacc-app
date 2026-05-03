@@ -307,14 +307,14 @@ function CustomerDetailPage({ customerId }: { customerId: string }) {
                 </dl>
 
                 {complianceData.classificationStatus === 'pep-forfalt' || complianceData.classificationStatus === 'pep-forfaller-snart' ? (
-                  <div className="cd-compliance-action" style={{ marginTop: '0.75rem', padding: '0.6rem 0.75rem', background: '#fef2f2', borderRadius: '0.3rem', borderLeft: '3px solid #dc2626' }}>
-                    <p style={{ margin: 0, fontSize: '0.82rem', fontWeight: 600, color: '#991b1b' }}>
+                  <div className="cd-compliance-alert cd-compliance-alert--critical">
+                    <p className="cd-compliance-alert__title">
                       PEP-kontroll {complianceData.classificationStatus === 'pep-forfalt' ? 'er forfalt' : 'forfaller snart'}
                     </p>
                     <button
-                      className="cd-back-btn"
-                      style={{ marginTop: '0.4rem', marginBottom: 0, fontSize: '0.82rem', color: '#dc2626' }}
-                      onClick={() => { window.location.hash = '#rapporter/investorer'; }}
+                      type="button"
+                      className="cd-compliance-link"
+                      onClick={() => { window.location.hash = `#rapporter/investorer/${customerId}`; }}
                     >
                       Gå til PEP-oppfølging →
                     </button>
@@ -322,23 +322,23 @@ function CustomerDetailPage({ customerId }: { customerId: string }) {
                 ) : null}
 
                 {complianceData.classificationStatus === 'mangler-naering' ? (
-                  <div className="cd-compliance-action" style={{ marginTop: '0.75rem', padding: '0.6rem 0.75rem', background: '#fffbeb', borderRadius: '0.3rem', borderLeft: '3px solid #d97706' }}>
-                    <p style={{ margin: 0, fontSize: '0.82rem', fontWeight: 600, color: '#92400e' }}>
+                  <div className="cd-compliance-alert cd-compliance-alert--warning">
+                    <p className="cd-compliance-alert__title">
                       Mangler næringsgruppe — blokkerer rapportering
                     </p>
                     <button
-                      className="cd-back-btn"
-                      style={{ marginTop: '0.4rem', marginBottom: 0, fontSize: '0.82rem', color: '#d97706' }}
-                      onClick={() => { window.location.hash = '#rapporter/investorer'; }}
+                      type="button"
+                      className="cd-compliance-link"
+                      onClick={() => { window.location.hash = `#rapporter/investorer/${customerId}`; }}
                     >
                       Oppdater i investorregisteret →
                     </button>
                   </div>
                 ) : null}
                 <button
-                  className="cd-back-btn"
-                  style={{ marginTop: '1rem', marginBottom: 0 }}
-                  onClick={() => { window.location.hash = '#rapporter/investorer'; }}
+                  type="button"
+                  className="cd-compliance-link cd-compliance-link--neutral"
+                  onClick={() => { window.location.hash = `#rapporter/investorer/${customerId}`; }}
                 >
                   Se compliance-detaljer →
                 </button>

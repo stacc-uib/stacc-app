@@ -1350,6 +1350,45 @@ textarea {
   margin-top: 1rem;
 }
 
+.industry-group-edit {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.industry-group-select {
+  font-size: 0.8rem;
+  padding: 0.25rem 0.4rem;
+  border: 1px solid #d97706;
+  border-radius: 0.25rem;
+  background: #fffbeb;
+  color: #92400e;
+  cursor: pointer;
+  max-width: 180px;
+}
+
+.industry-group-select:focus {
+  outline: 2px solid #d97706;
+  outline-offset: 1px;
+}
+
+.industry-group-save {
+  font-size: 0.78rem;
+  font-weight: 600;
+  padding: 0.25rem 0.6rem;
+  border: none;
+  border-radius: 0.25rem;
+  background: #d97706;
+  color: #fff;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.15s;
+}
+
+.industry-group-save:hover {
+  background: #b45309;
+}
+
 .trade-registration {
   display: flex;
   flex-direction: column;

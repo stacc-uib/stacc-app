@@ -120,11 +120,6 @@ function AmlPepMonitoringSection({ overview }: AmlPepMonitoringSectionProps) {
 
   const visibleRows = useMemo(() => getVisibleRows(rows, activeFilter), [activeFilter, rows]);
 
-  const selectedRow = useMemo(
-    () => visibleRows.find((row) => row.customerId === selectedCustomerId) ?? null,
-    [selectedCustomerId, visibleRows],
-  );
-
   function handleSelectRow(customerId: string) {
     setSelectedCustomerId((current) => (current === customerId ? '' : customerId));
   }
@@ -256,7 +251,7 @@ function AmlPepMonitoringSection({ overview }: AmlPepMonitoringSectionProps) {
                         type="button"
                         className="compliance-customer-link"
                         onClick={() => {
-                          window.location.hash = `kundeoversikt/${row.customerId}`;
+                          window.location.hash = `#kundeoversikt/${row.customerId}`;
                         }}
                       >
                         Vis kundeprofil
@@ -390,7 +385,7 @@ function AmlPepMonitoringSection({ overview }: AmlPepMonitoringSectionProps) {
                           type="button"
                           className="compliance-customer-link"
                           onClick={() => {
-                            window.location.hash = `kundeoversikt/${row.customerId}`;
+                            window.location.hash = `#kundeoversikt/${row.customerId}`;
                           }}
                         >
                           <strong>{row.investorName}</strong>
