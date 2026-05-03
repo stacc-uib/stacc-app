@@ -11,37 +11,6 @@ type ComplianceWorkQueueSectionProps = {
   onOpenSubpage: (subpageId: ComplianceSubpageId) => void;
 };
 
-type ActionDialogState = {
-  item: ComplianceWorkQueueItem;
-} | null;
-
-function getDialogContent(item: ComplianceWorkQueueItem, currentOwner: string) {
-  if (item.actionType === 'gjennomga') {
-    return {
-      title: item.title,
-      context: `Gjennomgå og vurder om saken kan lukkes.`,
-      primaryLabel: item.customerId ? 'Gå til kunde' : 'Gå til detaljvisning',
-      secondaryLabel: 'Marker som gjennomgått',
-    };
-  }
-
-  if (item.actionType === 'fullfor') {
-    return {
-      title: item.title,
-      context: `Bekreft at rapporten er klar for innsending.`,
-      primaryLabel: 'Gå til rapportering',
-      secondaryLabel: 'Bekreft fullført',
-    };
-  }
-
-  return {
-    title: item.title,
-    context: `Nåværende ansvarlig: ${currentOwner}`,
-    primaryLabel: item.customerId ? 'Gå til kunde' : 'Gå til detaljvisning',
-    secondaryLabel: 'Ta ansvar',
-  };
-}
-
 const QUEUE_DEFAULT_VISIBLE = 5;
 
 const filterOptions: { id: ComplianceWorkQueueFilter; label: string }[] = [
@@ -70,7 +39,6 @@ function ComplianceWorkQueueSection({
   const [activeFilter, setActiveFilter] = useState<ComplianceWorkQueueFilter>('alle');
   const [completedIds, setCompletedIds] = useState<string[]>([]);
   const [assignedIds, setAssignedIds] = useState<string[]>([]);
-  const [dialog, setDialog] = useState<ActionDialogState>(null);
   const [showAll, setShowAll] = useState(false);
 
   const visibleItems = overview.items.filter((item) => {
@@ -85,13 +53,6 @@ function ComplianceWorkQueueSection({
   const hiddenCount = visibleItems.length - QUEUE_DEFAULT_VISIBLE;
 
   function handlePrimaryAction(item: ComplianceWorkQueueItem) {
-    setDialog({ item });
-  }
-
-  function handleDialogPrimary() {
-    if (!dialog) return;
-    const { item } = dialog;
-
     if (item.customerId) {
       window.location.hash = `#kundeoversikt/${item.customerId}`;
     } else {
@@ -103,23 +64,6 @@ function ComplianceWorkQueueSection({
         current.includes(item.id) ? current : [...current, item.id],
       );
     }
-
-    setDialog(null);
-  }
-
-  function handleDialogSecondary() {
-    if (!dialog) return;
-    const { item } = dialog;
-
-    if (item.actionType === 'apne-sak') {
-      setAssignedIds((current) =>
-        current.includes(item.id) ? current : [...current, item.id],
-      );
-    } else {
-      setCompletedIds((current) => [...current, item.id]);
-    }
-
-    setDialog(null);
   }
 
   return (
@@ -217,59 +161,6 @@ function ComplianceWorkQueueSection({
           </button>
         ) : null}
 
-        {dialog ? (() => {
-          const currentOwner = assignedIds.includes(dialog.item.id) ? 'Meg' : dialog.item.owner;
-          const content = getDialogContent(dialog.item, currentOwner);
-
-          return (
-            <div className="queue-dialog-overlay" onClick={() => setDialog(null)}>
-              <div
-                className="queue-dialog"
-                role="dialog"
-                aria-label={content.title}
-                onClick={(e) => e.stopPropagation()}
-              >
-                <div className="queue-dialog__header">
-                  <h3 className="queue-dialog__title">{content.title}</h3>
-                  <button
-                    type="button"
-                    className="queue-dialog__close"
-                    onClick={() => setDialog(null)}
-                    aria-label="Lukk"
-                  >
-                    ✕
-                  </button>
-                </div>
-
-                <p className="queue-dialog__description">{content.context}</p>
-
-                <div className="queue-dialog__actions">
-                  <button
-                    type="button"
-                    className="queue-action queue-action--primary"
-                    onClick={handleDialogPrimary}
-                  >
-                    {content.primaryLabel}
-                  </button>
-                  <button
-                    type="button"
-                    className="queue-action"
-                    onClick={handleDialogSecondary}
-                  >
-                    {content.secondaryLabel}
-                  </button>
-                  <button
-                    type="button"
-                    className="queue-action"
-                    onClick={() => setDialog(null)}
-                  >
-                    Avbryt
-                  </button>
-                </div>
-              </div>
-            </div>
-          );
-        })() : null}
       </div>
     </section>
   );
