@@ -1,5 +1,6 @@
 import IncomeSubnav from '../components/IncomeSubnav';
 import IncomeTable from '../components/IncomeTable';
+import IncomeGraph from '../components/IncomeGraph';
 import IncomeOverview from '../components/IncomeOverview';
 import getIncomeData from '../lib/getIncomeData';
 import IncomePeriodFilter from '../components/IncomePeriodFilter';
@@ -19,13 +20,13 @@ const incomeSubnavItems = [
         description: '',
     },
     {
-        id: 'fondsinntekter',
-        label: 'Fondsinntekter',
+        id: 'tabell',
+        label: 'Tabell',
         description: '',
     },
     {
-        id: 'projeksjoner',
-        label: 'Projeksjoner',
+        id: 'grafer',
+        label: 'Grafer',
         description: '',
     },
 ] as const;
@@ -103,16 +104,29 @@ function IncomePage() {
             />
 
             {activeSubpageId === 'oversikt' ? (
-                <IncomeOverview incomeData={incomeData} />
+                <IncomeOverview 
+                    incomeData={incomeData} 
+                    trades={trades}
+                    fundPrices={fundPrices}
+                />
             ) : null}
 
-            {activeSubpageId === 'projeksjoner' ? (
-                <div className="content-card__placeholder">
-                    Placeholder inntekt.
-                </div>
+            {activeSubpageId === 'grafer' ? (
+                <>
+                    <IncomePeriodFilter
+                        range={range}
+                        minDate={minDate}
+                        maxDate={maxDate}
+                        activePreset={activePreset}
+                        onRangeChange={handleRangeChange}
+                        onPresetSelect={handlePresetSelect}
+                        onReset={handleReset}
+                    />
+                    <IncomeGraph incomeData={filteredIncomeData} />
+                    </>
             ) : null}
 
-            {activeSubpageId === 'fondsinntekter' ? (
+            {activeSubpageId === 'tabell' ? (
                 <>
                     <IncomePeriodFilter
                         range={range}
