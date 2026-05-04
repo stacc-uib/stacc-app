@@ -30,7 +30,7 @@ Applikasjonen har en fast toppbar med logo og en sidebar til venstre med hovedme
 | 3 | Inntekt | Placeholder | Inntektsanalyse (ikke implementert) |
 | 4 | Fondsoversikt | Placeholder | Fondsinformasjon (ikke implementert) |
 | 5 | Kundeoversikt | Placeholder | Investorregister (ikke implementert) |
-| 6 | Transaksjoner | Placeholder | Transaksjonsliste (ikke implementert) |
+| 6 | Transaksjoner | Ferdig | Transaksjonsliste |
 | 7 | Rapporter | Ferdig | Compliance og rapportering |
 | 8 | Registrer ny handel | Ferdig | Handelsregistrering |
 | 9 | Registrer utbytte | Placeholder | Utbytteregistrering (ikke implementert) |
@@ -81,7 +81,7 @@ Investorregister, segmentering og kundedetaljer. Ikke implementert.
 
 **Menyvalg:** Transaksjoner
 **Hash:** `#transaksjoner`
-**Status:** Placeholder
+**Status:** Ferdig
 
 Oversikt over transaksjoner ved filtrerbar KPI, grafer og tabell. 
 
@@ -93,7 +93,7 @@ Elementer på siden:
 - Grafer
 - Transaksjonstabell
 
-### 6.2 Preiode- og fondsfiltrering
+### 6.2 Periode- og fondsfiltrering
 
 Filtrering øverst som gjelder for alle andre elementer på siden. 
 
@@ -101,7 +101,7 @@ Består av:
 - Intervallvelger der bruker selv kan velge periode fra første til siste transaksjon
 - Ulike knapper for å få en angitt periode "YTD", "5 år", "10 år" eller "20 år"
 - Drop down meny der bruker kan velge hvilke fond man vil se på
-- Nullstill knapp som synes når noe annet enn default er valgt
+- Nullstill-knapp som synes når noe annet enn default er valgt
 
 ### 6.3 KPI-rad & grafer
 
@@ -109,7 +109,7 @@ Nøkkeltall og grafer midt på siden som oppdateres når man filtrerer på fond 
 
 Består av: 
 - KPI-rad med "Antall transaksjoner", "Antall kjøp", "Antall salg", "Brutto tegning" og "Netto tegning" i angitt periode og fond.
-- Linjediagram som viser "Transaksjonsvolum" i angitt periode og fond. Dersom angitt periode er mindre enn 2 år, viser den månedlig transaksjonsvolum.
+- Linjediagram som viser "Transaksjonsvolum" i angitt periode og fond. Dersom angitt periode er mindre enn 2 år, viser den månedlig transaksjonsvolum i stedet for årlig.
 - Kakediagram som viser "Transaksjonstype" i angitt periode og fond.
 - KPI-seksjon til høyre for diagrammene som viser "Gjennomsnittlig transaksjonsstørrelse", "Vekst transaksjoner" og "Vekst beløp" i angitt periode og fond.
 
