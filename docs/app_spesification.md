@@ -133,6 +133,9 @@ Når bruker registrerer ny handel, vil transaksjonen automatisk dukke opp i tran
 
 Når bruker trykker på kundenavnet i transaksjonstabellen kommer man direkte inn på kundeoversikten til angitt kunde for å se nøkkelinformasjon, aktivitet, fondsfordeling og compliance. 
 
+### 6.6 Datakilder
+Alle elementer på siden er basert på data fra `mocks/trades.json`. 
+
 ---
 
 ## 7. Rapporter (Compliance)
