@@ -83,7 +83,55 @@ Investorregister, segmentering og kundedetaljer. Ikke implementert.
 **Hash:** `#transaksjoner`
 **Status:** Placeholder
 
-Transaksjonslister, filtre og statusoppfølging. Ikke implementert.
+Oversikt over transaksjoner ved filtrerbar KPI, grafer og tabell. 
+
+### 6.1 Layout
+
+Elementer på siden:
+- Periode- og fondsfiltrering
+- KPI-rad
+- Grafer
+- Transaksjonstabell
+
+### 6.2 Preiode- og fondsfiltrering
+
+Filtrering øverst som gjelder for alle andre elementer på siden. 
+
+Består av:
+- Intervallvelger der bruker selv kan velge periode fra første til siste transaksjon
+- Ulike knapper for å få en angitt periode "YTD", "5 år", "10 år" eller "20 år"
+- Drop down meny der bruker kan velge hvilke fond man vil se på
+- Nullstill knapp som synes når noe annet enn default er valgt
+
+### 6.3 KPI-rad & grafer
+
+Nøkkeltall og grafer midt på siden som oppdateres når man filtrerer på fond og periode. 
+
+Består av: 
+- KPI-rad med "Antall transaksjoner", "Antall kjøp", "Antall salg", "Brutto tegning" og "Netto tegning" i angitt periode og fond.
+- Linjediagram som viser "Transaksjonsvolum" i angitt periode og fond. Dersom angitt periode er mindre enn 2 år, viser den månedlig transaksjonsvolum.
+- Kakediagram som viser "Transaksjonstype" i angitt periode og fond.
+- KPI-seksjon til høyre for diagrammene som viser "Gjennomsnittlig transaksjonsstørrelse", "Vekst transaksjoner" og "Vekst beløp" i angitt periode og fond.
+
+### 6.4 Transaksjonstabell
+
+Tabell nederst på siden som viser en oversikt over alle transaksjoner i valgt periode. 
+
+Består av:
+- Oversikt over hvor mange transaksjoner som synes. Tabellen viser 25 transaksjoner av gangen, og default her er "Viser 1-25 av 1501 transaksjoner".
+- Mulighet for å søke på kunde. Viser da kun transaksjoner for angitt kunde.
+- Mulighet for å laste ned CSV. Laster da ned transaksjonene som synes i tabellen.
+- Filtreringsrad med mulighet for å filtrere på fond, transaksjonstype, klasser og statuser. Tallet til høyre viser antall treff på filtreringen og tabellen oppdateres automatisk.
+- Kolonner i tabellen: transaksjons ID, kundenavn, dato for transaksjon, fond, klasse, transaksjonstype, antall, kurs, beløp og status (oppgjort, delvis oppgjort eller ikke oppgjort).
+- Under tabellen kan bruker bla gjennom alle transaksjonene ved å velge "Neste" eller "Forrige" side. Finner også oversikt over hvilke transaksjoner som synes med default "Side 1 av 61". 
+
+### 6.5 Interaksjon med andre sider
+
+Denne siden interagerer med "Registrer ny handel" og "Kundeoversikt". 
+
+Når bruker registrerer ny handel, vil transaksjonen automatisk dukke opp i transaksjonstabellen og alle elementer på siden vil oppdateres deretter. 
+
+Når bruker trykker på kundenavnet i transaksjonstabellen kommer man direkte inn på kundeoversikten til angitt kunde for å se nøkkelinformasjon, aktivitet, fondsfordeling og compliance. 
 
 ---
 
