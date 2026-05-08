@@ -6,11 +6,17 @@ function Navbar({ logoSrc }: NavbarProps) {
   return (
     <header className="top-navbar">
       <div className="top-navbar__brand">
-        <img
-          src={logoSrc}
-          alt="Escali Insight"
-          className="brand-logo"
-        />
+        <a
+          href="#dashboard"
+          aria-label="Go to dashboard"
+          style={{ display: 'contents', cursor: 'pointer' }}
+        >
+          <img
+            src={logoSrc}
+            alt="Escali Insight"
+            className="brand-logo"
+          />
+        </a>
       </div>
     </header>
   );

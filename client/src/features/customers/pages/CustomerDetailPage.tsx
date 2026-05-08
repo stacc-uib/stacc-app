@@ -70,7 +70,7 @@ function getFundType(fundName: string): FundType {
 // ---- SVG Pie Chart ----
 const FUND_COLORS: Record<FundType, string> = {
   Global: '#f5c518',
-  Norden: '#e03131',
+  Norden: '#f07800',
   Kreditt: '#1a1a1a',
 };
 
