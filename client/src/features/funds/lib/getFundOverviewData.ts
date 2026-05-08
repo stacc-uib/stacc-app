@@ -873,9 +873,7 @@ function createFlowContributorRows(
   >();
 
   for (const trade of periodTrades) {
-    const isInternalActor = trade.investorType === 'Fond' || trade.investorType === 'Fondsforvalter';
-
-    if (trade.transactionType !== transactionType || isInternalActor || trade.amount <= 0) {
+    if (trade.transactionType !== transactionType || trade.amount <= 0) {
       continue;
     }
 
@@ -909,8 +907,6 @@ function createMetrics(
   startShareholders: number,
   shareholders: number,
   netSubscriptions: number,
-  grossBuy: number,
-  grossSell: number,
   periodReturn: number,
   startNav: number,
   closingNav: number,
@@ -920,7 +916,6 @@ function createMetrics(
 ): FundOverviewMetric[] {
   const dateLabel = formatDateLabel(asOfDate);
   const rangeLabel = getRangeLabel(periodStartDate, asOfDate);
-  const grossActivity = grossBuy + grossSell;
   const netFlowRatio = aum > 0 ? netSubscriptions / aum : 0;
   const dividendYield = startAum > 0 ? dividends / startAum : 0;
 
@@ -963,13 +958,6 @@ function createMetrics(
         direction: getDeltaDirection(netSubscriptions),
         label: 'Netto i perioden',
       },
-    ),
-    createMetric(
-      'gross-activity',
-      'Brutto aktivitet',
-      grossActivity,
-      'currency',
-      `Kjøp og salg i perioden ${rangeLabel}`,
     ),
     createMetric(
       'net-flow-ratio',
@@ -1152,18 +1140,21 @@ function createFlowSection(
 
   const totalGrossBuy = sum(combinedPoints.map((point) => point.grossBuy));
   const totalGrossSell = sum(combinedPoints.map((point) => point.grossSell));
-  const grossActivity = totalGrossBuy + totalGrossSell;
   const redemptionRatio = totalGrossBuy > 0 ? totalGrossSell / totalGrossBuy : 0;
-  const mostActivePoint = combinedPoints.reduce(
-    (best, point) =>
-      point.grossBuy + point.grossSell > best.grossBuy + best.grossSell ? point : best,
-    combinedPoints[0] ?? {
-      date: asOfDate,
-      label: getBucketLabel(asOfDate, granularity),
-      grossBuy: 0,
-      grossSell: 0,
-      net: 0,
-    },
+  const fallbackFlowPoint = combinedPoints[0] ?? {
+    date: asOfDate,
+    label: getBucketLabel(asOfDate, granularity),
+    grossBuy: 0,
+    grossSell: 0,
+    net: 0,
+  };
+  const mostActiveBuyPoint = combinedPoints.reduce(
+    (best, point) => (point.grossBuy > best.grossBuy ? point : best),
+    fallbackFlowPoint,
+  );
+  const mostActiveSellPoint = combinedPoints.reduce(
+    (best, point) => (point.grossSell > best.grossSell ? point : best),
+    fallbackFlowPoint,
   );
   const rangeLabel = getRangeLabel(periodStartDate, asOfDate);
 
@@ -1189,13 +1180,6 @@ function createFlowSection(
         `Kjøp minus salg i perioden ${rangeLabel}`,
       ),
       createMetric(
-        'gross-activity',
-        'Brutto aktivitet',
-        grossActivity,
-        'currency',
-        `Samlet kjøp og salg i perioden ${rangeLabel}`,
-      ),
-      createMetric(
         'redemption-ratio',
         'Salg/kjøp-forhold',
         redemptionRatio,
@@ -1203,11 +1187,18 @@ function createFlowSection(
         totalGrossBuy > 0 ? 'Brutto salg delt på brutto kjøp' : 'Ingen kjøp i perioden',
       ),
       createMetric(
-        'flow-activity',
-        'Mest aktive periode',
-        mostActivePoint.grossBuy + mostActivePoint.grossSell,
+        'flow-buy-activity',
+        'Mest aktive kjøpsperiode',
+        mostActiveBuyPoint.grossBuy,
         'currency',
-        mostActivePoint.label,
+        mostActiveBuyPoint.label,
+      ),
+      createMetric(
+        'flow-sell-activity',
+        'Mest aktive salgsperiode',
+        mostActiveSellPoint.grossSell,
+        'currency',
+        mostActiveSellPoint.label,
       ),
     ],
     description:
@@ -1601,8 +1592,6 @@ export function getFundOverviewData(filters: FundOverviewFilters): FundOverviewS
       startHoldings.shareholders,
       endHoldings.shareholders,
       netSubscriptions,
-      grossBuyTotal,
-      grossSellTotal,
       periodReturn,
       startAggregate.nav,
       endAggregate.nav,

@@ -61,7 +61,7 @@ type ShareholderSortKey =
   | 'ownershipShare';
 
 const TABLE_PAGE_SIZE = 10;
-const TOP_METRIC_IDS_TO_HIDE = new Set(['gross-activity', 'net-flow-ratio', 'dividend-yield']);
+const TOP_METRIC_IDS_TO_HIDE = new Set(['net-flow-ratio', 'dividend-yield']);
 const compositionModeOptions: { id: CompositionMode; label: string }[] = [
   { id: 'funds', label: 'Fond' },
   { id: 'classes', label: 'Klasser' },
@@ -623,7 +623,7 @@ function FlowContributorTable({
     <article className="fund-overview__impact-card">
       <div className="fund-overview__impact-header">
         <strong>{title}</strong>
-        <span>{formatNumber(rows.length, 0)} eiere</span>
+        <span>{formatNumber(rows.length, 0)} aktører</span>
       </div>
       <div className="table-responsive fund-overview__impact-table-scroll">
         <table className="data-table table align-middle mb-0 fund-overview__impact-table">
@@ -655,7 +655,7 @@ function FlowContributorTable({
             ) : (
               <tr>
                 <td colSpan={4} className="fund-overview__table-empty">
-                  Ingen eiere med bidrag i valgt periode.
+                  Ingen aktører med bidrag i valgt periode.
                 </td>
               </tr>
             )}
