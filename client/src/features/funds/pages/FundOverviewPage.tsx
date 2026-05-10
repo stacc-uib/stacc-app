@@ -38,15 +38,17 @@ type ChartDragState = {
   pointerId: number;
 } | null;
 
-type ZoomHandle = 'start' | 'end';
+type ZoomHandle = 'start' | 'end' | 'window';
 
-type ZoomHandleDragState = {
+type ZoomDragState = {
   handle: ZoomHandle;
   pointerId: number;
+  startIndex: number;
+  range: ChartRange;
 } | null;
 
-type NavValueMode = 'nav' | 'return';
 type CompositionMode = 'funds' | 'classes' | 'investorCategories' | 'largestOwners';
+type NavValueMode = 'nav' | 'return';
 type SortDirection = 'asc' | 'desc';
 type SortState<TSortKey extends string> = {
   key: TSortKey;
@@ -67,11 +69,12 @@ const FUND_CHART_PRIMARY = '#ff7415';
 const FUND_CHART_MUTED = '#6b7280';
 const FUND_CHART_NET = '#1f2937';
 const FUND_CHART_AREA_FILL = 'rgba(255, 116, 21, 0.14)';
+
 const compositionModeOptions: { id: CompositionMode; label: string }[] = [
   { id: 'funds', label: 'Fond' },
   { id: 'classes', label: 'Andelsklasse' },
   { id: 'investorCategories', label: 'Investorsegment' },
-  { id: 'largestOwners', label: 'Største eiere' },
+  { id: 'largestOwners', label: 'Storste eiere' },
 ];
 
 const currencyFormatter = new Intl.NumberFormat('nb-NO', {
@@ -116,26 +119,12 @@ function formatSignedMetricValue(value: number, format: FundOverviewMetricFormat
   return `${prefix}${formatMetricValue(Math.abs(value), format)}`;
 }
 
-function getSeriesAsPercentChangeFromStart(
-  series: FundOverviewLineSeries[],
-): FundOverviewLineSeries[] {
-  return series.map((seriesItem) => {
-    const startValue = seriesItem.points[0]?.value ?? 0;
-
-    return {
-      ...seriesItem,
-      points: seriesItem.points.map((point) => ({
-        ...point,
-        value: startValue > 0 ? point.value / startValue - 1 : 0,
-      })),
-    };
-  });
+function formatNumber(value: number, maximumFractionDigits = 2) {
+  return new Intl.NumberFormat('nb-NO', { maximumFractionDigits }).format(value);
 }
 
-function formatNumber(value: number, maximumFractionDigits = 2) {
-  return new Intl.NumberFormat('nb-NO', {
-    maximumFractionDigits,
-  }).format(value);
+function clamp(value: number, min: number, max: number) {
+  return Math.min(Math.max(value, min), max);
 }
 
 function getTickIndexes(length: number, maxTicks = 5) {
@@ -168,8 +157,12 @@ function buildAreaPath(points: ChartCoordinate[], baselineY: number) {
   )} L ${points[0].x.toFixed(2)} ${baselineY.toFixed(2)} Z`;
 }
 
-function clamp(value: number, min: number, max: number) {
-  return Math.min(Math.max(value, min), max);
+function getChartXForIndex(index: number, pointCount: number, chartWidth: number, paddingLeft: number) {
+  if (pointCount <= 1) {
+    return paddingLeft + chartWidth / 2;
+  }
+
+  return paddingLeft + (chartWidth / Math.max(pointCount - 1, 1)) * index;
 }
 
 function getPointIndexFromClientX(
@@ -191,15 +184,6 @@ function getPointIndexFromClientX(
   return clamp(Math.round((clampedX - padding.left) / step), 0, pointCount - 1);
 }
 
-function getHoveredPointIndex(
-  event: { currentTarget: SVGSVGElement; clientX: number },
-  pointCount: number,
-  width: number,
-  padding: { left: number; right: number },
-) {
-  return getPointIndexFromClientX(event.clientX, event.currentTarget, pointCount, width, padding);
-}
-
 function normalizeChartRange(startIndex: number, endIndex: number): ChartRange {
   return {
     startIndex: Math.min(startIndex, endIndex),
@@ -212,10 +196,10 @@ function getClampedChartRange(range: ChartRange | null, pointCount: number): Cha
     return null;
   }
 
-  const startIndex = clamp(range.startIndex, 0, pointCount - 1);
-  const endIndex = clamp(range.endIndex, 0, pointCount - 1);
-
-  return normalizeChartRange(startIndex, endIndex);
+  return normalizeChartRange(
+    clamp(range.startIndex, 0, pointCount - 1),
+    clamp(range.endIndex, 0, pointCount - 1),
+  );
 }
 
 function getFullChartRange(pointCount: number): ChartRange {
@@ -231,30 +215,6 @@ function isFullChartRange(range: ChartRange, pointCount: number) {
 
 function getRangeWindowSize(range: ChartRange) {
   return range.endIndex - range.startIndex + 1;
-}
-
-function getPannedChartRange(range: ChartRange, delta: number, pointCount: number) {
-  const windowSize = getRangeWindowSize(range);
-  const maxStart = Math.max(pointCount - windowSize, 0);
-  const nextStartIndex = clamp(range.startIndex + delta, 0, maxStart);
-
-  return {
-    startIndex: nextStartIndex,
-    endIndex: Math.min(nextStartIndex + windowSize - 1, Math.max(pointCount - 1, 0)),
-  } satisfies ChartRange;
-}
-
-function getChartXForIndex(
-  index: number,
-  pointCount: number,
-  chartWidth: number,
-  paddingLeft: number,
-) {
-  if (pointCount <= 1) {
-    return paddingLeft + chartWidth / 2;
-  }
-
-  return paddingLeft + (chartWidth / Math.max(pointCount - 1, 1)) * index;
 }
 
 function getVisibleSelectionRange(selectionRange: ChartRange | null, zoomRange: ChartRange) {
@@ -275,6 +235,62 @@ function getVisibleSelectionRange(selectionRange: ChartRange | null, zoomRange: 
   } satisfies ChartRange;
 }
 
+function getWheelZoomRange(
+  activeRange: ChartRange,
+  focusIndex: number,
+  scrollDelta: number,
+  pointCount: number,
+) {
+  if (pointCount <= 1) {
+    return getFullChartRange(pointCount);
+  }
+
+  const currentWindowSize = getRangeWindowSize(activeRange);
+  const zoomFactor = scrollDelta > 0 ? 1.28 : 0.76;
+  const minWindowSize = Math.min(2, pointCount);
+  const nextWindowSize = clamp(Math.round(currentWindowSize * zoomFactor), minWindowSize, pointCount);
+  const focusRatio =
+    currentWindowSize <= 1 ? 0.5 : (focusIndex - activeRange.startIndex) / Math.max(currentWindowSize - 1, 1);
+  const nextStartIndex = clamp(
+    Math.round(focusIndex - focusRatio * (nextWindowSize - 1)),
+    0,
+    Math.max(pointCount - nextWindowSize, 0),
+  );
+
+  return {
+    startIndex: nextStartIndex,
+    endIndex: nextStartIndex + nextWindowSize - 1,
+  } satisfies ChartRange;
+}
+
+function getCenteredChartRange(centerIndex: number, windowSize: number, pointCount: number) {
+  const safeWindowSize = clamp(windowSize, Math.min(2, pointCount), pointCount);
+  const startIndex = clamp(
+    Math.round(centerIndex - (safeWindowSize - 1) / 2),
+    0,
+    Math.max(pointCount - safeWindowSize, 0),
+  );
+
+  return {
+    startIndex,
+    endIndex: startIndex + safeWindowSize - 1,
+  } satisfies ChartRange;
+}
+
+function getSeriesAsPercentChangeFromStart(series: FundOverviewLineSeries[]): FundOverviewLineSeries[] {
+  return series.map((seriesItem) => {
+    const startValue = seriesItem.points[0]?.value ?? 0;
+
+    return {
+      ...seriesItem,
+      points: seriesItem.points.map((point) => ({
+        ...point,
+        value: startValue > 0 ? point.value / startValue - 1 : 0,
+      })),
+    };
+  });
+}
+
 function getChartDataKey(series: FundOverviewLineSeries[]) {
   return series
     .map((seriesItem) => {
@@ -285,12 +301,19 @@ function getChartDataKey(series: FundOverviewLineSeries[]) {
     .join('|');
 }
 
-function getPaginationPages(currentPage: number, totalPages: number) {
-  const maxButtons = 5;
-  const startPage = Math.max(1, Math.min(currentPage - 2, totalPages - maxButtons + 1));
-  const endPage = Math.min(totalPages, startPage + maxButtons - 1);
+function compareString(left: string, right: string) {
+  return left.localeCompare(right, 'nb', { sensitivity: 'base' });
+}
 
-  return Array.from({ length: endPage - startPage + 1 }, (_, index) => startPage + index);
+function getNextSortState<TSortKey extends string>(currentSort: SortState<TSortKey>, key: TSortKey) {
+  if (currentSort.key !== key) {
+    return { key, direction: 'asc' } satisfies SortState<TSortKey>;
+  }
+
+  return {
+    key,
+    direction: currentSort.direction === 'asc' ? 'desc' : 'asc',
+  } satisfies SortState<TSortKey>;
 }
 
 function getPaginatedRows<T>(rows: T[], page: number, pageSize: number) {
@@ -306,6 +329,22 @@ function getPaginatedRows<T>(rows: T[], page: number, pageSize: number) {
     startRow: rows.length === 0 ? 0 : startIndex + 1,
     endRow: endIndex,
   };
+}
+
+function getMultiSelectSummary(
+  options: FundOverviewSelectOption[],
+  selectedIds: string[],
+  allLabel: string,
+) {
+  if (selectedIds.length === options.length) {
+    return allLabel;
+  }
+
+  const labels = options
+    .filter((option) => selectedIds.includes(option.id))
+    .map((option) => option.label);
+
+  return labels.length === 0 ? allLabel : labels.join(', ');
 }
 
 function usePreventWheelScroll<TElement extends HTMLElement>() {
@@ -327,92 +366,6 @@ function usePreventWheelScroll<TElement extends HTMLElement>() {
   }, []);
 
   return ref;
-}
-
-function compareString(left: string, right: string) {
-  return left.localeCompare(right, 'nb', { sensitivity: 'base' });
-}
-
-function getNextSortState<TSortKey extends string>(
-  currentSort: SortState<TSortKey>,
-  key: TSortKey,
-) {
-  if (currentSort.key !== key) {
-    return { key, direction: 'asc' } satisfies SortState<TSortKey>;
-  }
-
-  return {
-    key,
-    direction: currentSort.direction === 'asc' ? 'desc' : 'asc',
-  } satisfies SortState<TSortKey>;
-}
-
-function SortableHeader<TSortKey extends string>({
-  label,
-  sortKey,
-  sortState,
-  onSort,
-}: {
-  label: string;
-  sortKey: TSortKey;
-  sortState: SortState<TSortKey>;
-  onSort: (key: TSortKey) => void;
-}) {
-  const isActive = sortState.key === sortKey;
-
-  return (
-    <button
-      type="button"
-      className={`fund-overview__sort-button${isActive ? ' fund-overview__sort-button--active' : ''}`}
-      onClick={() => onSort(sortKey)}
-      aria-sort={isActive ? (sortState.direction === 'asc' ? 'ascending' : 'descending') : undefined}
-    >
-      <span>{label}</span>
-      <span aria-hidden="true">{isActive ? (sortState.direction === 'asc' ? '↑' : '↓') : '↕'}</span>
-    </button>
-  );
-}
-
-function getSortedDividendRows(
-  rows: FundOverviewDividendRow[],
-  sortState: SortState<DividendSortKey>,
-) {
-  return [...rows].sort((left, right) => {
-    const direction = sortState.direction === 'asc' ? 1 : -1;
-
-    if (sortState.key === 'amount') {
-      return (left.amount - right.amount) * direction;
-    }
-
-    if (sortState.key === 'date') {
-      return compareString(left.date, right.date) * direction;
-    }
-
-    return compareString(left[sortState.key], right[sortState.key]) * direction;
-  });
-}
-
-function getSortedShareholderRows(
-  rows: FundOverviewTopShareholder[],
-  sortState: SortState<ShareholderSortKey>,
-) {
-  return [...rows].sort((left, right) => {
-    const direction = sortState.direction === 'asc' ? 1 : -1;
-
-    if (sortState.key === 'rank') {
-      return (right.marketValue - left.marketValue) * (sortState.direction === 'asc' ? 1 : -1);
-    }
-
-    if (sortState.key === 'investorName') {
-      return compareString(left.investorName, right.investorName) * direction;
-    }
-
-    if (sortState.key === 'exposureCount') {
-      return (left.exposureCount - right.exposureCount) * direction;
-    }
-
-    return (left[sortState.key] - right[sortState.key]) * direction;
-  });
 }
 
 function getDeltaArrow(direction: NonNullable<FundOverviewMetric['delta']>['direction']) {
@@ -462,17 +415,11 @@ function SectionKpiGrid({
   compact?: boolean;
 }) {
   return (
-    <div
-      className={`fund-overview__section-kpi-grid${
-        compact ? ' fund-overview__section-kpi-grid--compact' : ''
-      }`}
-    >
+    <div className={`fund-overview__section-kpi-grid${compact ? ' fund-overview__section-kpi-grid--compact' : ''}`}>
       {metrics.map((metric) => (
         <article key={metric.id} className="fund-overview__section-kpi">
           <p className="fund-overview__section-kpi-label">{metric.label}</p>
-          <p className="fund-overview__section-kpi-value">
-            {formatMetricValue(metric.value, metric.format)}
-          </p>
+          <p className="fund-overview__section-kpi-value">{formatMetricValue(metric.value, metric.format)}</p>
           <MetricDelta delta={metric.delta} />
           <p className="fund-overview__section-kpi-meta">{metric.meta}</p>
         </article>
@@ -507,6 +454,1071 @@ function PairedNavKpiGrid({ metrics }: { metrics: FundOverviewMetric[] }) {
           )}
         </article>
       ))}
+    </div>
+  );
+}
+
+function CustomerOverviewLink({
+  customerId,
+  children,
+}: {
+  customerId: string;
+  children: string;
+}) {
+  return (
+    <a
+      className="fund-overview__owner-link"
+      href={`#kundeoversikt/${customerId}`}
+      aria-label={`Apne kundeoversikt for ${children}`}
+    >
+      {children}
+    </a>
+  );
+}
+
+function SortableHeader<TSortKey extends string>({
+  label,
+  sortKey,
+  sortState,
+  onSort,
+}: {
+  label: string;
+  sortKey: TSortKey;
+  sortState: SortState<TSortKey>;
+  onSort: (key: TSortKey) => void;
+}) {
+  const isActive = sortState.key === sortKey;
+
+  return (
+    <button
+      type="button"
+      className={`fund-overview__sort-button${isActive ? ' fund-overview__sort-button--active' : ''}`}
+      onClick={() => onSort(sortKey)}
+      aria-sort={isActive ? (sortState.direction === 'asc' ? 'ascending' : 'descending') : undefined}
+    >
+      <span>{label}</span>
+      <span aria-hidden="true">{isActive ? (sortState.direction === 'asc' ? '\u2191' : '\u2193') : '\u2195'}</span>
+    </button>
+  );
+}
+
+function MultiSelectFilter({
+  label,
+  options,
+  selectedIds,
+  allLabel,
+  onChange,
+}: {
+  label: string;
+  options: FundOverviewSelectOption[];
+  selectedIds: string[];
+  allLabel: string;
+  onChange: (selectedIds: string[]) => void;
+}) {
+  const [isOpen, setIsOpen] = useState(false);
+  const optionIds = options.map((option) => option.id);
+  const allSelected = selectedIds.length === optionIds.length;
+  const selectedSummary = getMultiSelectSummary(options, selectedIds, allLabel);
+
+  const toggleAll = () => {
+    onChange(allSelected ? [] : optionIds);
+  };
+
+  const toggleOption = (optionId: string) => {
+    if (selectedIds.includes(optionId)) {
+      onChange(selectedIds.filter((id) => id !== optionId));
+      return;
+    }
+
+    onChange([...selectedIds, optionId]);
+  };
+
+  return (
+    <div className="fund-overview__multi-filter">
+      <span className="fund-overview__range-label">{label}</span>
+      <div className="fund-overview__multi-filter-control">
+        <button
+          type="button"
+          className="fund-overview__multi-filter-button"
+          onClick={() => setIsOpen((current) => !current)}
+          aria-expanded={isOpen}
+        >
+          <span>{selectedSummary}</span>
+          <span aria-hidden="true">{isOpen ? '\u25b2' : '\u25bc'}</span>
+        </button>
+        {isOpen ? (
+          <div className="fund-overview__multi-filter-menu">
+            <label className="fund-overview__multi-filter-option fund-overview__multi-filter-option--all">
+              <input type="checkbox" checked={allSelected} onChange={toggleAll} />
+              <span>{allLabel}</span>
+            </label>
+            {options.map((option) => (
+              <label key={option.id} className="fund-overview__multi-filter-option">
+                <input
+                  type="checkbox"
+                  checked={selectedIds.includes(option.id)}
+                  onChange={() => toggleOption(option.id)}
+                />
+                <span>{option.label}</span>
+              </label>
+            ))}
+          </div>
+        ) : null}
+      </div>
+    </div>
+  );
+}
+
+function PeriodRangeSlider({
+  options,
+  startDate,
+  endDate,
+  onStartChange,
+  onEndChange,
+}: {
+  options: { date: string; label: string }[];
+  startDate: string;
+  endDate: string;
+  onStartChange: (date: string) => void;
+  onEndChange: (date: string) => void;
+}) {
+  if (options.length === 0) {
+    return null;
+  }
+
+  const dateIndexByDate = new Map(options.map((option, index) => [option.date, index]));
+  const maxIndex = Math.max(options.length - 1, 0);
+  const rawStartIndex = dateIndexByDate.get(startDate) ?? 0;
+  const rawEndIndex = dateIndexByDate.get(endDate) ?? maxIndex;
+  const startIndex = Math.min(rawStartIndex, rawEndIndex);
+  const endIndex = Math.max(rawStartIndex, rawEndIndex);
+  const startPercent = maxIndex === 0 ? 0 : (startIndex / maxIndex) * 100;
+  const endPercent = maxIndex === 0 ? 100 : (endIndex / maxIndex) * 100;
+
+  return (
+    <div className="fund-overview__range-card">
+      <div className="fund-overview__range-header">
+        <div>
+          <p className="fund-overview__range-label">Datointervall</p>
+          <strong>
+            {formatDateLabel(options[startIndex]?.date ?? startDate)} - {formatDateLabel(options[endIndex]?.date ?? endDate)}
+          </strong>
+        </div>
+        <span className="fund-overview__range-caption">{formatNumber(options.length, 0)} tilgjengelige NAV-datoer</span>
+      </div>
+
+      <div className="fund-overview__range-values">
+        <span>Start: {formatDateLabel(options[startIndex]?.date ?? startDate)}</span>
+        <span>Slutt: {formatDateLabel(options[endIndex]?.date ?? endDate)}</span>
+      </div>
+
+      <div className="fund-overview__range-slider-stack">
+        <div className="fund-overview__range-track" />
+        <div
+          className="fund-overview__range-fill"
+          style={{
+            left: `${startPercent}%`,
+            width: `${Math.max(endPercent - startPercent, 0)}%`,
+          }}
+        />
+        <input
+          type="range"
+          min={0}
+          max={maxIndex}
+          value={startIndex}
+          className="fund-overview__range-input"
+          aria-label="Velg startdato for datointervall"
+          onChange={(event) => {
+            const nextIndex = Math.min(Number(event.target.value), endIndex);
+            onStartChange(options[nextIndex]?.date ?? startDate);
+          }}
+        />
+        <input
+          type="range"
+          min={0}
+          max={maxIndex}
+          value={endIndex}
+          className="fund-overview__range-input"
+          aria-label="Velg sluttdato for datointervall"
+          onChange={(event) => {
+            const nextIndex = Math.max(Number(event.target.value), startIndex);
+            onEndChange(options[nextIndex]?.date ?? endDate);
+          }}
+        />
+      </div>
+
+      <div className="fund-overview__range-footer">
+        <span>{options[0]?.label}</span>
+        <span>{options[maxIndex]?.label}</span>
+      </div>
+    </div>
+  );
+}
+
+function MiniLineOverview({
+  series,
+  zoomRange,
+  onZoomRangeChange,
+}: {
+  series: FundOverviewLineSeries[];
+  zoomRange: ChartRange;
+  onZoomRangeChange: (range: ChartRange) => void;
+}) {
+  const [dragState, setDragState] = useState<ZoomDragState>(null);
+  const displaySeries = series.filter((seriesItem) => seriesItem.points.length > 0);
+
+  if (displaySeries.length === 0) {
+    return null;
+  }
+
+  const width = 900;
+  const height = 58;
+  const padding = { top: 7, right: 16, bottom: 9, left: 16 };
+  const chartWidth = width - padding.left - padding.right;
+  const chartHeight = height - padding.top - padding.bottom;
+  const pointCount = displaySeries[0].points.length;
+
+  if (pointCount <= 1) {
+    return null;
+  }
+
+  const values = displaySeries.flatMap((seriesItem) => seriesItem.points.map((point) => point.value));
+  const valueMin = Math.min(...values);
+  const valueMax = Math.max(...values);
+  const valueRange = valueMax - valueMin || Math.max(Math.abs(valueMax), 1);
+  const displayMin = valueMin - valueRange * 0.1;
+  const displayMax = valueMax + valueRange * 0.1;
+  const displayRange = displayMax - displayMin || 1;
+  const safeZoomRange = getClampedChartRange(zoomRange, pointCount) ?? getFullChartRange(pointCount);
+  const startX = getChartXForIndex(safeZoomRange.startIndex, pointCount, chartWidth, padding.left);
+  const endX = getChartXForIndex(safeZoomRange.endIndex, pointCount, chartWidth, padding.left);
+  const selectionX = Math.min(startX, endX);
+  const selectionWidth = Math.max(Math.abs(endX - startX), 4);
+  const handleWidth = 10;
+  const getIndex = (event: ReactPointerEvent<SVGSVGElement>) =>
+    getPointIndexFromClientX(event.clientX, event.currentTarget, pointCount, width, padding);
+  const getIndexFromElement = (event: ReactPointerEvent<SVGElement>) => {
+    const svgElement = event.currentTarget.ownerSVGElement;
+
+    if (!svgElement) {
+      return safeZoomRange.startIndex;
+    }
+
+    return getPointIndexFromClientX(event.clientX, svgElement, pointCount, width, padding);
+  };
+  const emitRange = (nextRange: ChartRange) => {
+    const safeRange = getClampedChartRange(nextRange, pointCount) ?? getFullChartRange(pointCount);
+    onZoomRangeChange(safeRange);
+  };
+  const updateDragRange = (nextIndex: number) => {
+    if (!dragState) {
+      return;
+    }
+
+    if (dragState.handle === 'start') {
+      emitRange({
+        startIndex: Math.min(nextIndex, dragState.range.endIndex - 1),
+        endIndex: dragState.range.endIndex,
+      });
+      return;
+    }
+
+    if (dragState.handle === 'end') {
+      emitRange({
+        startIndex: dragState.range.startIndex,
+        endIndex: Math.max(nextIndex, dragState.range.startIndex + 1),
+      });
+      return;
+    }
+
+    const windowSize = getRangeWindowSize(dragState.range);
+    const maxStart = Math.max(pointCount - windowSize, 0);
+    const nextStartIndex = clamp(dragState.range.startIndex + nextIndex - dragState.startIndex, 0, maxStart);
+
+    emitRange({
+      startIndex: nextStartIndex,
+      endIndex: Math.min(nextStartIndex + windowSize - 1, pointCount - 1),
+    });
+  };
+  const startDragFromSvg = (event: ReactPointerEvent<SVGSVGElement>) => {
+    const nextIndex = getIndex(event);
+    const nextRange = getCenteredChartRange(nextIndex, getRangeWindowSize(safeZoomRange), pointCount);
+
+    event.preventDefault();
+    event.currentTarget.setPointerCapture(event.pointerId);
+    emitRange(nextRange);
+    setDragState({
+      handle: 'window',
+      pointerId: event.pointerId,
+      startIndex: nextIndex,
+      range: nextRange,
+    });
+  };
+  const startDragFromElement = (event: ReactPointerEvent<SVGElement>, handle: ZoomHandle) => {
+    const svgElement = event.currentTarget.ownerSVGElement;
+
+    if (!svgElement) {
+      return;
+    }
+
+    event.preventDefault();
+    event.stopPropagation();
+    svgElement.setPointerCapture(event.pointerId);
+    setDragState({
+      handle,
+      pointerId: event.pointerId,
+      startIndex: getIndexFromElement(event),
+      range: safeZoomRange,
+    });
+  };
+
+  return (
+    <svg
+      viewBox={`0 0 ${width} ${height}`}
+      className="fund-overview__mini-chart"
+      aria-label="Zoomintervall"
+      role="img"
+      onPointerDown={startDragFromSvg}
+      onPointerMove={(event) => {
+        if (!dragState) {
+          return;
+        }
+
+        event.preventDefault();
+        updateDragRange(getIndex(event));
+      }}
+      onPointerUp={(event) => {
+        if (event.currentTarget.hasPointerCapture(event.pointerId)) {
+          event.currentTarget.releasePointerCapture(event.pointerId);
+        }
+
+        setDragState(null);
+      }}
+      onPointerCancel={() => setDragState(null)}
+    >
+      <rect
+        x={padding.left}
+        y={padding.top}
+        width={chartWidth}
+        height={chartHeight}
+        className="fund-overview__mini-chart-track"
+      />
+      {displaySeries.map((seriesItem) => {
+        const coordinates = seriesItem.points.map((point, index) => ({
+          x: getChartXForIndex(index, pointCount, chartWidth, padding.left),
+          y: padding.top + chartHeight - ((point.value - displayMin) / displayRange) * chartHeight,
+        }));
+
+        return (
+          <path
+            key={seriesItem.id}
+            d={buildLinePath(coordinates)}
+            fill="none"
+            stroke={seriesItem.color}
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth="2"
+            opacity="0.65"
+          />
+        );
+      })}
+      <rect
+        x={selectionX}
+        y={padding.top + 1}
+        width={selectionWidth}
+        height={chartHeight - 2}
+        className="fund-overview__mini-chart-window"
+        onPointerDown={(event) => startDragFromElement(event, 'window')}
+      />
+      <rect
+        x={startX - handleWidth / 2}
+        y={padding.top - 2}
+        width={handleWidth}
+        height={chartHeight + 4}
+        rx="2"
+        className="fund-overview__mini-chart-handle"
+        onPointerDown={(event) => startDragFromElement(event, 'start')}
+      />
+      <rect
+        x={endX - handleWidth / 2}
+        y={padding.top - 2}
+        width={handleWidth}
+        height={chartHeight + 4}
+        rx="2"
+        className="fund-overview__mini-chart-handle"
+        onPointerDown={(event) => startDragFromElement(event, 'end')}
+      />
+    </svg>
+  );
+}
+
+function ChartRangeBadge({
+  range,
+  pointCount,
+  onReset,
+}: {
+  range: ChartRange;
+  pointCount: number;
+  onReset: () => void;
+}) {
+  const isFullRange = isFullChartRange(range, pointCount);
+
+  return (
+    <div className="fund-overview__chart-actions">
+      <span>
+        {isFullRange
+          ? 'Viser hele perioden'
+          : `Zoom: punkt ${formatNumber(range.startIndex + 1, 0)}-${formatNumber(range.endIndex + 1, 0)}`}
+      </span>
+      <button type="button" onClick={onReset} disabled={isFullRange}>
+        Nullstill zoom
+      </button>
+    </div>
+  );
+}
+
+function LineRangeSummary({
+  range,
+  series,
+  mode,
+}: {
+  range: ChartRange | null;
+  series: FundOverviewLineSeries[];
+  mode: NavValueMode;
+}) {
+  if (!range || range.endIndex <= range.startIndex || series.length === 0) {
+    return null;
+  }
+
+  const startPoint = series[0]?.points[range.startIndex];
+  const endPoint = series[0]?.points[range.endIndex];
+
+  if (!startPoint || !endPoint) {
+    return null;
+  }
+
+  return (
+    <div className="fund-overview__chart-period">
+      <div>
+        <span>Valgt intervall</span>
+        <strong>
+          {formatDateLabel(startPoint.date)} - {formatDateLabel(endPoint.date)}
+        </strong>
+      </div>
+      <div className="fund-overview__chart-period-list">
+        {series.map((seriesItem) => {
+          const seriesStart = seriesItem.points[range.startIndex];
+          const seriesEnd = seriesItem.points[range.endIndex];
+
+          if (!seriesStart || !seriesEnd) {
+            return null;
+          }
+
+          const delta = seriesEnd.value - seriesStart.value;
+          const relativeDelta = seriesStart.value !== 0 ? seriesEnd.value / seriesStart.value - 1 : 0;
+
+          return (
+            <span key={seriesItem.id}>
+              <i className="fund-overview__legend-dot" style={{ background: seriesItem.color }} />
+              {seriesItem.label}:{' '}
+              {mode === 'nav'
+                ? `${formatSignedMetricValue(delta, 'nav')} (${formatSignedMetricValue(relativeDelta, 'percent')})`
+                : formatSignedMetricValue(delta, 'percent')}
+            </span>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+function FlowRangeSummary({
+  range,
+  combinedPoints,
+}: {
+  range: ChartRange | null;
+  combinedPoints: FundOverviewFlowPoint[];
+}) {
+  if (!range || range.endIndex <= range.startIndex) {
+    return null;
+  }
+
+  const selectedPoints = combinedPoints.slice(range.startIndex, range.endIndex + 1);
+  const startPoint = selectedPoints[0];
+  const endPoint = selectedPoints[selectedPoints.length - 1];
+
+  if (!startPoint || !endPoint) {
+    return null;
+  }
+
+  const grossBuy = selectedPoints.reduce((total, point) => total + point.grossBuy, 0);
+  const grossSell = selectedPoints.reduce((total, point) => total + point.grossSell, 0);
+  const net = selectedPoints.reduce((total, point) => total + point.net, 0);
+
+  return (
+    <div className="fund-overview__chart-period">
+      <div>
+        <span>Valgt intervall</span>
+        <strong>
+          {formatDateLabel(startPoint.date)} - {formatDateLabel(endPoint.date)}
+        </strong>
+      </div>
+      <div className="fund-overview__chart-period-list">
+        <span>
+          <i className="fund-overview__legend-dot fund-overview__legend-dot--buy" />
+          Tegninger: {formatMetricValue(grossBuy, 'currency')}
+        </span>
+        <span>
+          <i className="fund-overview__legend-dot fund-overview__legend-dot--sell" />
+          Innløsninger: {formatMetricValue(grossSell, 'currency')}
+        </span>
+        <span>
+          <i className="fund-overview__legend-dot fund-overview__legend-dot--net" />
+          Nettoflyt: {formatSignedMetricValue(net, 'currency')}
+        </span>
+      </div>
+    </div>
+  );
+}
+
+function LineChart({
+  series,
+  mode = 'return',
+}: {
+  series: FundOverviewLineSeries[];
+  mode?: NavValueMode;
+}) {
+  const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
+  const [selectionRange, setSelectionRange] = useState<ChartRange | null>(null);
+  const [zoomRange, setZoomRange] = useState<ChartRange | null>(null);
+  const [dragState, setDragState] = useState<ChartDragState>(null);
+  const chartShellRef = usePreventWheelScroll<HTMLDivElement>();
+  const rawDisplaySeries = series.filter((seriesItem) => seriesItem.points.length > 0);
+  const displaySeries = mode === 'return' ? getSeriesAsPercentChangeFromStart(rawDisplaySeries) : rawDisplaySeries;
+  const chartDataKey = `${mode}:${getChartDataKey(rawDisplaySeries)}`;
+
+  useEffect(() => {
+    setHoveredIndex(null);
+    setSelectionRange(null);
+    setZoomRange(null);
+    setDragState(null);
+  }, [chartDataKey]);
+
+  if (displaySeries.length === 0) {
+    return <div className="fund-overview__chart-empty">Ingen NAV-data i valgt utvalg.</div>;
+  }
+
+  const width = 900;
+  const height = 300;
+  const padding = { top: 18, right: 64, bottom: 36, left: 16 };
+  const chartWidth = width - padding.left - padding.right;
+  const chartHeight = height - padding.top - padding.bottom;
+  const totalPointCount = displaySeries[0].points.length;
+  const activeZoomRange = getClampedChartRange(zoomRange, totalPointCount) ?? getFullChartRange(totalPointCount);
+  const visibleSeries = displaySeries.map((seriesItem) => ({
+    ...seriesItem,
+    points: seriesItem.points.slice(activeZoomRange.startIndex, activeZoomRange.endIndex + 1),
+  }));
+  const pointCount = visibleSeries[0].points.length;
+  const values = visibleSeries.flatMap((seriesItem) => seriesItem.points.map((point) => point.value));
+  const valueMin = Math.min(...values);
+  const valueMax = Math.max(...values);
+  const valueRange = valueMax - valueMin || Math.max(Math.abs(valueMax), Math.abs(valueMin), 0.01);
+  const displayMin = mode === 'nav' ? Math.max(0, valueMin - valueRange * 0.16) : valueMin - valueRange * 0.18;
+  const displayMax = valueMax + valueRange * 0.18;
+  const displayRange = displayMax - displayMin || 1;
+  const coordinatesBySeries = visibleSeries.map((seriesItem) => ({
+    ...seriesItem,
+    coordinates: seriesItem.points.map((point, index) => ({
+      x: getChartXForIndex(index, pointCount, chartWidth, padding.left),
+      y: padding.top + chartHeight - ((point.value - displayMin) / displayRange) * chartHeight,
+    })),
+  }));
+  const tickIndexes = getTickIndexes(pointCount);
+  const axisFormat: FundOverviewMetricFormat = mode === 'return' ? 'percent' : 'nav';
+  const yAxisValues = [displayMax, displayMin + displayRange / 2, displayMin];
+  const activeIndex = hoveredIndex;
+  const activeX = activeIndex === null ? null : getChartXForIndex(activeIndex, pointCount, chartWidth, padding.left);
+  const activePoint = activeIndex === null ? null : visibleSeries[0].points[activeIndex];
+  const tooltipLeft = activeX === null ? 0 : clamp((activeX / width) * 100, 12, 82);
+  const zeroLineY =
+    mode === 'return' && displayMin <= 0 && displayMax >= 0
+      ? padding.top + chartHeight - ((0 - displayMin) / displayRange) * chartHeight
+      : null;
+  const visibleSelectionRange = getVisibleSelectionRange(selectionRange, activeZoomRange);
+  const selectionStartX =
+    visibleSelectionRange === null
+      ? null
+      : getChartXForIndex(visibleSelectionRange.startIndex, pointCount, chartWidth, padding.left);
+  const selectionEndX =
+    visibleSelectionRange === null
+      ? null
+      : getChartXForIndex(visibleSelectionRange.endIndex, pointCount, chartWidth, padding.left);
+  const selectionX =
+    selectionStartX === null || selectionEndX === null ? null : Math.min(selectionStartX, selectionEndX);
+  const selectionWidth =
+    selectionStartX === null || selectionEndX === null ? 0 : Math.max(Math.abs(selectionEndX - selectionStartX), 4);
+  const getLocalIndex = (event: ReactPointerEvent<SVGSVGElement> | ReactWheelEvent<SVGSVGElement>) =>
+    getPointIndexFromClientX(event.clientX, event.currentTarget, pointCount, width, padding);
+  const getAbsoluteIndex = (event: ReactPointerEvent<SVGSVGElement> | ReactWheelEvent<SVGSVGElement>) =>
+    activeZoomRange.startIndex + getLocalIndex(event);
+  const handlePointerDown = (event: ReactPointerEvent<SVGSVGElement>) => {
+    if (event.button !== 0) {
+      return;
+    }
+
+    const nextIndex = getAbsoluteIndex(event);
+    event.currentTarget.setPointerCapture(event.pointerId);
+    setDragState({ startIndex: nextIndex, pointerId: event.pointerId });
+    setHoveredIndex(nextIndex - activeZoomRange.startIndex);
+    setSelectionRange(null);
+  };
+  const handlePointerMove = (event: ReactPointerEvent<SVGSVGElement>) => {
+    const nextLocalIndex = getLocalIndex(event);
+    const nextAbsoluteIndex = activeZoomRange.startIndex + nextLocalIndex;
+    setHoveredIndex(nextLocalIndex);
+
+    if (dragState) {
+      setSelectionRange(normalizeChartRange(dragState.startIndex, nextAbsoluteIndex));
+    }
+  };
+  const handlePointerEnd = (event: ReactPointerEvent<SVGSVGElement>) => {
+    if (!dragState) {
+      return;
+    }
+
+    const nextRange = normalizeChartRange(dragState.startIndex, getAbsoluteIndex(event));
+    setDragState(null);
+
+    if (event.currentTarget.hasPointerCapture(event.pointerId)) {
+      event.currentTarget.releasePointerCapture(event.pointerId);
+    }
+
+    setSelectionRange(nextRange.endIndex > nextRange.startIndex ? nextRange : null);
+  };
+  const handleWheel = (event: ReactWheelEvent<SVGSVGElement>) => {
+    event.preventDefault();
+
+    const scrollDelta = Math.abs(event.deltaY) >= Math.abs(event.deltaX) ? event.deltaY : event.deltaX;
+
+    if (scrollDelta === 0) {
+      return;
+    }
+
+    const focusIndex = getAbsoluteIndex(event);
+    const nextRange = getWheelZoomRange(activeZoomRange, focusIndex, scrollDelta, totalPointCount);
+    setZoomRange(isFullChartRange(nextRange, totalPointCount) ? null : nextRange);
+    setHoveredIndex(clamp(focusIndex - nextRange.startIndex, 0, getRangeWindowSize(nextRange) - 1));
+  };
+
+  return (
+    <div className="fund-overview__chart-shell" ref={chartShellRef}>
+      {activeIndex !== null && activePoint ? (
+        <div className="fund-overview__chart-tooltip" style={{ left: `${tooltipLeft}%`, top: '0.85rem' }}>
+          <strong>{formatDateLabel(activePoint.date)}</strong>
+          <div className="fund-overview__chart-tooltip-list">
+            {visibleSeries.map((seriesItem) => (
+              <span key={seriesItem.id}>
+                <i className="fund-overview__legend-dot" style={{ background: seriesItem.color }} />
+                {seriesItem.label}: {formatMetricValue(seriesItem.points[activeIndex].value, axisFormat)}
+              </span>
+            ))}
+          </div>
+        </div>
+      ) : null}
+
+      <svg
+        viewBox={`0 0 ${width} ${height}`}
+        aria-label={mode === 'return' ? 'Prosentvis NAV-endring fra grafstart' : 'NAV-verdi over tid per fond'}
+        className="fund-overview__chart-svg"
+        role="img"
+        onPointerDown={handlePointerDown}
+        onPointerMove={handlePointerMove}
+        onPointerUp={handlePointerEnd}
+        onPointerCancel={handlePointerEnd}
+        onPointerLeave={() => {
+          if (!dragState) {
+            setHoveredIndex(null);
+          }
+        }}
+        onWheel={handleWheel}
+      >
+        {yAxisValues.map((axisValue) => {
+          const y = padding.top + chartHeight - ((axisValue - displayMin) / displayRange) * chartHeight;
+
+          return (
+            <g key={axisValue}>
+              <line
+                x1={padding.left}
+                y1={y}
+                x2={width - padding.right}
+                y2={y}
+                stroke="rgba(17, 24, 39, 0.08)"
+                strokeDasharray="4 6"
+              />
+              <text
+                x={width - 8}
+                y={y - 6}
+                className="fund-overview__chart-text fund-overview__chart-text--value"
+                textAnchor="end"
+              >
+                {formatMetricValue(axisValue, axisFormat)}
+              </text>
+            </g>
+          );
+        })}
+
+        {zeroLineY !== null ? (
+          <g>
+            <line
+              x1={padding.left}
+              y1={zeroLineY}
+              x2={width - padding.right}
+              y2={zeroLineY}
+              className="fund-overview__chart-zero-line"
+            />
+            <text x={padding.left + 8} y={zeroLineY - 7} className="fund-overview__chart-zero-label">
+              0%
+            </text>
+          </g>
+        ) : null}
+
+        {activeX !== null ? (
+          <line
+            x1={activeX}
+            y1={padding.top}
+            x2={activeX}
+            y2={padding.top + chartHeight}
+            className="fund-overview__chart-hover-line"
+          />
+        ) : null}
+
+        {selectionX !== null ? (
+          <rect
+            x={selectionX}
+            y={padding.top}
+            width={selectionWidth}
+            height={chartHeight}
+            className="fund-overview__chart-selection"
+          />
+        ) : null}
+
+        {coordinatesBySeries.length === 1 ? (
+          <path d={buildAreaPath(coordinatesBySeries[0].coordinates, padding.top + chartHeight)} fill={FUND_CHART_AREA_FILL} />
+        ) : null}
+
+        {coordinatesBySeries.map((seriesItem) => (
+          <g key={seriesItem.id}>
+            <path
+              d={buildLinePath(seriesItem.coordinates)}
+              fill="none"
+              stroke={seriesItem.color}
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth="3"
+            />
+            {activeIndex !== null && seriesItem.coordinates[activeIndex] ? (
+              <circle
+                cx={seriesItem.coordinates[activeIndex].x}
+                cy={seriesItem.coordinates[activeIndex].y}
+                r="5"
+                fill={seriesItem.color}
+                className="fund-overview__chart-point"
+              />
+            ) : null}
+          </g>
+        ))}
+
+        {tickIndexes.map((index) => (
+          <text
+            key={visibleSeries[0].points[index].date}
+            x={getChartXForIndex(index, pointCount, chartWidth, padding.left)}
+            y={height - 12}
+            className="fund-overview__chart-text"
+            textAnchor={index === 0 ? 'start' : index === pointCount - 1 ? 'end' : 'middle'}
+          >
+            {visibleSeries[0].points[index].label}
+          </text>
+        ))}
+      </svg>
+      <LineRangeSummary range={selectionRange} series={displaySeries} mode={mode} />
+      <ChartRangeBadge range={activeZoomRange} pointCount={totalPointCount} onReset={() => setZoomRange(null)} />
+      <MiniLineOverview
+        series={displaySeries}
+        zoomRange={activeZoomRange}
+        onZoomRangeChange={(range) => setZoomRange(isFullChartRange(range, totalPointCount) ? null : range)}
+      />
+    </div>
+  );
+}
+
+function FlowChart({
+  combinedPoints,
+  series,
+}: {
+  combinedPoints: FundOverviewFlowPoint[];
+  series: FundOverviewLineSeries[];
+}) {
+  const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
+  const [selectionRange, setSelectionRange] = useState<ChartRange | null>(null);
+  const [zoomRange, setZoomRange] = useState<ChartRange | null>(null);
+  const [dragState, setDragState] = useState<ChartDragState>(null);
+  const chartShellRef = usePreventWheelScroll<HTMLDivElement>();
+  const displaySeries = series.filter((seriesItem) => seriesItem.points.length > 0);
+  const chartDataKey = `${combinedPoints[0]?.date ?? 'empty'}:${combinedPoints[combinedPoints.length - 1]?.date ?? 'empty'}:${combinedPoints.length}:${getChartDataKey(displaySeries)}`;
+
+  useEffect(() => {
+    setHoveredIndex(null);
+    setSelectionRange(null);
+    setZoomRange(null);
+    setDragState(null);
+  }, [chartDataKey]);
+
+  if (combinedPoints.length === 0 || displaySeries.length === 0) {
+    return <div className="fund-overview__chart-empty">Ingen kapitalflyt i valgt utvalg.</div>;
+  }
+
+  const width = 900;
+  const height = 330;
+  const padding = { top: 18, right: 64, bottom: 36, left: 16 };
+  const chartWidth = width - padding.left - padding.right;
+  const chartHeight = height - padding.top - padding.bottom;
+  const halfHeight = chartHeight / 2;
+  const baselineY = padding.top + halfHeight;
+  const totalPointCount = combinedPoints.length;
+  const activeZoomRange = getClampedChartRange(zoomRange, totalPointCount) ?? getFullChartRange(totalPointCount);
+  const visibleCombinedPoints = combinedPoints.slice(activeZoomRange.startIndex, activeZoomRange.endIndex + 1);
+  const visibleSeries = displaySeries.map((seriesItem) => ({
+    ...seriesItem,
+    points: seriesItem.points.slice(activeZoomRange.startIndex, activeZoomRange.endIndex + 1),
+  }));
+  const pointCount = visibleCombinedPoints.length;
+  const maxAbs = Math.max(
+    1,
+    ...visibleCombinedPoints.map((point) => Math.max(point.grossBuy, point.grossSell, Math.abs(point.net))),
+    ...visibleSeries.flatMap((seriesItem) => seriesItem.points.map((point) => Math.abs(point.value))),
+  );
+  const coordinatesBySeries = visibleSeries.map((seriesItem) => ({
+    ...seriesItem,
+    coordinates: seriesItem.points.map((point, index) => ({
+      x: getChartXForIndex(index, pointCount, chartWidth, padding.left),
+      y: baselineY - (point.value / maxAbs) * (halfHeight - 14),
+    })),
+  }));
+  const tickIndexes = getTickIndexes(pointCount);
+  const activeIndex = hoveredIndex;
+  const activeX = activeIndex === null ? null : getChartXForIndex(activeIndex, pointCount, chartWidth, padding.left);
+  const activePoint = activeIndex === null ? null : visibleCombinedPoints[activeIndex];
+  const tooltipLeft = activeX === null ? 0 : clamp((activeX / width) * 100, 12, 82);
+  const visibleSelectionRange = getVisibleSelectionRange(selectionRange, activeZoomRange);
+  const selectionStartX =
+    visibleSelectionRange === null
+      ? null
+      : getChartXForIndex(visibleSelectionRange.startIndex, pointCount, chartWidth, padding.left);
+  const selectionEndX =
+    visibleSelectionRange === null
+      ? null
+      : getChartXForIndex(visibleSelectionRange.endIndex, pointCount, chartWidth, padding.left);
+  const selectionX =
+    selectionStartX === null || selectionEndX === null ? null : Math.min(selectionStartX, selectionEndX);
+  const selectionWidth =
+    selectionStartX === null || selectionEndX === null ? 0 : Math.max(Math.abs(selectionEndX - selectionStartX), 4);
+  const getLocalIndex = (event: ReactPointerEvent<SVGSVGElement> | ReactWheelEvent<SVGSVGElement>) =>
+    getPointIndexFromClientX(event.clientX, event.currentTarget, pointCount, width, padding);
+  const getAbsoluteIndex = (event: ReactPointerEvent<SVGSVGElement> | ReactWheelEvent<SVGSVGElement>) =>
+    activeZoomRange.startIndex + getLocalIndex(event);
+  const handlePointerDown = (event: ReactPointerEvent<SVGSVGElement>) => {
+    if (event.button !== 0) {
+      return;
+    }
+
+    const nextIndex = getAbsoluteIndex(event);
+    event.currentTarget.setPointerCapture(event.pointerId);
+    setDragState({ startIndex: nextIndex, pointerId: event.pointerId });
+    setHoveredIndex(nextIndex - activeZoomRange.startIndex);
+    setSelectionRange(null);
+  };
+  const handlePointerMove = (event: ReactPointerEvent<SVGSVGElement>) => {
+    const nextLocalIndex = getLocalIndex(event);
+    const nextAbsoluteIndex = activeZoomRange.startIndex + nextLocalIndex;
+    setHoveredIndex(nextLocalIndex);
+
+    if (dragState) {
+      setSelectionRange(normalizeChartRange(dragState.startIndex, nextAbsoluteIndex));
+    }
+  };
+  const handlePointerEnd = (event: ReactPointerEvent<SVGSVGElement>) => {
+    if (!dragState) {
+      return;
+    }
+
+    const nextRange = normalizeChartRange(dragState.startIndex, getAbsoluteIndex(event));
+    setDragState(null);
+
+    if (event.currentTarget.hasPointerCapture(event.pointerId)) {
+      event.currentTarget.releasePointerCapture(event.pointerId);
+    }
+
+    setSelectionRange(nextRange.endIndex > nextRange.startIndex ? nextRange : null);
+  };
+  const handleWheel = (event: ReactWheelEvent<SVGSVGElement>) => {
+    event.preventDefault();
+
+    const scrollDelta = Math.abs(event.deltaY) >= Math.abs(event.deltaX) ? event.deltaY : event.deltaX;
+
+    if (scrollDelta === 0) {
+      return;
+    }
+
+    const focusIndex = getAbsoluteIndex(event);
+    const nextRange = getWheelZoomRange(activeZoomRange, focusIndex, scrollDelta, totalPointCount);
+    setZoomRange(isFullChartRange(nextRange, totalPointCount) ? null : nextRange);
+    setHoveredIndex(clamp(focusIndex - nextRange.startIndex, 0, getRangeWindowSize(nextRange) - 1));
+  };
+
+  return (
+    <div className="fund-overview__chart-shell fund-overview__chart-shell--flow" ref={chartShellRef}>
+      {activeIndex !== null && activePoint ? (
+        <div className="fund-overview__chart-tooltip" style={{ left: `${tooltipLeft}%`, top: '0.85rem' }}>
+          <strong>{formatDateLabel(activePoint.date)}</strong>
+          <div className="fund-overview__chart-tooltip-list">
+            <span>
+              <i className="fund-overview__legend-dot fund-overview__legend-dot--buy" />
+              Tegninger: {formatMetricValue(activePoint.grossBuy, 'currency')}
+            </span>
+            <span>
+              <i className="fund-overview__legend-dot fund-overview__legend-dot--sell" />
+              Innlosninger: {formatMetricValue(activePoint.grossSell, 'currency')}
+            </span>
+            <span>
+              <i className="fund-overview__legend-dot fund-overview__legend-dot--net" />
+              Nettoflyt: {formatMetricValue(activePoint.net, 'currency')}
+            </span>
+          </div>
+        </div>
+      ) : null}
+
+      <svg
+        viewBox={`0 0 ${width} ${height}`}
+        aria-label="Kapitalflyt med tegninger, innlosninger og nettoflyt"
+        className="fund-overview__chart-svg"
+        role="img"
+        onPointerDown={handlePointerDown}
+        onPointerMove={handlePointerMove}
+        onPointerUp={handlePointerEnd}
+        onPointerCancel={handlePointerEnd}
+        onPointerLeave={() => {
+          if (!dragState) {
+            setHoveredIndex(null);
+          }
+        }}
+        onWheel={handleWheel}
+      >
+        {[0.25, 0.5, 0.75].map((fraction) => (
+          <g key={fraction}>
+            <line
+              x1={padding.left}
+              y1={padding.top + fraction * halfHeight}
+              x2={width - padding.right}
+              y2={padding.top + fraction * halfHeight}
+              stroke="rgba(17, 24, 39, 0.06)"
+              strokeDasharray="4 6"
+            />
+            <line
+              x1={padding.left}
+              y1={baselineY + fraction * halfHeight}
+              x2={width - padding.right}
+              y2={baselineY + fraction * halfHeight}
+              stroke="rgba(17, 24, 39, 0.06)"
+              strokeDasharray="4 6"
+            />
+          </g>
+        ))}
+
+        <line x1={padding.left} y1={baselineY} x2={width - padding.right} y2={baselineY} stroke="rgba(17, 24, 39, 0.18)" />
+
+        {activeX !== null ? (
+          <line
+            x1={activeX}
+            y1={padding.top}
+            x2={activeX}
+            y2={padding.top + chartHeight}
+            className="fund-overview__chart-hover-line"
+          />
+        ) : null}
+
+        {selectionX !== null ? (
+          <rect
+            x={selectionX}
+            y={padding.top}
+            width={selectionWidth}
+            height={chartHeight}
+            className="fund-overview__chart-selection"
+          />
+        ) : null}
+
+        <text x={width - 8} y={padding.top - 2} className="fund-overview__chart-text fund-overview__chart-text--value" textAnchor="end">
+          {formatMetricValue(maxAbs, 'currency')}
+        </text>
+        <text x={width - 8} y={height - 48} className="fund-overview__chart-text fund-overview__chart-text--value" textAnchor="end">
+          -{formatMetricValue(maxAbs, 'currency')}
+        </text>
+
+        {visibleCombinedPoints.map((point, index) => {
+          const centerX = getChartXForIndex(index, pointCount, chartWidth, padding.left);
+          const buyHeight = (point.grossBuy / maxAbs) * (halfHeight - 14);
+          const sellHeight = (point.grossSell / maxAbs) * (halfHeight - 14);
+          const barWidth = Math.max(4, Math.min(14, (pointCount === 1 ? chartWidth / 4 : (chartWidth / Math.max(pointCount - 1, 1)) * 0.28)));
+
+          return (
+            <g key={point.date}>
+              <rect x={centerX - barWidth / 2} y={baselineY - buyHeight} width={barWidth} height={buyHeight} rx="2" fill={FUND_CHART_PRIMARY} />
+              <rect x={centerX - barWidth / 2} y={baselineY} width={barWidth} height={sellHeight} rx="2" fill={FUND_CHART_MUTED} />
+            </g>
+          );
+        })}
+
+        {coordinatesBySeries.map((seriesItem) => (
+          <g key={seriesItem.id}>
+            <path
+              d={buildLinePath(seriesItem.coordinates)}
+              fill="none"
+              stroke={seriesItem.color}
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth="2.5"
+            />
+            {activeIndex !== null && seriesItem.coordinates[activeIndex] ? (
+              <circle
+                cx={seriesItem.coordinates[activeIndex].x}
+                cy={seriesItem.coordinates[activeIndex].y}
+                r="4.5"
+                fill={seriesItem.color}
+                className="fund-overview__chart-point"
+              />
+            ) : null}
+          </g>
+        ))}
+
+        {tickIndexes.map((index) => (
+          <text
+            key={visibleCombinedPoints[index].date}
+            x={getChartXForIndex(index, pointCount, chartWidth, padding.left)}
+            y={height - 12}
+            className="fund-overview__chart-text"
+            textAnchor={index === 0 ? 'start' : index === pointCount - 1 ? 'end' : 'middle'}
+          >
+            {visibleCombinedPoints[index].label}
+          </text>
+        ))}
+      </svg>
+      <FlowRangeSummary range={selectionRange} combinedPoints={combinedPoints} />
+      <ChartRangeBadge range={activeZoomRange} pointCount={totalPointCount} onReset={() => setZoomRange(null)} />
+      <MiniLineOverview
+        series={displaySeries}
+        zoomRange={activeZoomRange}
+        onZoomRangeChange={(range) => setZoomRange(isFullChartRange(range, totalPointCount) ? null : range)}
+      />
     </div>
   );
 }
@@ -575,13 +1587,7 @@ function CompositionPiePanel({
             onMouseLeave={() => setHoveredPointId(null)}
           >
             {points.length === 1 ? (
-              <circle
-                cx="90"
-                cy="90"
-                r="78"
-                fill={points[0].color}
-                onMouseEnter={() => setHoveredPointId(points[0].id)}
-              />
+              <circle cx="90" cy="90" r="78" fill={points[0].color} onMouseEnter={() => setHoveredPointId(points[0].id)} />
             ) : (
               points.map((point) => {
                 const startAngle = angleCursor;
@@ -627,6 +1633,41 @@ function CompositionPiePanel({
   );
 }
 
+function PaginationControls({
+  currentPage,
+  totalPages,
+  totalRows,
+  startRow,
+  endRow,
+  label,
+  onPageChange,
+}: {
+  currentPage: number;
+  totalPages: number;
+  totalRows: number;
+  startRow: number;
+  endRow: number;
+  label: string;
+  onPageChange: (page: number) => void;
+}) {
+  return (
+    <div className="fund-overview__pagination">
+      <span>
+        Viser {formatNumber(startRow, 0)}-{formatNumber(endRow, 0)} av {formatNumber(totalRows, 0)} {label}
+      </span>
+      <div className="fund-overview__pagination-buttons">
+        <button type="button" onClick={() => onPageChange(currentPage - 1)} disabled={currentPage <= 1}>
+          Forrige
+        </button>
+        <span className="fund-overview__pagination-current">{currentPage}</span>
+        <button type="button" onClick={() => onPageChange(currentPage + 1)} disabled={currentPage >= totalPages}>
+          Neste
+        </button>
+      </div>
+    </div>
+  );
+}
+
 function FlowContributorTable({
   title,
   rows,
@@ -662,7 +1703,9 @@ function FlowContributorTable({
                 <tr key={row.customerId}>
                   <td>
                     <div className="table-primary-cell">
-                      <strong>{row.investorName}</strong>
+                      <strong>
+                        <CustomerOverviewLink customerId={row.customerId}>{row.investorName}</CustomerOverviewLink>
+                      </strong>
                       <span>
                         {row.investorType} / {row.investorCategory}
                       </span>
@@ -706,1473 +1749,63 @@ function FlowContributorTables({
   const [buyPage, setBuyPage] = useState(1);
   const [sellPage, setSellPage] = useState(1);
 
-  useEffect(() => {
-    setBuyPage(1);
-    setSellPage(1);
-  }, [buyRows, sellRows]);
-
   return (
     <div className="fund-overview__impact-grid">
-      <FlowContributorTable
-        title="Største tegninger"
-        rows={buyRows}
-        page={buyPage}
-        onPageChange={setBuyPage}
-      />
-      <FlowContributorTable
-        title="Største innløsninger"
-        rows={sellRows}
-        page={sellPage}
-        onPageChange={setSellPage}
-      />
+      <FlowContributorTable title="Største tegninger" rows={buyRows} page={buyPage} onPageChange={setBuyPage} />
+      <FlowContributorTable title="Største innløsninger" rows={sellRows} page={sellPage} onPageChange={setSellPage} />
     </div>
   );
 }
 
-function getMultiSelectSummary(
-  options: FundOverviewSelectOption[],
-  selectedIds: string[],
-  allLabel: string,
-) {
-  if (selectedIds.length === options.length) {
-    return allLabel;
-  }
+function getSortedDividendRows(rows: FundOverviewDividendRow[], sortState: SortState<DividendSortKey>) {
+  return [...rows].sort((left, right) => {
+    const direction = sortState.direction === 'asc' ? 1 : -1;
 
-  const labels = options
-    .filter((option) => selectedIds.includes(option.id))
-    .map((option) => option.label);
-
-  return labels.join(', ');
-}
-
-function MultiSelectFilter({
-  label,
-  options,
-  selectedIds,
-  allLabel,
-  onChange,
-}: {
-  label: string;
-  options: FundOverviewSelectOption[];
-  selectedIds: string[];
-  allLabel: string;
-  onChange: (selectedIds: string[]) => void;
-}) {
-  const [isOpen, setIsOpen] = useState(false);
-  const wrapperRef = useRef<HTMLDivElement>(null);
-  const optionIds = options.map((option) => option.id);
-  const selectedSet = new Set(selectedIds);
-  const allSelected = selectedIds.length === optionIds.length;
-  const selectedSummary = getMultiSelectSummary(options, selectedIds, allLabel);
-
-  useEffect(() => {
-    const handlePointerDown = (event: MouseEvent) => {
-      if (wrapperRef.current && !wrapperRef.current.contains(event.target as Node)) {
-        setIsOpen(false);
-      }
-    };
-
-    document.addEventListener('mousedown', handlePointerDown);
-    return () => document.removeEventListener('mousedown', handlePointerDown);
-  }, []);
-
-  const commitSelection = (nextIds: string[]) => {
-    const normalizedIds = optionIds.filter((optionId) => nextIds.includes(optionId));
-    onChange(normalizedIds.length > 0 ? normalizedIds : [...optionIds]);
-  };
-
-  const toggleOption = (optionId: string) => {
-    const nextSelected = new Set(selectedIds);
-
-    if (nextSelected.has(optionId)) {
-      nextSelected.delete(optionId);
-    } else {
-      nextSelected.add(optionId);
+    if (sortState.key === 'amount') {
+      return (left.amount - right.amount) * direction;
     }
 
-    commitSelection(Array.from(nextSelected));
-  };
+    if (sortState.key === 'date') {
+      return compareString(left.date, right.date) * direction;
+    }
 
-  return (
-    <label className="trade-field fund-overview__multi-filter">
-      <span>{label}</span>
-      <div className="fund-overview__multi-filter-control" ref={wrapperRef}>
-        <button
-          type="button"
-          className="fund-overview__multi-filter-button"
-          aria-haspopup="listbox"
-          aria-expanded={isOpen}
-          title={selectedSummary}
-          onClick={() => setIsOpen((current) => !current)}
-        >
-          <span>{selectedSummary}</span>
-          <span aria-hidden="true">▾</span>
-        </button>
-
-        {isOpen ? (
-          <div
-            className="fund-overview__multi-filter-menu"
-            role="listbox"
-            aria-multiselectable="true"
-          >
-            <label className="fund-overview__multi-filter-option fund-overview__multi-filter-option--all">
-              <input
-                type="checkbox"
-                checked={allSelected}
-                onChange={() => commitSelection(optionIds)}
-              />
-              <span>{allLabel}</span>
-            </label>
-
-            {options.map((option) => (
-              <label key={option.id} className="fund-overview__multi-filter-option">
-                <input
-                  type="checkbox"
-                  checked={selectedSet.has(option.id)}
-                  onChange={() => toggleOption(option.id)}
-                />
-                <span>{option.label}</span>
-              </label>
-            ))}
-          </div>
-        ) : null}
-      </div>
-    </label>
-  );
+    return compareString(left[sortState.key], right[sortState.key]) * direction;
+  });
 }
 
-function PaginationControls({
-  currentPage,
-  totalPages,
-  totalRows,
-  startRow,
-  endRow,
-  label,
-  onPageChange,
-}: {
-  currentPage: number;
-  totalPages: number;
-  totalRows: number;
-  startRow: number;
-  endRow: number;
-  label: string;
-  onPageChange: (page: number) => void;
-}) {
-  if (totalRows <= TABLE_PAGE_SIZE) {
+function getSortedShareholderRows(rows: FundOverviewTopShareholder[], sortState: SortState<ShareholderSortKey>) {
+  return [...rows].sort((left, right) => {
+    const direction = sortState.direction === 'asc' ? 1 : -1;
+
+    if (sortState.key === 'rank') {
+      return (right.marketValue - left.marketValue) * (sortState.direction === 'asc' ? 1 : -1);
+    }
+
+    if (sortState.key === 'investorName') {
+      return compareString(left.investorName, right.investorName) * direction;
+    }
+
+    if (sortState.key === 'exposureCount') {
+      return (left.exposureCount - right.exposureCount) * direction;
+    }
+
+    return (left[sortState.key] - right[sortState.key]) * direction;
+  });
+}
+
+function ChartLegend({ series }: { series: FundOverviewLineSeries[] }) {
+  if (series.length <= 1) {
     return null;
   }
 
   return (
-    <div className="fund-overview__pagination" aria-label={`Sider for ${label}`}>
-      <span>
-        {formatNumber(startRow, 0)}-{formatNumber(endRow, 0)} av {formatNumber(totalRows, 0)}
-      </span>
-      <div className="fund-overview__pagination-buttons">
-        <button
-          type="button"
-          onClick={() => onPageChange(currentPage - 1)}
-          disabled={currentPage === 1}
-        >
-          Forrige
-        </button>
-        {getPaginationPages(currentPage, totalPages).map((page) => (
-          page === currentPage ? (
-            <span
-              key={page}
-              className="fund-overview__pagination-current"
-              aria-current="page"
-            >
-              {page}
-            </span>
-          ) : (
-            <button key={page} type="button" onClick={() => onPageChange(page)}>
-              {page}
-            </button>
-          )
-        ))}
-        <button
-          type="button"
-          onClick={() => onPageChange(currentPage + 1)}
-          disabled={currentPage === totalPages}
-        >
-          Neste
-        </button>
-      </div>
-    </div>
-  );
-}
-
-function PeriodRangeSlider({
-  options,
-  startDate,
-  endDate,
-  onStartChange,
-  onEndChange,
-}: {
-  options: { date: string; label: string }[];
-  startDate: string;
-  endDate: string;
-  onStartChange: (date: string) => void;
-  onEndChange: (date: string) => void;
-}) {
-  if (options.length === 0) {
-    return null;
-  }
-
-  const dateIndexByDate = new Map(options.map((option, index) => [option.date, index]));
-  const maxIndex = Math.max(options.length - 1, 0);
-  const startIndex = dateIndexByDate.get(startDate) ?? 0;
-  const endIndex = dateIndexByDate.get(endDate) ?? maxIndex;
-  const startPercent = maxIndex === 0 ? 0 : (startIndex / maxIndex) * 100;
-  const endPercent = maxIndex === 0 ? 100 : (endIndex / maxIndex) * 100;
-
-  return (
-    <div className="fund-overview__range-card">
-      <div className="fund-overview__range-header">
-        <div>
-          <p className="fund-overview__range-label">Datointervall</p>
-          <strong>
-            {formatDateLabel(startDate)} - {formatDateLabel(endDate)}
-          </strong>
-        </div>
-        <span className="fund-overview__range-caption">
-          {options.length} tilgjengelige NAV-datoer
+    <div className="fund-overview__chart-legend">
+      {series.map((seriesItem) => (
+        <span key={seriesItem.id}>
+          <i className="fund-overview__legend-dot" style={{ background: seriesItem.color }} />
+          {seriesItem.label}
         </span>
-      </div>
-
-      <div className="fund-overview__range-values">
-        <span>Start: {formatDateLabel(startDate)}</span>
-        <span>Slutt: {formatDateLabel(endDate)}</span>
-      </div>
-
-      <div className="fund-overview__range-slider-stack">
-        <div className="fund-overview__range-track" />
-        <div
-          className="fund-overview__range-fill"
-          style={{
-            left: `${startPercent}%`,
-            width: `${Math.max(endPercent - startPercent, 0)}%`,
-          }}
-        />
-        <input
-          type="range"
-          min={0}
-          max={maxIndex}
-          value={startIndex}
-          className="fund-overview__range-input"
-          onChange={(event) => {
-            const nextIndex = Math.min(Number(event.target.value), endIndex);
-            onStartChange(options[nextIndex]?.date ?? startDate);
-          }}
-        />
-        <input
-          type="range"
-          min={0}
-          max={maxIndex}
-          value={endIndex}
-          className="fund-overview__range-input"
-          onChange={(event) => {
-            const nextIndex = Math.max(Number(event.target.value), startIndex);
-            onEndChange(options[nextIndex]?.date ?? endDate);
-          }}
-        />
-      </div>
-
-      <div className="fund-overview__range-footer">
-        <span>{options[0]?.label}</span>
-        <span>{options[maxIndex]?.label}</span>
-      </div>
-    </div>
-  );
-}
-
-function MiniLineOverview({
-  series,
-  zoomRange,
-  onZoomRangeChange,
-}: {
-  series: FundOverviewLineSeries[];
-  zoomRange: ChartRange;
-  onZoomRangeChange: (range: ChartRange) => void;
-}) {
-  const [dragState, setDragState] = useState<ZoomHandleDragState>(null);
-  const displaySeries = series.filter((seriesItem) => seriesItem.points.length > 0);
-
-  if (displaySeries.length === 0) {
-    return null;
-  }
-
-  const width = 900;
-  const height = 58;
-  const padding = { top: 7, right: 16, bottom: 9, left: 16 };
-  const chartWidth = width - padding.left - padding.right;
-  const chartHeight = height - padding.top - padding.bottom;
-  const pointCount = displaySeries[0].points.length;
-  const values = displaySeries.flatMap((seriesItem) => seriesItem.points.map((point) => point.value));
-  const valueMin = Math.min(...values);
-  const valueMax = Math.max(...values);
-  const valueRange = valueMax - valueMin || Math.max(Math.abs(valueMax) * 0.08, 1);
-  const displayMin = valueMin - valueRange * 0.1;
-  const displayMax = valueMax + valueRange * 0.1;
-  const displayRange = displayMax - displayMin || 1;
-  const safeZoomRange = getClampedChartRange(zoomRange, pointCount) ?? getFullChartRange(pointCount);
-  const startX = getChartXForIndex(safeZoomRange.startIndex, pointCount, chartWidth, padding.left);
-  const endX = getChartXForIndex(safeZoomRange.endIndex, pointCount, chartWidth, padding.left);
-  const selectionX = Math.min(startX, endX);
-  const selectionWidth = Math.max(Math.abs(endX - startX), pointCount === 1 ? 8 : 4);
-  const handleWidth = 10;
-  const getIndex = (event: ReactPointerEvent<SVGSVGElement>) =>
-    getPointIndexFromClientX(event.clientX, event.currentTarget, pointCount, width, padding);
-  const updateHandle = (handle: ZoomHandle | null, nextIndex: number) => {
-    if (!handle || pointCount <= 1) {
-      return;
-    }
-
-    if (handle === 'start') {
-      onZoomRangeChange({
-        startIndex: Math.min(nextIndex, safeZoomRange.endIndex - 1),
-        endIndex: safeZoomRange.endIndex,
-      });
-      return;
-    }
-
-    onZoomRangeChange({
-      startIndex: safeZoomRange.startIndex,
-      endIndex: Math.max(nextIndex, safeZoomRange.startIndex + 1),
-    });
-  };
-  const handlePointerDown = (
-    event: ReactPointerEvent<SVGRectElement>,
-    handle: ZoomHandle,
-  ) => {
-    event.preventDefault();
-    event.stopPropagation();
-    setDragState({ handle, pointerId: event.pointerId });
-    event.currentTarget.setPointerCapture(event.pointerId);
-  };
-
-  return (
-    <svg
-      viewBox={`0 0 ${width} ${height}`}
-      className="fund-overview__mini-chart"
-      aria-label="Zoomintervall"
-      role="img"
-      onPointerMove={(event) => {
-        if (!dragState) {
-          return;
-        }
-
-        event.preventDefault();
-        updateHandle(dragState.handle, getIndex(event));
-      }}
-      onPointerUp={(event) => {
-        if (!dragState) {
-          return;
-        }
-
-        if (event.currentTarget.hasPointerCapture(dragState.pointerId)) {
-          event.currentTarget.releasePointerCapture(dragState.pointerId);
-        }
-
-        setDragState(null);
-      }}
-      onPointerCancel={() => setDragState(null)}
-    >
-      <rect
-        x={padding.left}
-        y={padding.top}
-        width={chartWidth}
-        height={chartHeight}
-        className="fund-overview__mini-chart-track"
-      />
-      {displaySeries.map((seriesItem) => {
-        const coordinates = seriesItem.points.map((point, index) => ({
-          x: getChartXForIndex(index, pointCount, chartWidth, padding.left),
-          y:
-            padding.top +
-            chartHeight -
-            ((point.value - displayMin) / displayRange) * chartHeight,
-        }));
-
-        return (
-          <path
-            key={seriesItem.id}
-            d={buildLinePath(coordinates)}
-            fill="none"
-            stroke={seriesItem.color}
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth="2"
-            opacity="0.65"
-          />
-        );
-      })}
-      <rect
-        x={selectionX}
-        y={padding.top + 1}
-        width={selectionWidth}
-        height={chartHeight - 2}
-        className="fund-overview__mini-chart-window"
-      />
-      <rect
-        x={startX - handleWidth / 2}
-        y={padding.top - 2}
-        width={handleWidth}
-        height={chartHeight + 4}
-        rx="2"
-        className="fund-overview__mini-chart-handle"
-        onPointerDown={(event) => handlePointerDown(event, 'start')}
-      />
-      <rect
-        x={endX - handleWidth / 2}
-        y={padding.top - 2}
-        width={handleWidth}
-        height={chartHeight + 4}
-        rx="2"
-        className="fund-overview__mini-chart-handle"
-        onPointerDown={(event) => handlePointerDown(event, 'end')}
-      />
-    </svg>
-  );
-}
-
-function ChartRangeBadge({
-  range,
-  pointCount,
-  onReset,
-}: {
-  range: ChartRange;
-  pointCount: number;
-  onReset: () => void;
-}) {
-  const isFullRange = isFullChartRange(range, pointCount);
-
-  return (
-    <div className="fund-overview__chart-actions">
-      <span>
-        {isFullRange
-          ? 'Viser hele perioden'
-          : `Zoom: ${formatNumber(range.startIndex + 1, 0)}-${formatNumber(range.endIndex + 1, 0)}`}
-      </span>
-      <button type="button" onClick={onReset} disabled={isFullRange}>
-        Tilbakestill zoom
-      </button>
-    </div>
-  );
-}
-
-function NavRangeSummary({
-  range,
-  series,
-}: {
-  range: ChartRange | null;
-  series: FundOverviewLineSeries[];
-}) {
-  if (!range || range.endIndex <= range.startIndex) {
-    return null;
-  }
-
-  const startPoint = series[0]?.points[range.startIndex];
-  const endPoint = series[0]?.points[range.endIndex];
-
-  if (!startPoint || !endPoint) {
-    return null;
-  }
-
-  return (
-    <div className="fund-overview__chart-period">
-      <div>
-        <span>Valgt delperiode</span>
-        <strong>
-          {formatDateLabel(startPoint.date)} - {formatDateLabel(endPoint.date)}
-        </strong>
-      </div>
-      <div className="fund-overview__chart-period-list">
-        {series.map((seriesItem) => {
-          const seriesStartPoint = seriesItem.points[range.startIndex];
-          const seriesEndPoint = seriesItem.points[range.endIndex];
-
-          if (!seriesStartPoint || !seriesEndPoint) {
-            return null;
-          }
-
-          const valueChange = seriesEndPoint.value - seriesStartPoint.value;
-          const returnChange =
-            seriesStartPoint.value > 0 ? seriesEndPoint.value / seriesStartPoint.value - 1 : 0;
-
-          return (
-            <span key={seriesItem.id}>
-              <i className="fund-overview__legend-dot" style={{ background: seriesItem.color }} />
-              {seriesItem.label}: {formatSignedMetricValue(valueChange, 'nav')} (
-              {formatSignedMetricValue(returnChange, 'percent')})
-            </span>
-          );
-        })}
-      </div>
-    </div>
-  );
-}
-
-function FlowRangeSummary({
-  range,
-  combinedPoints,
-}: {
-  range: ChartRange | null;
-  combinedPoints: FundOverviewFlowPoint[];
-}) {
-  if (!range || range.endIndex <= range.startIndex) {
-    return null;
-  }
-
-  const selectedPoints = combinedPoints.slice(range.startIndex, range.endIndex + 1);
-  const startPoint = selectedPoints[0];
-  const endPoint = selectedPoints[selectedPoints.length - 1];
-
-  if (!startPoint || !endPoint) {
-    return null;
-  }
-
-  const grossBuy = selectedPoints.reduce((total, point) => total + point.grossBuy, 0);
-  const grossSell = selectedPoints.reduce((total, point) => total + point.grossSell, 0);
-  const net = grossBuy - grossSell;
-  const grossActivity = grossBuy + grossSell;
-  const netShare = grossActivity > 0 ? net / grossActivity : 0;
-
-  return (
-    <div className="fund-overview__chart-period">
-      <div>
-        <span>Valgt delperiode</span>
-        <strong>
-          {formatDateLabel(startPoint.date)} - {formatDateLabel(endPoint.date)}
-        </strong>
-      </div>
-      <div className="fund-overview__chart-period-list">
-        <span>
-          <i className="fund-overview__legend-dot fund-overview__legend-dot--buy" />
-          Tegninger: {formatMetricValue(grossBuy, 'currency')}
-        </span>
-        <span>
-          <i className="fund-overview__legend-dot fund-overview__legend-dot--sell" />
-          Innløsninger: {formatMetricValue(grossSell, 'currency')}
-        </span>
-        <span>
-          <i className="fund-overview__legend-dot fund-overview__legend-dot--net" />
-          Nettoflyt: {formatSignedMetricValue(net, 'currency')}
-        </span>
-        <span>
-          Nettoandel av aktivitet: {formatSignedMetricValue(netShare, 'percent')}
-        </span>
-      </div>
-    </div>
-  );
-}
-
-function NavChart({
-  series,
-  mode = 'return',
-}: {
-  series: FundOverviewLineSeries[];
-  mode?: 'return' | 'nav';
-}) {
-  const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
-  const [selectionRange, setSelectionRange] = useState<ChartRange | null>(null);
-  const [zoomRange, setZoomRange] = useState<ChartRange | null>(null);
-  const [dragState, setDragState] = useState<ChartDragState>(null);
-  const chartShellRef = usePreventWheelScroll<HTMLDivElement>();
-  const displaysPercentChange = mode === 'return';
-  const rawDisplaySeries = series.filter((seriesItem) => seriesItem.points.length > 0);
-  const displaySeries = displaysPercentChange
-    ? getSeriesAsPercentChangeFromStart(rawDisplaySeries)
-    : rawDisplaySeries;
-  const chartDataKey = getChartDataKey(rawDisplaySeries);
-
-  useEffect(() => {
-    setHoveredIndex(null);
-    setSelectionRange(null);
-    setZoomRange(null);
-    setDragState(null);
-  }, [chartDataKey, mode]);
-
-  if (displaySeries.length === 0) {
-    return <div className="fund-overview__chart-empty">Ingen NAV-data i valgt utvalg.</div>;
-  }
-
-  const width = 900;
-  const height = 340;
-  const padding = { top: 18, right: 64, bottom: 36, left: 16 };
-  const chartWidth = width - padding.left - padding.right;
-  const chartHeight = height - padding.top - padding.bottom;
-  const totalPointCount = displaySeries[0].points.length;
-  const activeZoomRange =
-    getClampedChartRange(zoomRange, totalPointCount) ?? getFullChartRange(totalPointCount);
-  const visibleSeries = displaySeries.map((seriesItem) => ({
-    ...seriesItem,
-    points: seriesItem.points.slice(activeZoomRange.startIndex, activeZoomRange.endIndex + 1),
-  }));
-  const pointCount = visibleSeries[0].points.length;
-  const values = visibleSeries.flatMap((seriesItem) => seriesItem.points.map((point) => point.value));
-  const valueMin = Math.min(...values);
-  const valueMax = Math.max(...values);
-  const valueRange = valueMax - valueMin || Math.max(Math.abs(valueMax), Math.abs(valueMin), 0.01);
-  const displayMin =
-    mode === 'nav'
-      ? Math.max(0, valueMin - valueRange * 0.16)
-      : valueMin - valueRange * (displaysPercentChange ? 0.18 : 0.16);
-  const displayMax = valueMax + valueRange * (displaysPercentChange ? 0.18 : 0.16);
-  const displayRange = displayMax - displayMin || 1;
-  const coordinatesBySeries = displaySeries.map((seriesItem) => ({
-    ...seriesItem,
-    points: seriesItem.points.slice(activeZoomRange.startIndex, activeZoomRange.endIndex + 1),
-    coordinates: seriesItem.points
-      .slice(activeZoomRange.startIndex, activeZoomRange.endIndex + 1)
-      .map((point, index) => ({
-        x: getChartXForIndex(index, pointCount, chartWidth, padding.left),
-        y:
-          padding.top +
-          chartHeight -
-          ((point.value - displayMin) / displayRange) * chartHeight,
-      })),
-  }));
-  const tickIndexes = getTickIndexes(pointCount);
-  const activeIndex =
-    hoveredIndex !== null &&
-    hoveredIndex >= activeZoomRange.startIndex &&
-    hoveredIndex <= activeZoomRange.endIndex
-      ? hoveredIndex - activeZoomRange.startIndex
-      : null;
-  const activeX =
-    activeIndex === null
-      ? null
-      : getChartXForIndex(activeIndex, pointCount, chartWidth, padding.left);
-  const yAxisValues = [displayMax, displayMin + displayRange / 2, displayMin];
-  const tooltipLeft =
-    activeX === null
-      ? 0
-      : clamp((activeX / width) * 100, 12, 82);
-  const activePoint = activeIndex === null ? null : visibleSeries[0].points[activeIndex];
-  const zeroLineY =
-    displaysPercentChange && displayMin <= 0 && displayMax >= 0
-      ? padding.top + chartHeight - ((0 - displayMin) / displayRange) * chartHeight
-      : null;
-  const axisFormat: FundOverviewMetricFormat = displaysPercentChange ? 'percent' : 'nav';
-  const visibleSelectionRange = getVisibleSelectionRange(selectionRange, activeZoomRange);
-  const selectionStartX =
-    visibleSelectionRange === null
-      ? null
-      : getChartXForIndex(visibleSelectionRange.startIndex, pointCount, chartWidth, padding.left);
-  const selectionEndX =
-    visibleSelectionRange === null
-      ? null
-      : getChartXForIndex(visibleSelectionRange.endIndex, pointCount, chartWidth, padding.left);
-  const selectionX =
-    selectionStartX === null || selectionEndX === null ? null : Math.min(selectionStartX, selectionEndX);
-  const selectionWidth =
-    selectionStartX === null || selectionEndX === null
-      ? 0
-      : Math.max(Math.abs(selectionEndX - selectionStartX), pointCount === 1 ? 8 : 4);
-  const getAbsoluteIndex = (event: ReactPointerEvent<SVGSVGElement>) =>
-    activeZoomRange.startIndex +
-    getPointIndexFromClientX(event.clientX, event.currentTarget, pointCount, width, padding);
-  const handlePointerDown = (event: ReactPointerEvent<SVGSVGElement>) => {
-    if (event.pointerType === 'mouse' && event.button !== 0) {
-      return;
-    }
-
-    event.preventDefault();
-    const nextIndex = getAbsoluteIndex(event);
-    setDragState({ startIndex: nextIndex, pointerId: event.pointerId });
-    setSelectionRange({ startIndex: nextIndex, endIndex: nextIndex });
-    setHoveredIndex(nextIndex);
-    event.currentTarget.setPointerCapture(event.pointerId);
-  };
-  const handlePointerMove = (event: ReactPointerEvent<SVGSVGElement>) => {
-    event.preventDefault();
-    const nextIndex = getAbsoluteIndex(event);
-    setHoveredIndex(nextIndex);
-
-    if (dragState) {
-      setSelectionRange(normalizeChartRange(dragState.startIndex, nextIndex));
-    }
-  };
-  const handlePointerEnd = (event: ReactPointerEvent<SVGSVGElement>) => {
-    if (!dragState) {
-      return;
-    }
-
-    event.preventDefault();
-    const nextRange = normalizeChartRange(dragState.startIndex, getAbsoluteIndex(event));
-    setDragState(null);
-
-    if (event.currentTarget.hasPointerCapture(event.pointerId)) {
-      event.currentTarget.releasePointerCapture(event.pointerId);
-    }
-
-    if (nextRange.endIndex > nextRange.startIndex) {
-      setSelectionRange(nextRange);
-    } else {
-      setSelectionRange(null);
-    }
-  };
-  const handleWheel = (event: ReactWheelEvent<SVGSVGElement>) => {
-    event.preventDefault();
-    const direction = event.deltaY > 0 || event.deltaX > 0 ? 1 : -1;
-
-    if (isFullChartRange(activeZoomRange, totalPointCount)) {
-      setHoveredIndex((current) => {
-        const fallbackIndex = activeZoomRange.startIndex;
-        return clamp((current ?? fallbackIndex) + direction, 0, totalPointCount - 1);
-      });
-      return;
-    }
-
-    setZoomRange(getPannedChartRange(activeZoomRange, direction, totalPointCount));
-  };
-  const resetZoom = () => {
-    setZoomRange(null);
-  };
-
-  return (
-    <div
-      className="fund-overview__chart-shell"
-      ref={chartShellRef}
-      onWheel={(event) => event.preventDefault()}
-    >
-      {activeIndex !== null && activePoint ? (
-        <div className="fund-overview__chart-tooltip" style={{ left: `${tooltipLeft}%`, top: '0.85rem' }}>
-          <strong>{formatDateLabel(activePoint.date)}</strong>
-          <div className="fund-overview__chart-tooltip-list">
-            {visibleSeries.map((seriesItem) => {
-              const currentPoint = seriesItem.points[activeIndex];
-
-              return (
-                <span key={seriesItem.id}>
-                  <i className="fund-overview__legend-dot" style={{ background: seriesItem.color }} />
-                  {seriesItem.label}:{' '}
-                  {displaysPercentChange ? (
-                    formatSignedMetricValue(currentPoint.value, 'percent')
-                  ) : (
-                    formatMetricValue(currentPoint.value, 'nav')
-                  )}
-                </span>
-              );
-            })}
-          </div>
-        </div>
-      ) : null}
-
-      <svg
-        viewBox={`0 0 ${width} ${height}`}
-        aria-label={
-          displaysPercentChange
-            ? 'Prosentvis NAV-endring fra grafstart for valgt utvalg'
-            : 'NAV-verdi over tid per fond'
-        }
-        className="fund-overview__chart-svg"
-        role="img"
-        onPointerDown={handlePointerDown}
-        onPointerMove={handlePointerMove}
-        onPointerUp={handlePointerEnd}
-        onWheel={handleWheel}
-        onPointerCancel={(event) => {
-          setDragState(null);
-          if (event.currentTarget.hasPointerCapture(event.pointerId)) {
-            event.currentTarget.releasePointerCapture(event.pointerId);
-          }
-        }}
-        onPointerLeave={() => {
-          if (!dragState) {
-            setHoveredIndex(null);
-          }
-        }}
-      >
-        {yAxisValues.map((axisValue) => {
-          const y =
-            padding.top +
-            chartHeight -
-            ((axisValue - displayMin) / displayRange) * chartHeight;
-
-          return (
-            <g key={axisValue}>
-              <line
-                x1={padding.left}
-                y1={y}
-                x2={width - padding.right}
-                y2={y}
-                stroke="rgba(17, 24, 39, 0.08)"
-                strokeDasharray="4 6"
-              />
-              <text
-                x={width - 8}
-                y={y - 6}
-                className="fund-overview__chart-text fund-overview__chart-text--value"
-                textAnchor="end"
-              >
-                {formatMetricValue(axisValue, axisFormat)}
-              </text>
-            </g>
-          );
-        })}
-
-        {zeroLineY !== null ? (
-          <g>
-            <line
-              x1={padding.left}
-              y1={zeroLineY}
-              x2={width - padding.right}
-              y2={zeroLineY}
-              className="fund-overview__chart-zero-line"
-            />
-            <text
-              x={padding.left + 8}
-              y={zeroLineY - 7}
-              className="fund-overview__chart-zero-label"
-            >
-              0%
-            </text>
-          </g>
-        ) : null}
-
-        {activeX !== null ? (
-          <line
-            x1={activeX}
-            y1={padding.top}
-            x2={activeX}
-            y2={padding.top + chartHeight}
-            className="fund-overview__chart-hover-line"
-          />
-        ) : null}
-
-        {selectionX !== null ? (
-          <rect
-            x={selectionX}
-            y={padding.top}
-            width={selectionWidth}
-            height={chartHeight}
-            className="fund-overview__chart-selection"
-          />
-        ) : null}
-
-        {coordinatesBySeries.length === 1 ? (
-          <path
-            d={buildAreaPath(coordinatesBySeries[0].coordinates, padding.top + chartHeight)}
-            fill={FUND_CHART_AREA_FILL}
-          />
-        ) : null}
-
-        {coordinatesBySeries.map((seriesItem) => (
-          <g key={seriesItem.id}>
-            <path
-              d={buildLinePath(seriesItem.coordinates)}
-              fill="none"
-              stroke={seriesItem.color}
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth="3"
-            />
-
-            {seriesItem.coordinates.map((point, index) =>
-              activeIndex === index ? (
-                <circle
-                  key={`${seriesItem.id}-${seriesItem.points[index].date}`}
-                  cx={point.x}
-                  cy={point.y}
-                  r="5"
-                  fill={seriesItem.color}
-                  className="fund-overview__chart-point"
-                />
-              ) : null,
-            )}
-          </g>
-        ))}
-
-        {tickIndexes.map((index) => (
-          <text
-            key={visibleSeries[0].points[index].date}
-            x={getChartXForIndex(index, pointCount, chartWidth, padding.left)}
-            y={height - 12}
-            className="fund-overview__chart-text"
-            textAnchor={index === 0 ? 'start' : index === pointCount - 1 ? 'end' : 'middle'}
-          >
-            {visibleSeries[0].points[index].label}
-          </text>
-        ))}
-      </svg>
-      <NavRangeSummary range={selectionRange} series={rawDisplaySeries} />
-      <ChartRangeBadge range={activeZoomRange} pointCount={totalPointCount} onReset={resetZoom} />
-      <MiniLineOverview
-        series={displaySeries}
-        zoomRange={activeZoomRange}
-        onZoomRangeChange={setZoomRange}
-      />
-    </div>
-  );
-}
-
-function FlowChart({
-  combinedPoints,
-  series,
-}: {
-  combinedPoints: FundOverviewFlowPoint[];
-  series: FundOverviewLineSeries[];
-}) {
-  const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
-  const displaySeries = series.filter((seriesItem) => seriesItem.points.length > 0);
-
-  if (combinedPoints.length === 0 || displaySeries.length === 0) {
-    return <div className="fund-overview__chart-empty">Ingen kapitalflyt i valgt utvalg.</div>;
-  }
-
-  const width = 900;
-  const height = 350;
-  const padding = { top: 18, right: 64, bottom: 36, left: 16 };
-  const chartWidth = width - padding.left - padding.right;
-  const chartHeight = height - padding.top - padding.bottom;
-  const halfHeight = chartHeight / 2;
-  const baselineY = padding.top + halfHeight;
-  const pointCount = combinedPoints.length;
-  const step = pointCount > 1 ? chartWidth / Math.max(pointCount - 1, 1) : chartWidth;
-  const maxAbs = Math.max(
-    1,
-    ...combinedPoints.map((point) => Math.max(point.grossBuy, point.grossSell, Math.abs(point.net))),
-    ...displaySeries.flatMap((seriesItem) => seriesItem.points.map((point) => Math.abs(point.value))),
-  );
-  const coordinatesBySeries = displaySeries.map((seriesItem) => ({
-    ...seriesItem,
-    coordinates: seriesItem.points.map((point, index) => ({
-      x: padding.left + (pointCount === 1 ? chartWidth / 2 : step * index),
-      y: baselineY - (point.value / maxAbs) * (halfHeight - 14),
-    })),
-  }));
-  const tickIndexes = getTickIndexes(pointCount);
-  const activeIndex = hoveredIndex;
-  const activeX =
-    activeIndex === null
-      ? null
-      : padding.left + (pointCount === 1 ? chartWidth / 2 : step * activeIndex);
-  const tooltipLeft =
-    activeX === null
-      ? 0
-      : clamp((activeX / width) * 100, 12, 82);
-
-  return (
-    <div className="fund-overview__chart-shell" onWheel={(event) => event.preventDefault()}>
-      {activeIndex !== null ? (
-        <div className="fund-overview__chart-tooltip" style={{ left: `${tooltipLeft}%`, top: '0.85rem' }}>
-          <strong>{formatDateLabel(combinedPoints[activeIndex].date)}</strong>
-          <div className="fund-overview__chart-tooltip-list">
-            <span>
-              <i className="fund-overview__legend-dot fund-overview__legend-dot--buy" />
-              Tegninger: {formatMetricValue(combinedPoints[activeIndex].grossBuy, 'currency')}
-            </span>
-            <span>
-              <i className="fund-overview__legend-dot fund-overview__legend-dot--sell" />
-              Innløsninger: {formatMetricValue(combinedPoints[activeIndex].grossSell, 'currency')}
-            </span>
-            <span>
-              <i className="fund-overview__legend-dot fund-overview__legend-dot--net" />
-              Nettoflyt: {formatMetricValue(combinedPoints[activeIndex].net, 'currency')}
-            </span>
-            {displaySeries.length > 1
-              ? displaySeries.map((seriesItem) => (
-                  <span key={seriesItem.id}>
-                    <i className="fund-overview__legend-dot" style={{ background: seriesItem.color }} />
-                    {seriesItem.label}: {formatMetricValue(seriesItem.points[activeIndex].value, 'currency')}
-                  </span>
-                ))
-              : null}
-          </div>
-        </div>
-      ) : null}
-
-      <svg
-        viewBox={`0 0 ${width} ${height}`}
-        aria-label="Kapitalflyt med tegninger, innløsninger og nettoflyt"
-        className="fund-overview__chart-svg"
-        role="img"
-        onMouseMove={(event) =>
-          setHoveredIndex(getHoveredPointIndex(event, pointCount, width, padding))
-        }
-        onMouseLeave={() => setHoveredIndex(null)}
-      >
-        {[0.25, 0.5, 0.75].map((fraction) => (
-          <g key={fraction}>
-            <line
-              x1={padding.left}
-              y1={padding.top + fraction * halfHeight}
-              x2={width - padding.right}
-              y2={padding.top + fraction * halfHeight}
-              stroke="rgba(17, 24, 39, 0.06)"
-              strokeDasharray="4 6"
-            />
-            <line
-              x1={padding.left}
-              y1={baselineY + fraction * halfHeight}
-              x2={width - padding.right}
-              y2={baselineY + fraction * halfHeight}
-              stroke="rgba(17, 24, 39, 0.06)"
-              strokeDasharray="4 6"
-            />
-          </g>
-        ))}
-
-        <line
-          x1={padding.left}
-          y1={baselineY}
-          x2={width - padding.right}
-          y2={baselineY}
-          stroke="rgba(17, 24, 39, 0.18)"
-        />
-
-        {activeX !== null ? (
-          <line
-            x1={activeX}
-            y1={padding.top}
-            x2={activeX}
-            y2={padding.top + chartHeight}
-            className="fund-overview__chart-hover-line"
-          />
-        ) : null}
-
-        <text
-          x={width - 8}
-          y={padding.top - 2}
-          className="fund-overview__chart-text fund-overview__chart-text--value"
-          textAnchor="end"
-        >
-          {formatMetricValue(maxAbs, 'currency')}
-        </text>
-        <text
-          x={width - 8}
-          y={height - 48}
-          className="fund-overview__chart-text fund-overview__chart-text--value"
-          textAnchor="end"
-        >
-          -{formatMetricValue(maxAbs, 'currency')}
-        </text>
-
-        {combinedPoints.map((point, index) => {
-          const centerX = padding.left + (pointCount === 1 ? chartWidth / 2 : step * index);
-          const buyHeight = (point.grossBuy / maxAbs) * (halfHeight - 14);
-          const sellHeight = (point.grossSell / maxAbs) * (halfHeight - 14);
-          const barWidth = Math.max(4, Math.min(14, (pointCount === 1 ? chartWidth / 4 : step * 0.24)));
-
-          return (
-            <g key={point.date}>
-              <rect
-                x={centerX - barWidth - 2}
-                y={baselineY - buyHeight}
-                width={barWidth}
-                height={buyHeight}
-                rx="2"
-                fill={FUND_CHART_PRIMARY}
-              />
-              <rect
-                x={centerX + 2}
-                y={baselineY}
-                width={barWidth}
-                height={sellHeight}
-                rx="2"
-                fill={FUND_CHART_MUTED}
-              />
-            </g>
-          );
-        })}
-
-        {coordinatesBySeries.map((seriesItem) => (
-          <g key={seriesItem.id}>
-            <path
-              d={buildLinePath(seriesItem.coordinates)}
-              fill="none"
-              stroke={seriesItem.color}
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth="2.5"
-            />
-            {seriesItem.coordinates.map((point, index) =>
-              activeIndex === index ? (
-                <circle
-                  key={`${seriesItem.id}-${seriesItem.points[index].date}`}
-                  cx={point.x}
-                  cy={point.y}
-                  r="4.5"
-                  fill={seriesItem.color}
-                  className="fund-overview__chart-point"
-                />
-              ) : null,
-            )}
-          </g>
-        ))}
-
-        {tickIndexes.map((index) => (
-          <text
-            key={combinedPoints[index].date}
-            x={padding.left + (pointCount === 1 ? chartWidth / 2 : step * index)}
-            y={height - 12}
-            className="fund-overview__chart-text"
-            textAnchor={index === 0 ? 'start' : index === pointCount - 1 ? 'end' : 'middle'}
-          >
-            {combinedPoints[index].label}
-          </text>
-        ))}
-      </svg>
-    </div>
-  );
-}
-
-function ZoomableFlowChart({
-  combinedPoints,
-  series,
-}: {
-  combinedPoints: FundOverviewFlowPoint[];
-  series: FundOverviewLineSeries[];
-}) {
-  const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
-  const [selectionRange, setSelectionRange] = useState<ChartRange | null>(null);
-  const [zoomRange, setZoomRange] = useState<ChartRange | null>(null);
-  const [dragState, setDragState] = useState<ChartDragState>(null);
-  const chartShellRef = usePreventWheelScroll<HTMLDivElement>();
-  const displaySeries = series.filter((seriesItem) => seriesItem.points.length > 0);
-  const chartDataKey = `${combinedPoints[0]?.date ?? 'empty'}:${
-    combinedPoints[combinedPoints.length - 1]?.date ?? 'empty'
-  }:${combinedPoints.length}:${getChartDataKey(displaySeries)}`;
-
-  useEffect(() => {
-    setHoveredIndex(null);
-    setSelectionRange(null);
-    setZoomRange(null);
-    setDragState(null);
-  }, [chartDataKey]);
-
-  if (combinedPoints.length === 0 || displaySeries.length === 0) {
-    return <div className="fund-overview__chart-empty">Ingen kapitalflyt i valgt utvalg.</div>;
-  }
-
-  const width = 900;
-  const height = 350;
-  const padding = { top: 18, right: 64, bottom: 36, left: 16 };
-  const chartWidth = width - padding.left - padding.right;
-  const chartHeight = height - padding.top - padding.bottom;
-  const halfHeight = chartHeight / 2;
-  const baselineY = padding.top + halfHeight;
-  const totalPointCount = combinedPoints.length;
-  const activeZoomRange =
-    getClampedChartRange(zoomRange, totalPointCount) ?? getFullChartRange(totalPointCount);
-  const visibleCombinedPoints = combinedPoints.slice(
-    activeZoomRange.startIndex,
-    activeZoomRange.endIndex + 1,
-  );
-  const visibleSeries = displaySeries.map((seriesItem) => ({
-    ...seriesItem,
-    points: seriesItem.points.slice(activeZoomRange.startIndex, activeZoomRange.endIndex + 1),
-  }));
-  const pointCount = visibleCombinedPoints.length;
-  const pointStep = pointCount > 1 ? chartWidth / Math.max(pointCount - 1, 1) : chartWidth;
-  const maxAbs = Math.max(
-    1,
-    ...visibleCombinedPoints.map((point) => Math.max(point.grossBuy, point.grossSell, Math.abs(point.net))),
-    ...visibleSeries.flatMap((seriesItem) => seriesItem.points.map((point) => Math.abs(point.value))),
-  );
-  const coordinatesBySeries = visibleSeries.map((seriesItem) => ({
-    ...seriesItem,
-    coordinates: seriesItem.points.map((point, index) => ({
-      x: getChartXForIndex(index, pointCount, chartWidth, padding.left),
-      y: baselineY - (point.value / maxAbs) * (halfHeight - 14),
-    })),
-  }));
-  const tickIndexes = getTickIndexes(pointCount);
-  const activeIndex =
-    hoveredIndex !== null &&
-    hoveredIndex >= activeZoomRange.startIndex &&
-    hoveredIndex <= activeZoomRange.endIndex
-      ? hoveredIndex - activeZoomRange.startIndex
-      : null;
-  const activeX =
-    activeIndex === null
-      ? null
-      : getChartXForIndex(activeIndex, pointCount, chartWidth, padding.left);
-  const tooltipLeft = activeX === null ? 0 : clamp((activeX / width) * 100, 12, 82);
-  const activePoint = activeIndex === null ? null : visibleCombinedPoints[activeIndex];
-  const visibleSelectionRange = getVisibleSelectionRange(selectionRange, activeZoomRange);
-  const selectionStartX =
-    visibleSelectionRange === null
-      ? null
-      : getChartXForIndex(visibleSelectionRange.startIndex, pointCount, chartWidth, padding.left);
-  const selectionEndX =
-    visibleSelectionRange === null
-      ? null
-      : getChartXForIndex(visibleSelectionRange.endIndex, pointCount, chartWidth, padding.left);
-  const selectionX =
-    selectionStartX === null || selectionEndX === null ? null : Math.min(selectionStartX, selectionEndX);
-  const selectionWidth =
-    selectionStartX === null || selectionEndX === null
-      ? 0
-      : Math.max(Math.abs(selectionEndX - selectionStartX), pointCount === 1 ? 8 : 4);
-  const overviewSeries: FundOverviewLineSeries[] = [
-    {
-      id: 'combined-flow-overview',
-      label: 'Nettoflyt',
-      color: FUND_CHART_NET,
-      points: combinedPoints.map((point) => ({
-        date: point.date,
-        label: point.label,
-        value: point.net,
-      })),
-    },
-  ];
-  const getAbsoluteIndex = (event: ReactPointerEvent<SVGSVGElement>) =>
-    activeZoomRange.startIndex +
-    getPointIndexFromClientX(event.clientX, event.currentTarget, pointCount, width, padding);
-  const handlePointerDown = (event: ReactPointerEvent<SVGSVGElement>) => {
-    if (event.pointerType === 'mouse' && event.button !== 0) {
-      return;
-    }
-
-    event.preventDefault();
-    const nextIndex = getAbsoluteIndex(event);
-    setDragState({ startIndex: nextIndex, pointerId: event.pointerId });
-    setSelectionRange({ startIndex: nextIndex, endIndex: nextIndex });
-    setHoveredIndex(nextIndex);
-    event.currentTarget.setPointerCapture(event.pointerId);
-  };
-  const handlePointerMove = (event: ReactPointerEvent<SVGSVGElement>) => {
-    event.preventDefault();
-    const nextIndex = getAbsoluteIndex(event);
-    setHoveredIndex(nextIndex);
-
-    if (dragState) {
-      setSelectionRange(normalizeChartRange(dragState.startIndex, nextIndex));
-    }
-  };
-  const handlePointerEnd = (event: ReactPointerEvent<SVGSVGElement>) => {
-    if (!dragState) {
-      return;
-    }
-
-    event.preventDefault();
-    const nextRange = normalizeChartRange(dragState.startIndex, getAbsoluteIndex(event));
-    setDragState(null);
-
-    if (event.currentTarget.hasPointerCapture(event.pointerId)) {
-      event.currentTarget.releasePointerCapture(event.pointerId);
-    }
-
-    if (nextRange.endIndex > nextRange.startIndex) {
-      setSelectionRange(nextRange);
-    } else {
-      setSelectionRange(null);
-    }
-  };
-  const handleWheel = (event: ReactWheelEvent<SVGSVGElement>) => {
-    event.preventDefault();
-    const direction = event.deltaY > 0 || event.deltaX > 0 ? 1 : -1;
-
-    if (isFullChartRange(activeZoomRange, totalPointCount)) {
-      setHoveredIndex((current) => {
-        const fallbackIndex = activeZoomRange.startIndex;
-        return clamp((current ?? fallbackIndex) + direction, 0, totalPointCount - 1);
-      });
-      return;
-    }
-
-    setZoomRange(getPannedChartRange(activeZoomRange, direction, totalPointCount));
-  };
-  const resetZoom = () => {
-    setZoomRange(null);
-  };
-
-  return (
-    <div
-      className="fund-overview__chart-shell"
-      ref={chartShellRef}
-      onWheel={(event) => event.preventDefault()}
-    >
-      {activeIndex !== null && activePoint ? (
-        <div className="fund-overview__chart-tooltip" style={{ left: `${tooltipLeft}%`, top: '0.85rem' }}>
-          <strong>{formatDateLabel(activePoint.date)}</strong>
-          <div className="fund-overview__chart-tooltip-list">
-            <span>
-              <i className="fund-overview__legend-dot fund-overview__legend-dot--buy" />
-              Tegninger: {formatMetricValue(activePoint.grossBuy, 'currency')}
-            </span>
-            <span>
-              <i className="fund-overview__legend-dot fund-overview__legend-dot--sell" />
-              Innløsninger: {formatMetricValue(activePoint.grossSell, 'currency')}
-            </span>
-            <span>
-              <i className="fund-overview__legend-dot fund-overview__legend-dot--net" />
-              Nettoflyt: {formatMetricValue(activePoint.net, 'currency')}
-            </span>
-            {displaySeries.length > 1
-              ? visibleSeries.map((seriesItem) => (
-                  <span key={seriesItem.id}>
-                    <i className="fund-overview__legend-dot" style={{ background: seriesItem.color }} />
-                    {seriesItem.label}: {formatMetricValue(seriesItem.points[activeIndex].value, 'currency')}
-                  </span>
-                ))
-              : null}
-          </div>
-        </div>
-      ) : null}
-
-      <svg
-        viewBox={`0 0 ${width} ${height}`}
-        aria-label="Kapitalflyt med tegninger, innløsninger og nettoflyt"
-        className="fund-overview__chart-svg"
-        role="img"
-        onPointerDown={handlePointerDown}
-        onPointerMove={handlePointerMove}
-        onPointerUp={handlePointerEnd}
-        onWheel={handleWheel}
-        onPointerCancel={(event) => {
-          setDragState(null);
-          if (event.currentTarget.hasPointerCapture(event.pointerId)) {
-            event.currentTarget.releasePointerCapture(event.pointerId);
-          }
-        }}
-        onPointerLeave={() => {
-          if (!dragState) {
-            setHoveredIndex(null);
-          }
-        }}
-      >
-        {[0.25, 0.5, 0.75].map((fraction) => (
-          <g key={fraction}>
-            <line
-              x1={padding.left}
-              y1={padding.top + fraction * halfHeight}
-              x2={width - padding.right}
-              y2={padding.top + fraction * halfHeight}
-              stroke="rgba(17, 24, 39, 0.06)"
-              strokeDasharray="4 6"
-            />
-            <line
-              x1={padding.left}
-              y1={baselineY + fraction * halfHeight}
-              x2={width - padding.right}
-              y2={baselineY + fraction * halfHeight}
-              stroke="rgba(17, 24, 39, 0.06)"
-              strokeDasharray="4 6"
-            />
-          </g>
-        ))}
-
-        <line
-          x1={padding.left}
-          y1={baselineY}
-          x2={width - padding.right}
-          y2={baselineY}
-          stroke="rgba(17, 24, 39, 0.18)"
-        />
-
-        {activeX !== null ? (
-          <line
-            x1={activeX}
-            y1={padding.top}
-            x2={activeX}
-            y2={padding.top + chartHeight}
-            className="fund-overview__chart-hover-line"
-          />
-        ) : null}
-
-        {selectionX !== null ? (
-          <rect
-            x={selectionX}
-            y={padding.top}
-            width={selectionWidth}
-            height={chartHeight}
-            className="fund-overview__chart-selection"
-          />
-        ) : null}
-
-        <text
-          x={width - 8}
-          y={padding.top - 2}
-          className="fund-overview__chart-text fund-overview__chart-text--value"
-          textAnchor="end"
-        >
-          {formatMetricValue(maxAbs, 'currency')}
-        </text>
-        <text
-          x={width - 8}
-          y={height - 48}
-          className="fund-overview__chart-text fund-overview__chart-text--value"
-          textAnchor="end"
-        >
-          -{formatMetricValue(maxAbs, 'currency')}
-        </text>
-
-        {visibleCombinedPoints.map((point, index) => {
-          const centerX = getChartXForIndex(index, pointCount, chartWidth, padding.left);
-          const buyHeight = (point.grossBuy / maxAbs) * (halfHeight - 14);
-          const sellHeight = (point.grossSell / maxAbs) * (halfHeight - 14);
-          const barWidth = Math.max(4, Math.min(14, (pointCount === 1 ? chartWidth / 4 : pointStep * 0.28)));
-
-          return (
-            <g key={point.date}>
-              <rect
-                x={centerX - barWidth / 2}
-                y={baselineY - buyHeight}
-                width={barWidth}
-                height={buyHeight}
-                rx="2"
-                fill={FUND_CHART_PRIMARY}
-              />
-              <rect
-                x={centerX - barWidth / 2}
-                y={baselineY}
-                width={barWidth}
-                height={sellHeight}
-                rx="2"
-                fill={FUND_CHART_MUTED}
-              />
-            </g>
-          );
-        })}
-
-        {coordinatesBySeries.map((seriesItem) => (
-          <g key={seriesItem.id}>
-            <path
-              d={buildLinePath(seriesItem.coordinates)}
-              fill="none"
-              stroke={seriesItem.color}
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth="2.5"
-            />
-            {seriesItem.coordinates.map((point, index) =>
-              activeIndex === index ? (
-                <circle
-                  key={`${seriesItem.id}-${seriesItem.points[index].date}`}
-                  cx={point.x}
-                  cy={point.y}
-                  r="4.5"
-                  fill={seriesItem.color}
-                  className="fund-overview__chart-point"
-                />
-              ) : null,
-            )}
-          </g>
-        ))}
-
-        {tickIndexes.map((index) => (
-          <text
-            key={visibleCombinedPoints[index].date}
-            x={getChartXForIndex(index, pointCount, chartWidth, padding.left)}
-            y={height - 12}
-            className="fund-overview__chart-text"
-            textAnchor={index === 0 ? 'start' : index === pointCount - 1 ? 'end' : 'middle'}
-          >
-            {visibleCombinedPoints[index].label}
-          </text>
-        ))}
-      </svg>
-      <FlowRangeSummary range={selectionRange} combinedPoints={combinedPoints} />
-      <ChartRangeBadge range={activeZoomRange} pointCount={totalPointCount} onReset={resetZoom} />
-      <MiniLineOverview
-        series={overviewSeries}
-        zoomRange={activeZoomRange}
-        onZoomRangeChange={setZoomRange}
-      />
+      ))}
     </div>
   );
 }
@@ -2188,9 +1821,9 @@ function FundOverviewPage() {
   const [navGrouping, setNavGrouping] = useState<FundOverviewChartGrouping>('combined');
   const [navValueMode, setNavValueMode] = useState<NavValueMode>('nav');
   const [flowGrouping, setFlowGrouping] = useState<FundOverviewChartGrouping>('combined');
+  const [compositionMode, setCompositionMode] = useState<CompositionMode>('funds');
   const [dividendPage, setDividendPage] = useState(1);
   const [shareholderPage, setShareholderPage] = useState(1);
-  const [compositionMode, setCompositionMode] = useState<CompositionMode>('funds');
   const [dividendSort, setDividendSort] = useState<SortState<DividendSortKey>>({
     key: 'amount',
     direction: 'desc',
@@ -2225,15 +1858,8 @@ function FundOverviewPage() {
       selectedStartDate,
     ],
   );
-  const sortedDividendRows = getSortedDividendRows(overview.dividendSection.rows, dividendSort);
-  const sortedShareholderRows = getSortedShareholderRows(
-    overview.shareholderSection.rows,
-    shareholderSort,
-  );
-  const dividendRows = getPaginatedRows(sortedDividendRows, dividendPage, TABLE_PAGE_SIZE);
-  const shareholderRows = getPaginatedRows(sortedShareholderRows, shareholderPage, TABLE_PAGE_SIZE);
+
   const topMetrics = overview.metrics.filter((metric) => !TOP_METRIC_IDS_TO_HIDE.has(metric.id));
-  const compositionPoints = overview.compositionSection[compositionMode];
   const selectedInvestorCategoryLabel = getMultiSelectSummary(
     overview.investorCategoryOptions,
     overview.filters.investorCategoryIds,
@@ -2251,11 +1877,15 @@ function FundOverviewPage() {
     { label: 'Investortype', value: selectedInvestorTypeLabel },
     {
       label: 'Periode',
-      value: `${overview.selectedPeriodLabel}: ${formatDateLabel(
-        overview.periodStartDate,
-      )} - ${formatDateLabel(overview.asOfDate)}`,
+      value: `${overview.selectedPeriodLabel}: ${formatDateLabel(overview.periodStartDate)} - ${formatDateLabel(overview.asOfDate)}`,
     },
   ];
+  const compositionPoints = overview.compositionSection[compositionMode];
+  const sortedDividendRows = getSortedDividendRows(overview.dividendSection.rows, dividendSort);
+  const sortedShareholderRows = getSortedShareholderRows(overview.shareholderSection.rows, shareholderSort);
+  const dividendRows = getPaginatedRows(sortedDividendRows, dividendPage, TABLE_PAGE_SIZE);
+  const shareholderRows = getPaginatedRows(sortedShareholderRows, shareholderPage, TABLE_PAGE_SIZE);
+
   const handleDividendSort = (key: DividendSortKey) => {
     setDividendSort((currentSort) => getNextSortState(currentSort, key));
     setDividendPage(1);
@@ -2265,26 +1895,13 @@ function FundOverviewPage() {
     setShareholderPage(1);
   };
 
-  useEffect(() => {
-    setDividendPage(1);
-    setShareholderPage(1);
-  }, [
-    overview.filters.fundIds,
-    overview.filters.classIds,
-    overview.filters.investorCategoryIds,
-    overview.filters.investorTypeIds,
-    overview.filters.periodId,
-    overview.filters.startDate,
-    overview.filters.endDate,
-  ]);
-
   return (
     <div className="content-card fund-overview-page">
       <div className="fund-overview__page-header">
         <p className="content-card__eyebrow">Fond</p>
         <h1>Escali fondsanalyse</h1>
         <p className="content-card__description">
-          Analyser mockdata for Escali Global, Escali Kreditt og Escali Norden med NAV-historikk, kapitalflyt, utbytter og eierbok samlet på én side.
+          Analyser mockdata for Escali Global, Escali Kreditt og Escali Norden med NAV-historikk, kapitalflyt, utbytter og eierbok samlet pa en side.
         </p>
       </div>
 
@@ -2380,7 +1997,7 @@ function FundOverviewPage() {
         </div>
       </section>
 
-      <section className="fund-overview__metric-grid" aria-label="Nøkkeltall for valgt fondsutvalg">
+      <section className="fund-overview__metric-grid" aria-label="Nokkeltall for valgt fondsutvalg">
         {topMetrics.map((metric) => (
           <MetricCard key={metric.id} metric={metric} />
         ))}
@@ -2413,105 +2030,84 @@ function FundOverviewPage() {
       <section className="data-table-card data-table-card--tight fund-overview__section">
         <div className="data-table-card__header fund-overview__section-header">
           <div>
-            <p className="feature-section__eyebrow">NAV</p>
-            <h2 className="data-table-card__title">NAV og avkastning</h2>
+            <p className="feature-section__eyebrow">Avkastning</p>
+            <h2 className="data-table-card__title">Avkastning</h2>
             <p className="data-table-card__description">{overview.navSection.description}</p>
           </div>
         </div>
 
-        <div className="fund-overview__section-grid">
-          <div className="fund-overview__chart-stack">
-            <div className="fund-overview__chart-card">
-              <div className="fund-overview__chart-card-header">
-                <div className="fund-overview__chart-card-copy">
-                  <strong>Avkastning per fond og klasse</strong>
-                  <span>
-                    {formatDateLabel(overview.periodStartDate)} - {formatDateLabel(overview.asOfDate)}
-                  </span>
-                </div>
-
-                <label className="trade-field fund-overview__chart-select">
-                  <span>Vis som</span>
-                  <select
-                    value={overview.navSection.activeGrouping}
-                    onChange={(event) => setNavGrouping(event.target.value as FundOverviewChartGrouping)}
-                  >
-                    {overview.navSection.groupingOptions.map((option) => (
-                      <option key={option.id} value={option.id}>
-                        {option.label}
-                      </option>
-                    ))}
-                  </select>
-                </label>
-              </div>
-
-              {overview.navSection.series.length > 1 ? (
-                <div className="fund-overview__chart-legend">
-                  {overview.navSection.series.map((seriesItem) => (
-                    <span key={seriesItem.id}>
-                      <i className="fund-overview__legend-dot" style={{ background: seriesItem.color }} />
-                      {seriesItem.label}
-                    </span>
-                  ))}
-                </div>
-              ) : null}
-
-              <NavChart series={overview.navSection.series} />
-
-              <div className="fund-overview__chart-kpi-panel">
-                <SectionKpiGrid metrics={overview.navSection.returnKpis} compact />
-              </div>
+        <div className="fund-overview__chart-card">
+          <div className="fund-overview__chart-card-header">
+            <div className="fund-overview__chart-card-copy">
+              <strong>Avkastning per fond og klasse</strong>
+              <span>
+                {formatDateLabel(overview.periodStartDate)} - {formatDateLabel(overview.asOfDate)}
+              </span>
             </div>
 
-            <div className="fund-overview__chart-card">
-              <div className="fund-overview__chart-card-header">
-                <div className="fund-overview__chart-card-copy">
-                  <strong>NAV per fond</strong>
-                  <span>
-                    {navValueMode === 'nav'
-                      ? 'Faktisk NAV-verdi over tid'
-                      : 'Prosentvis endring fra periodestart'}
-                  </span>
-                </div>
+            <label className="trade-field fund-overview__chart-select">
+              <span>Vis som</span>
+              <select
+                value={overview.navSection.activeGrouping}
+                onChange={(event) => setNavGrouping(event.target.value as FundOverviewChartGrouping)}
+              >
+                {overview.navSection.groupingOptions.map((option) => (
+                  <option key={option.id} value={option.id}>
+                    {option.label}
+                  </option>
+                ))}
+              </select>
+            </label>
+          </div>
 
-                <label className="trade-field fund-overview__chart-select">
-                  <span>Visning</span>
-                  <select
-                    value={navValueMode}
-                    onChange={(event) => setNavValueMode(event.target.value as NavValueMode)}
-                  >
-                    <option value="nav">NAV-verdi</option>
-                    <option value="return">Prosent fra start</option>
-                  </select>
-                </label>
+          <ChartLegend series={overview.navSection.series} />
+          <LineChart series={overview.navSection.series} mode="return" />
+
+          <div className="fund-overview__chart-kpi-panel">
+            <SectionKpiGrid metrics={overview.navSection.returnKpis} compact />
+          </div>
+        </div>
+      </section>
+
+      <section className="data-table-card data-table-card--tight fund-overview__section">
+        <div className="data-table-card__header fund-overview__section-header">
+          <div>
+            <p className="feature-section__eyebrow">NAV</p>
+            <h2 className="data-table-card__title">NAV</h2>
+            <p className="data-table-card__description">
+              Viser faktisk NAV per fond over tid, med mulighet for a sammenligne prosentvis utvikling fra periodestart.
+            </p>
+          </div>
+        </div>
+
+        <div className="fund-overview__section-grid">
+          <div className="fund-overview__chart-card">
+            <div className="fund-overview__chart-card-header">
+              <div className="fund-overview__chart-card-copy">
+                <strong>NAV per fond</strong>
+                <span>{navValueMode === 'nav' ? 'Faktisk NAV-verdi over tid' : 'Prosentvis endring fra periodestart'}</span>
               </div>
 
-              {overview.navSection.fundNavSeries.length > 1 ? (
-                <div className="fund-overview__chart-legend">
-                  {overview.navSection.fundNavSeries.map((seriesItem) => (
-                    <span key={seriesItem.id}>
-                      <i className="fund-overview__legend-dot" style={{ background: seriesItem.color }} />
-                      {seriesItem.label}
-                    </span>
-                  ))}
-                </div>
-              ) : null}
+              <label className="trade-field fund-overview__chart-select">
+                <span>Visning</span>
+                <select value={navValueMode} onChange={(event) => setNavValueMode(event.target.value as NavValueMode)}>
+                  <option value="nav">NAV-verdi</option>
+                  <option value="return">Prosent fra start</option>
+                </select>
+              </label>
+            </div>
 
-              <NavChart series={overview.navSection.fundNavSeries} mode={navValueMode} />
+            <ChartLegend series={overview.navSection.fundNavSeries} />
+            <LineChart series={overview.navSection.fundNavSeries} mode={navValueMode} />
 
-              <div className="fund-overview__chart-kpi-panel">
-                <SectionKpiGrid metrics={overview.navSection.fundNavKpis} compact />
-              </div>
+            <div className="fund-overview__chart-kpi-panel">
+              <SectionKpiGrid metrics={overview.navSection.fundNavKpis} compact />
             </div>
           </div>
 
           <div className="fund-overview__side-panel">
             <PairedNavKpiGrid metrics={overview.navSection.kpis} />
-            <CompositionPiePanel
-              mode={compositionMode}
-              onModeChange={setCompositionMode}
-              points={compositionPoints}
-            />
+            <CompositionPiePanel mode={compositionMode} onModeChange={setCompositionMode} points={compositionPoints} />
           </div>
         </div>
       </section>
@@ -2525,7 +2121,7 @@ function FundOverviewPage() {
           </div>
         </div>
 
-        <div className="fund-overview__section-grid">
+        <div className="fund-overview__section-grid fund-overview__section-grid--flow">
           <div className="fund-overview__chart-card">
             <div className="fund-overview__chart-card-header">
               <div className="fund-overview__chart-card-copy">
@@ -2565,20 +2161,15 @@ function FundOverviewPage() {
               ))}
             </div>
 
-            <ZoomableFlowChart
-              combinedPoints={overview.flowSection.combinedPoints}
-              series={overview.flowSection.series}
-            />
+            <FlowChart combinedPoints={overview.flowSection.combinedPoints} series={overview.flowSection.series} />
           </div>
 
           <div className="fund-overview__side-panel">
             <SectionKpiGrid metrics={overview.flowSection.kpis} compact />
-            <FlowContributorTables
-              buyRows={overview.flowSection.buyContributors}
-              sellRows={overview.flowSection.sellContributors}
-            />
           </div>
         </div>
+
+        <FlowContributorTables buyRows={overview.flowSection.buyContributors} sellRows={overview.flowSection.sellContributors} />
       </section>
 
       <section className="data-table-card data-table-card--tight fund-overview__section">
@@ -2597,44 +2188,19 @@ function FundOverviewPage() {
             <thead>
               <tr>
                 <th>
-                  <SortableHeader
-                    label="Dato"
-                    sortKey="date"
-                    sortState={dividendSort}
-                    onSort={handleDividendSort}
-                  />
+                  <SortableHeader label="Dato" sortKey="date" sortState={dividendSort} onSort={handleDividendSort} />
                 </th>
                 <th>
-                  <SortableHeader
-                    label="Investor"
-                    sortKey="investorName"
-                    sortState={dividendSort}
-                    onSort={handleDividendSort}
-                  />
+                  <SortableHeader label="Investor" sortKey="investorName" sortState={dividendSort} onSort={handleDividendSort} />
                 </th>
                 <th>
-                  <SortableHeader
-                    label="Fond"
-                    sortKey="fundLabel"
-                    sortState={dividendSort}
-                    onSort={handleDividendSort}
-                  />
+                  <SortableHeader label="Fond" sortKey="fundLabel" sortState={dividendSort} onSort={handleDividendSort} />
                 </th>
                 <th>
-                  <SortableHeader
-                    label="Andelsklasse"
-                    sortKey="classLabel"
-                    sortState={dividendSort}
-                    onSort={handleDividendSort}
-                  />
+                  <SortableHeader label="Andelsklasse" sortKey="classLabel" sortState={dividendSort} onSort={handleDividendSort} />
                 </th>
                 <th>
-                  <SortableHeader
-                    label="Utbetalt beløp"
-                    sortKey="amount"
-                    sortState={dividendSort}
-                    onSort={handleDividendSort}
-                  />
+                  <SortableHeader label="Utbetalt belop" sortKey="amount" sortState={dividendSort} onSort={handleDividendSort} />
                 </th>
               </tr>
             </thead>
@@ -2645,7 +2211,9 @@ function FundOverviewPage() {
                     <td>{row.dateLabel}</td>
                     <td>
                       <div className="table-primary-cell">
-                        <strong>{row.investorName}</strong>
+                        <strong>
+                          <CustomerOverviewLink customerId={row.customerId}>{row.investorName}</CustomerOverviewLink>
+                        </strong>
                         <span>{row.investorType}</span>
                       </div>
                     </td>
@@ -2691,20 +2259,10 @@ function FundOverviewPage() {
             <thead>
               <tr>
                 <th>
-                  <SortableHeader
-                    label="Rang"
-                    sortKey="rank"
-                    sortState={shareholderSort}
-                    onSort={handleShareholderSort}
-                  />
+                  <SortableHeader label="Rang" sortKey="rank" sortState={shareholderSort} onSort={handleShareholderSort} />
                 </th>
                 <th>
-                  <SortableHeader
-                    label="Investor"
-                    sortKey="investorName"
-                    sortState={shareholderSort}
-                    onSort={handleShareholderSort}
-                  />
+                  <SortableHeader label="Investor" sortKey="investorName" sortState={shareholderSort} onSort={handleShareholderSort} />
                 </th>
                 <th>
                   <SortableHeader
@@ -2715,20 +2273,10 @@ function FundOverviewPage() {
                   />
                 </th>
                 <th>
-                  <SortableHeader
-                    label="Markedsverdi"
-                    sortKey="marketValue"
-                    sortState={shareholderSort}
-                    onSort={handleShareholderSort}
-                  />
+                  <SortableHeader label="Markedsverdi" sortKey="marketValue" sortState={shareholderSort} onSort={handleShareholderSort} />
                 </th>
                 <th>
-                  <SortableHeader
-                    label="Eierandel"
-                    sortKey="ownershipShare"
-                    sortState={shareholderSort}
-                    onSort={handleShareholderSort}
-                  />
+                  <SortableHeader label="Eierandel" sortKey="ownershipShare" sortState={shareholderSort} onSort={handleShareholderSort} />
                 </th>
               </tr>
             </thead>
@@ -2736,22 +2284,20 @@ function FundOverviewPage() {
               {shareholderRows.rows.map((row) => (
                 <tr key={row.customerId}>
                   <td>
-                    {overview.shareholderSection.rows.findIndex(
-                      (shareholder) => shareholder.customerId === row.customerId,
-                    ) + 1}
+                    {overview.shareholderSection.rows.findIndex((shareholder) => shareholder.customerId === row.customerId) + 1}
                   </td>
                   <td>
                     <div className="table-primary-cell">
-                      <strong>{row.investorName}</strong>
+                      <strong>
+                        <CustomerOverviewLink customerId={row.customerId}>{row.investorName}</CustomerOverviewLink>
+                      </strong>
                       <span>
                         {row.investorType} / {row.investorCategory}
                       </span>
                     </div>
                   </td>
                   <td>
-                    {overview.shareholderSection.showUnits
-                      ? formatNumber(row.units)
-                      : formatNumber(row.exposureCount, 0)}
+                    {overview.shareholderSection.showUnits ? formatNumber(row.units) : formatNumber(row.exposureCount, 0)}
                   </td>
                   <td>{formatMetricValue(row.marketValue, 'currency')}</td>
                   <td>{formatMetricValue(row.ownershipShare, 'percent')}</td>

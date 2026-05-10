@@ -126,6 +126,7 @@ export type FundOverviewFlowSection = {
 
 export type FundOverviewDividendRow = {
   tradeId: string;
+  customerId: string;
   date: string;
   dateLabel: string;
   investorName: string;

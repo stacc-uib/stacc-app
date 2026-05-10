@@ -2366,6 +2366,49 @@ textarea {
   gap: 0.85rem;
 }
 
+.fund-overview__section-grid--flow {
+  grid-template-columns: minmax(0, 1.38fr) minmax(400px, 0.82fr);
+  align-items: stretch;
+}
+
+.fund-overview__section-grid--flow .fund-overview__side-panel .fund-overview__section-kpi-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.fund-overview__section-grid--flow .fund-overview__chart-card {
+  overflow: visible;
+}
+
+.fund-overview__chart-shell--flow {
+  overflow: visible;
+}
+
+.fund-overview__section-grid--flow .fund-overview__chart-shell {
+  display: block;
+  flex: 0 0 auto;
+  min-height: 0;
+}
+
+.fund-overview__section-grid--flow .fund-overview__chart-shell:not(.fund-overview__chart-shell--flow) {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-height: 100%;
+}
+
+.fund-overview__section-grid--flow
+  .fund-overview__chart-shell:not(.fund-overview__chart-shell--flow)
+  .fund-overview__chart-svg {
+  flex: 1;
+  height: 100%;
+  min-height: 360px;
+}
+
+.fund-overview__chart-shell--flow .fund-overview__chart-svg {
+  height: auto;
+  min-height: 0;
+}
+
 .fund-overview__chart-stack {
   display: flex;
   flex-direction: column;
@@ -2444,7 +2487,7 @@ textarea {
 }
 
 .fund-overview__mini-chart {
-  min-height: 52px;
+  min-height: 46px;
 }
 
 .fund-overview__chart-hover-line {
@@ -2589,6 +2632,16 @@ textarea {
 .fund-overview__chart-actions button:hover {
   border-color: rgba(255, 116, 21, 0.45);
   color: #b85717;
+}
+
+.fund-overview__chart-actions button:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+.fund-overview__chart-actions button:disabled:hover {
+  border-color: rgba(17, 24, 39, 0.12);
+  color: #111827;
 }
 
 .fund-overview__mini-chart {
@@ -2931,6 +2984,11 @@ textarea {
   gap: 0.85rem;
 }
 
+.fund-overview__section > .fund-overview__impact-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  margin-top: 0.85rem;
+}
+
 .fund-overview__impact-table-scroll {
   margin-top: 0.65rem;
 }
@@ -3031,6 +3089,18 @@ textarea {
   color: #6b7280;
   text-align: center;
   font-style: italic;
+}
+
+.fund-overview__owner-link {
+  color: inherit;
+  text-decoration: none;
+  text-underline-offset: 3px;
+}
+
+.fund-overview__owner-link:hover,
+.fund-overview__owner-link:focus-visible {
+  color: #b85717;
+  text-decoration: underline;
 }
 
 @media (max-width: 1200px) {
@@ -3197,11 +3267,16 @@ textarea {
   .fund-overview__filter-grid,
   .fund-overview__metric-grid,
   .fund-overview__detail-grid,
+  .fund-overview__section > .fund-overview__impact-grid,
   .fund-overview__section-kpi-grid {
     grid-template-columns: 1fr;
   }
 
   .fund-overview__chart-kpi-panel .fund-overview__section-kpi-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .fund-overview__section-grid--flow .fund-overview__side-panel .fund-overview__section-kpi-grid {
     grid-template-columns: 1fr;
   }
 

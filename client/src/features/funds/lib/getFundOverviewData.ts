@@ -1491,7 +1491,7 @@ function createNavSection(
       ),
     ],
     description:
-      'Sammenligner prosentvis avkastning for samlet portefølje, hvert fond og hver andelsklasse, med egen NAV-graf for fondsvis verdiutvikling.',
+      'Sammenligner prosentvis avkastning for samlet portefølje, hvert fond og hver andelsklasse.',
   };
 }
 
@@ -1604,6 +1604,7 @@ function createDividendSection(
     .filter((trade) => trade.transactionType === 'Utbytte')
     .map((trade) => ({
       tradeId: trade.tradeId,
+      customerId: trade.customerId,
       date: trade.tradeDate,
       dateLabel: formatDateLabel(trade.tradeDate),
       investorName: trade.investorName,
