@@ -2,6 +2,31 @@
 import { getComplianceDashboardData } from '../lib/getComplianceDashboardData';
 import type { CompliancePageData, ComplianceSubpageId } from '../types/compliance';
 
+export const toneColor: Record<string, string> = {
+  critical: '#dc2626',
+  warning: '#d97706',
+  ok: '#16a34a',
+  neutral: '#6b7280',
+};
+
+export function ToneTag({ tone, label }: { tone?: string; label: string }) {
+  const color = tone ? toneColor[tone] : '#6b7280';
+  return (
+    <span
+      style={{
+        fontSize: '0.72rem',
+        padding: '0.15rem 0.45rem',
+        borderRadius: '0.25rem',
+        background: `${color}20`,
+        color,
+        fontWeight: 600,
+      }}
+    >
+      {label}
+    </span>
+  );
+}
+
 type ComplianceDashboardSectionProps = {
   pageData: CompliancePageData;
   onOpenSubpage: (subpageId: ComplianceSubpageId) => void;
