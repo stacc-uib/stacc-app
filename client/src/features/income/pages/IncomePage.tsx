@@ -49,6 +49,8 @@ function IncomePage() {
         getIncomeData(trades, investors, fundPrices)
     );
 
+    const [splitBy, setSplitBy] = useState<"fund" | "class" | "fundandclass" | "segment" | "category">("fund");
+
     const { from: minDate, to: maxDate } = getIncomeDateRange(incomeData);
     const [range, setRange] = useState<DateRange>({ from: minDate, to: maxDate });
 
@@ -122,7 +124,7 @@ function IncomePage() {
                         onPresetSelect={handlePresetSelect}
                         onReset={handleReset}
                     />
-                    <IncomeGraph incomeData={filteredIncomeData} investors={investors} />
+                    <IncomeGraph incomeData={filteredIncomeData} investors={investors} splitBy={splitBy} setSplitBy={setSplitBy}  />
                     </>
             ) : null}
 
@@ -137,7 +139,7 @@ function IncomePage() {
                         onPresetSelect={handlePresetSelect}
                         onReset={handleReset}
                     />
-                    <IncomeTable incomeData={filteredIncomeData}/>
+                    <IncomeTable incomeData={filteredIncomeData} investors={investors} splitBy={splitBy} setSplitBy={setSplitBy} />
                 </>
             ) : null}
         </div>

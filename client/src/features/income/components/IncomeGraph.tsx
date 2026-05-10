@@ -45,6 +45,12 @@ function generateDataPoints(incomeData: IncomeData, investors: Investor[], split
                     currPoint.sources[i] += event.amount;
                     break;
                 }
+            } else if (splitBy === "fundandclass") {
+                const [fundName, className] = labels[i].split(" - ");
+                if (event.shareClass.includes(fundName) && event.shareClass.includes(className)) {
+                    currPoint.sources[i] += event.amount;
+                    break;
+                }
             } else if (splitBy === "segment") {
                 const customer = investors.find(x => x.customerId === event.customerId)!;
                 if (customer.customerType === labels[i]) {
@@ -83,6 +89,8 @@ function getLabels(splitBy: string): string[] {
         return ["Norden", "Global", "Kreditt"];
     } else if (splitBy === "class") {
         return ["Klasse B", "Klasse C"];
+    } else if (splitBy === "fundandclass") {
+        return ["Global - Klasse B", "Global - Klasse C", "Kreditt - Klasse B", "Kreditt - Klasse C", "Norden - Klasse B", "Norden - Klasse C"];
     } else if (splitBy === "segment") {
         return ["Aksjeselskap", "Pensjonskasse", "Ansatt", "Fond", "Fondsforvalter", "Forsikringsselskap", "Privatperson", "Stiftelse"];
     } else if (splitBy === "category") {
@@ -119,6 +127,7 @@ const SplitByButtons = ({splitBy, setSplitBy}: {splitBy: string, setSplitBy: any
   const buttons = [
     { label: "Fond", value: "fund" as const },
     { label: "Fondsklasse", value: "class" as const },
+    { label: "Fond og klasse", value: "fundandclass" as const },
     { label: "Kundesegment", value: "segment" as const },
     { label: "Kundekategori", value: "category" as const },
   ];
@@ -138,13 +147,12 @@ const SplitByButtons = ({splitBy, setSplitBy}: {splitBy: string, setSplitBy: any
   );
 };
 
-const IncomeGraph = ({ incomeData, investors }: { incomeData: IncomeData, investors: Investor[] }) => {
+const IncomeGraph = ({ incomeData, investors, splitBy, setSplitBy }: { incomeData: IncomeData, investors: Investor[], splitBy: string, setSplitBy: any }) => {
     const canvasRef = useRef<HTMLCanvasElement>(null);
     const [containerWidth, setContainerWidth] = useState(0);
     const containerRef = useRef<HTMLDivElement>(null);
 
 
-    const [splitBy, setSplitBy] = useState<"fund" | "class" | "segment" | "category">("fund");
     const data = generateDataPoints(incomeData, investors, splitBy);
     const cumulativeData = getCumulativeDataPoints(data);
     const colors = getColors(splitBy);

@@ -71,7 +71,7 @@ const formatPercentageChangePoints = (val: number) =>  {
         maximumFractionDigits: 2,
     }).format(val);
 
-    return prefix + " " + formatted + "pp.";
+    return prefix + " " + formatted + " pp.";
 }
 
 const KpiBox = ({initialValue, currentValue, label, deltaLabel}: {initialValue: number, currentValue: number, label: string, deltaLabel: string}) => {
@@ -326,14 +326,17 @@ const EffectiveRateBox = ({incomeData, trades, fundPrices} : {incomeData: Income
     )
 }
 
+
 const IncomeOverview = ({incomeData, trades, fundPrices} : {incomeData: IncomeData, trades: Trade[], fundPrices: FundPrice[]}) => {
 
     return (
-        <div className="feature-section__surface row g-3" style={{ marginBottom: '1.5rem' }}>
+        <div className="feature-section__surface" style={{ marginBottom: '1.5rem' }}>
+        <div className="row g-3" style={{ marginBottom: '1.5rem' }}>
             <YTDIncomeBox incomeData={incomeData} />
             <ProjectedIncomeBox incomeData={incomeData} />
             <AumBox trades={trades} fundPrices={fundPrices} />
             <EffectiveRateBox incomeData={incomeData} trades={trades} fundPrices={fundPrices} />
+        </div>
         </div>
     )
 };
