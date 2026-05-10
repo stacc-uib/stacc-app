@@ -214,6 +214,11 @@
   white-space: nowrap;
 }
 
+.th-filter-options-scroll {
+  max-height: 170px;
+  overflow-y: auto;
+}
+
 .th-filter-option {
   display: flex;
   align-items: center;

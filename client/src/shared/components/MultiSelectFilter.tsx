@@ -76,16 +76,18 @@ function MultiSelectFilter<T extends string>({
               {selected.length === options.length ? 'Fjern alle' : 'Velg alle'}
             </button>
             <div className="th-filter-divider" />
-            {options.map((option) => (
-              <label key={option} className="th-filter-option">
-                <input
-                  type="checkbox"
-                  checked={selected.includes(option)}
-                  onChange={() => toggle(option)}
-                />
-                {option}
-              </label>
-            ))}
+            <div className="th-filter-options-scroll">
+              {options.map((option) => (
+                <label key={option} className="th-filter-option">
+                  <input
+                    type="checkbox"
+                    checked={selected.includes(option)}
+                    onChange={() => toggle(option)}
+                  />
+                  {option}
+                </label>
+              ))}
+            </div>
           </div>
         )}
       </div>

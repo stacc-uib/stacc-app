@@ -6,7 +6,7 @@ import MultiSelectFilter from '../../../shared/components/MultiSelectFilter';
 import { getCustomerComplianceData } from '../../../shared/lib/getCustomerComplianceData';
 import { formatCurrency, formatDate } from '../../../shared/utils/format';
 import { useTradesContext } from '../../trades/TradesContext';
-import ActivityPageSizeSelector, { PageSize } from '../components/ActivityPageSizeSelector';
+
 import '../components/customerDetail.css';
 
 type FundType = 'Norden' | 'Global' | 'Kreditt';
@@ -228,10 +228,23 @@ function CustomerDetailPage({ customerId }: { customerId: string }) {
     return Array.from(years).sort((a, b) => Number(b) - Number(a));
   }, [trades]);
 
+  const PAGE_SIZE = 10;
+
+  const tradeKpi = useMemo(() => {
+    const financialTrades = trades.filter(
+      (t) => t.transactionType !== 'Telefon' && t.transactionType !== 'Epost',
+    );
+    const kjop = financialTrades.filter((t) => t.transactionType === 'Kjøp').length;
+    const salg = financialTrades.filter((t) => t.transactionType === 'Salg').length;
+    const totalAmount = financialTrades.reduce((sum, t) => sum + t.units * t.price, 0);
+    const avgAmount = financialTrades.length > 0 ? totalAmount / financialTrades.length : 0;
+    return { kjop, salg, avgAmount };
+  }, [trades]);
+
   const [selectedFunds, setSelectedFunds] = useState<string[]>([]);
   const [selectedTypes, setSelectedTypes] = useState<string[]>([]);
   const [selectedYears, setSelectedYears] = useState<string[]>([]);
-  const [pageSize, setPageSize] = useState<PageSize>(10);
+  const [page, setPage] = useState(0);
 
   useEffect(() => {
     setSelectedFunds([...allFundOptions]);
@@ -244,6 +257,7 @@ function CustomerDetailPage({ customerId }: { customerId: string }) {
   }, [allYearOptions]);
 
   const visibleTrades = useMemo(() => {
+    setPage(0);
     const activeFunds = selectedFunds.length === 0 ? allFundOptions : selectedFunds;
     const activeTypes = selectedTypes.length === 0 ? allTypeOptions : selectedTypes;
     const activeYears = selectedYears.length === 0 ? allYearOptions : selectedYears;
@@ -415,14 +429,28 @@ function CustomerDetailPage({ customerId }: { customerId: string }) {
 
         {/* Right column — activity */}
         <div className="cd-right">
+          <div className="cd-kpi-row">
+            <article className="summary-card">
+              <p className="summary-card__label">Antall kjøp</p>
+              <p className="summary-card__value">{tradeKpi.kjop}</p>
+            </article>
+            <article className="summary-card">
+              <p className="summary-card__label">Antall salg</p>
+              <p className="summary-card__value">{tradeKpi.salg}</p>
+            </article>
+            <article className="summary-card">
+              <p className="summary-card__label">Gjennomsnittlig transaksjonsbeløp</p>
+              <p className="summary-card__value">{formatCurrency(tradeKpi.avgAmount)} kr</p>
+            </article>
+          </div>
           <div className="cd-card cd-card--full">
             <div className="cd-section-header">
               <h3 className="cd-section-title">Aktivitet</h3>
-              <ActivityPageSizeSelector
-                value={pageSize}
-                onChange={setPageSize}
-                totalCount={visibleTrades.length}
-              />
+              <span className="cd-page-size-label" style={{ color: '#6b7280', fontSize: '0.85rem' }}>
+                {visibleTrades.length === 0
+                  ? 'Ingen treff'
+                  : `${page * PAGE_SIZE + 1}–${Math.min((page + 1) * PAGE_SIZE, visibleTrades.length)} av ${visibleTrades.length}`}
+              </span>
             </div>
             {trades.length === 0 ? (
               <p className="cd-empty">Ingen aktivitet registrert.</p>
@@ -430,6 +458,7 @@ function CustomerDetailPage({ customerId }: { customerId: string }) {
               <table className="cd-table">
                 <thead>
                   <tr>
+                    <th style={{ color: '#9ca3af', fontSize: '0.75rem' }}>ID</th>
                     <th className="th-fondstyper">
                       <MultiSelectFilter
                         label="Dato"
@@ -463,13 +492,14 @@ function CustomerDetailPage({ customerId }: { customerId: string }) {
                   </tr>
                 </thead>
                 <tbody>
-                  {(pageSize === 'all' ? visibleTrades : visibleTrades.slice(0, pageSize)).map(
+                  {visibleTrades.slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE).map(
                     (t) => {
                       const isFinancial =
                         t.transactionType !== 'Telefon' && t.transactionType !== 'Epost';
                       const beløp = isFinancial ? t.units * t.price : null;
                       return (
                         <tr key={t.id}>
+                          <td style={{ color: '#9ca3af', fontSize: '0.75rem' }}>{t.id.replace('trade-', '').split('-')[0]}</td>
                           <td>{formatDate(t.tradeDate)}</td>
                           <td>
                             <span
@@ -497,10 +527,23 @@ function CustomerDetailPage({ customerId }: { customerId: string }) {
                 </tbody>
                 <tfoot>
                   <tr>
-                    <td colSpan={6} className="cd-table-footer" />
+                    <td colSpan={7} className="cd-table-footer" />
                   </tr>
                 </tfoot>
               </table>
+            )}
+            {Math.ceil(visibleTrades.length / PAGE_SIZE) > 1 && (
+              <div className="queue-filter-row" style={{ padding: '1rem 0 0', justifyContent: 'center' }}>
+                <button type="button" className="queue-filter" onClick={() => setPage((p) => p - 1)} disabled={page === 0}>
+                  Forrige
+                </button>
+                <span style={{ padding: '0 0.5rem', color: '#6b7280', fontSize: '0.9rem', alignSelf: 'center' }}>
+                  Side {page + 1} av {Math.ceil(visibleTrades.length / PAGE_SIZE)}
+                </span>
+                <button type="button" className="queue-filter" onClick={() => setPage((p) => p + 1)} disabled={page >= Math.ceil(visibleTrades.length / PAGE_SIZE) - 1}>
+                  Neste
+                </button>
+              </div>
             )}
           </div>
         </div>
