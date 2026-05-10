@@ -45,6 +45,7 @@ type ZoomHandleDragState = {
   pointerId: number;
 } | null;
 
+type NavValueMode = 'nav' | 'return';
 type CompositionMode = 'funds' | 'classes' | 'investorCategories' | 'largestOwners';
 type SortDirection = 'asc' | 'desc';
 type SortState<TSortKey extends string> = {
@@ -62,10 +63,14 @@ type ShareholderSortKey =
 
 const TABLE_PAGE_SIZE = 10;
 const TOP_METRIC_IDS_TO_HIDE = new Set(['net-flow-ratio', 'dividend-yield']);
+const FUND_CHART_PRIMARY = '#ff7415';
+const FUND_CHART_MUTED = '#6b7280';
+const FUND_CHART_NET = '#1f2937';
+const FUND_CHART_AREA_FILL = 'rgba(255, 116, 21, 0.14)';
 const compositionModeOptions: { id: CompositionMode; label: string }[] = [
   { id: 'funds', label: 'Fond' },
-  { id: 'classes', label: 'Klasser' },
-  { id: 'investorCategories', label: 'Retail/profesjonell' },
+  { id: 'classes', label: 'Andelsklasse' },
+  { id: 'investorCategories', label: 'Investorsegment' },
   { id: 'largestOwners', label: 'Største eiere' },
 ];
 
@@ -109,6 +114,22 @@ function formatMetricValue(value: number, format: FundOverviewMetricFormat) {
 function formatSignedMetricValue(value: number, format: FundOverviewMetricFormat) {
   const prefix = value > 0 ? '+' : value < 0 ? '-' : '';
   return `${prefix}${formatMetricValue(Math.abs(value), format)}`;
+}
+
+function getSeriesAsPercentChangeFromStart(
+  series: FundOverviewLineSeries[],
+): FundOverviewLineSeries[] {
+  return series.map((seriesItem) => {
+    const startValue = seriesItem.points[0]?.value ?? 0;
+
+    return {
+      ...seriesItem,
+      points: seriesItem.points.map((point) => ({
+        ...point,
+        value: startValue > 0 ? point.value / startValue - 1 : 0,
+      })),
+    };
+  });
 }
 
 function formatNumber(value: number, maximumFractionDigits = 2) {
@@ -466,8 +487,8 @@ function PairedNavKpiGrid({ metrics }: { metrics: FundOverviewMetric[] }) {
   const navHigh = metrics.find((metric) => metric.id === 'nav-high');
   const navLow = metrics.find((metric) => metric.id === 'nav-low');
   const pairs = [
-    { id: 'start-end', title: 'Start / slutt NAV', metrics: [navStart, navEnd] },
-    { id: 'high-low', title: 'Høyeste / laveste NAV', metrics: [navHigh, navLow] },
+    { id: 'start-end', title: 'NAV start / siste', metrics: [navStart, navEnd] },
+    { id: 'high-low', title: 'NAV topp / bunn', metrics: [navHigh, navLow] },
   ];
 
   return (
@@ -530,10 +551,10 @@ function CompositionPiePanel({
       <div className="fund-overview__composition-header">
         <div>
           <p className="fund-overview__section-kpi-label">Fordeling</p>
-          <strong>Kapitalsammensetning</strong>
+          <strong>Kapitalfordeling</strong>
         </div>
         <label className="trade-field fund-overview__composition-select">
-          <span>Vis</span>
+          <span>Fordel etter</span>
           <select value={mode} onChange={(event) => onModeChange(event.target.value as CompositionMode)}>
             {compositionModeOptions.map((option) => (
               <option key={option.id} value={option.id}>
@@ -550,7 +571,7 @@ function CompositionPiePanel({
             viewBox="0 0 180 180"
             className="fund-overview__composition-pie"
             role="img"
-            aria-label="Fordeling for valgt filter"
+            aria-label="Kapitalfordeling for valgt utvalg"
             onMouseLeave={() => setHoveredPointId(null)}
           >
             {points.length === 1 ? (
@@ -623,14 +644,14 @@ function FlowContributorTable({
     <article className="fund-overview__impact-card">
       <div className="fund-overview__impact-header">
         <strong>{title}</strong>
-        <span>{formatNumber(rows.length, 0)} aktører</span>
+        <span>{formatNumber(rows.length, 0)} investorer</span>
       </div>
       <div className="table-responsive fund-overview__impact-table-scroll">
         <table className="data-table table align-middle mb-0 fund-overview__impact-table">
           <thead>
             <tr>
               <th>Investor</th>
-              <th>Beløp</th>
+              <th>Kapital</th>
               <th>Andel</th>
               <th>Handler</th>
             </tr>
@@ -655,7 +676,7 @@ function FlowContributorTable({
             ) : (
               <tr>
                 <td colSpan={4} className="fund-overview__table-empty">
-                  Ingen aktører med bidrag i valgt periode.
+                  Ingen investorer med bidrag i valgt periode.
                 </td>
               </tr>
             )}
@@ -693,13 +714,13 @@ function FlowContributorTables({
   return (
     <div className="fund-overview__impact-grid">
       <FlowContributorTable
-        title="Bidrag til brutto kjøp"
+        title="Største tegninger"
         rows={buyRows}
         page={buyPage}
         onPageChange={setBuyPage}
       />
       <FlowContributorTable
-        title="Bidrag til brutto salg"
+        title="Største innløsninger"
         rows={sellRows}
         page={sellPage}
         onPageChange={setSellPage}
@@ -721,7 +742,7 @@ function getMultiSelectSummary(
     .filter((option) => selectedIds.includes(option.id))
     .map((option) => option.label);
 
-  return labels.length <= 2 ? labels.join(', ') : `${labels.length} valgt`;
+  return labels.join(', ');
 }
 
 function MultiSelectFilter({
@@ -742,6 +763,7 @@ function MultiSelectFilter({
   const optionIds = options.map((option) => option.id);
   const selectedSet = new Set(selectedIds);
   const allSelected = selectedIds.length === optionIds.length;
+  const selectedSummary = getMultiSelectSummary(options, selectedIds, allLabel);
 
   useEffect(() => {
     const handlePointerDown = (event: MouseEvent) => {
@@ -780,9 +802,10 @@ function MultiSelectFilter({
           className="fund-overview__multi-filter-button"
           aria-haspopup="listbox"
           aria-expanded={isOpen}
+          title={selectedSummary}
           onClick={() => setIsOpen((current) => !current)}
         >
-          <span>{getMultiSelectSummary(options, selectedIds, allLabel)}</span>
+          <span>{selectedSummary}</span>
           <span aria-hidden="true">▾</span>
         </button>
 
@@ -979,9 +1002,9 @@ function MiniLineOverview({
     return null;
   }
 
-  const width = 820;
-  const height = 64;
-  const padding = { top: 8, right: 20, bottom: 10, left: 20 };
+  const width = 900;
+  const height = 58;
+  const padding = { top: 7, right: 16, bottom: 9, left: 16 };
   const chartWidth = width - padding.left - padding.right;
   const chartHeight = height - padding.top - padding.bottom;
   const pointCount = displaySeries[0].points.length;
@@ -1128,7 +1151,7 @@ function ChartRangeBadge({
     <div className="fund-overview__chart-actions">
       <span>
         {isFullRange
-          ? 'Zoom: Hele perioden'
+          ? 'Viser hele perioden'
           : `Zoom: ${formatNumber(range.startIndex + 1, 0)}-${formatNumber(range.endIndex + 1, 0)}`}
       </span>
       <button type="button" onClick={onReset} disabled={isFullRange}>
@@ -1159,7 +1182,7 @@ function NavRangeSummary({
   return (
     <div className="fund-overview__chart-period">
       <div>
-        <span>Markert periode</span>
+        <span>Valgt delperiode</span>
         <strong>
           {formatDateLabel(startPoint.date)} - {formatDateLabel(endPoint.date)}
         </strong>
@@ -1218,7 +1241,7 @@ function FlowRangeSummary({
   return (
     <div className="fund-overview__chart-period">
       <div>
-        <span>Markert periode</span>
+        <span>Valgt delperiode</span>
         <strong>
           {formatDateLabel(startPoint.date)} - {formatDateLabel(endPoint.date)}
         </strong>
@@ -1226,47 +1249,57 @@ function FlowRangeSummary({
       <div className="fund-overview__chart-period-list">
         <span>
           <i className="fund-overview__legend-dot fund-overview__legend-dot--buy" />
-          Kjøp: {formatMetricValue(grossBuy, 'currency')}
+          Tegninger: {formatMetricValue(grossBuy, 'currency')}
         </span>
         <span>
           <i className="fund-overview__legend-dot fund-overview__legend-dot--sell" />
-          Salg: {formatMetricValue(grossSell, 'currency')}
+          Innløsninger: {formatMetricValue(grossSell, 'currency')}
         </span>
         <span>
           <i className="fund-overview__legend-dot fund-overview__legend-dot--net" />
-          Netto: {formatSignedMetricValue(net, 'currency')}
+          Nettoflyt: {formatSignedMetricValue(net, 'currency')}
         </span>
         <span>
-          Nettoandel: {formatSignedMetricValue(netShare, 'percent')}
+          Nettoandel av aktivitet: {formatSignedMetricValue(netShare, 'percent')}
         </span>
       </div>
     </div>
   );
 }
 
-function NavChart({ series }: { series: FundOverviewLineSeries[] }) {
+function NavChart({
+  series,
+  mode = 'return',
+}: {
+  series: FundOverviewLineSeries[];
+  mode?: 'return' | 'nav';
+}) {
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
   const [selectionRange, setSelectionRange] = useState<ChartRange | null>(null);
   const [zoomRange, setZoomRange] = useState<ChartRange | null>(null);
   const [dragState, setDragState] = useState<ChartDragState>(null);
   const chartShellRef = usePreventWheelScroll<HTMLDivElement>();
-  const displaySeries = series.filter((seriesItem) => seriesItem.points.length > 0);
-  const chartDataKey = getChartDataKey(displaySeries);
+  const displaysPercentChange = mode === 'return';
+  const rawDisplaySeries = series.filter((seriesItem) => seriesItem.points.length > 0);
+  const displaySeries = displaysPercentChange
+    ? getSeriesAsPercentChangeFromStart(rawDisplaySeries)
+    : rawDisplaySeries;
+  const chartDataKey = getChartDataKey(rawDisplaySeries);
 
   useEffect(() => {
     setHoveredIndex(null);
     setSelectionRange(null);
     setZoomRange(null);
     setDragState(null);
-  }, [chartDataKey]);
+  }, [chartDataKey, mode]);
 
   if (displaySeries.length === 0) {
     return <div className="fund-overview__chart-empty">Ingen NAV-data i valgt utvalg.</div>;
   }
 
-  const width = 820;
-  const height = 300;
-  const padding = { top: 20, right: 20, bottom: 42, left: 20 };
+  const width = 900;
+  const height = 340;
+  const padding = { top: 18, right: 64, bottom: 36, left: 16 };
   const chartWidth = width - padding.left - padding.right;
   const chartHeight = height - padding.top - padding.bottom;
   const totalPointCount = displaySeries[0].points.length;
@@ -1280,9 +1313,12 @@ function NavChart({ series }: { series: FundOverviewLineSeries[] }) {
   const values = visibleSeries.flatMap((seriesItem) => seriesItem.points.map((point) => point.value));
   const valueMin = Math.min(...values);
   const valueMax = Math.max(...values);
-  const valueRange = valueMax - valueMin || Math.max(valueMax * 0.08, 1);
-  const displayMin = Math.max(0, valueMin - valueRange * 0.14);
-  const displayMax = valueMax + valueRange * 0.14;
+  const valueRange = valueMax - valueMin || Math.max(Math.abs(valueMax), Math.abs(valueMin), 0.01);
+  const displayMin =
+    mode === 'nav'
+      ? Math.max(0, valueMin - valueRange * 0.16)
+      : valueMin - valueRange * (displaysPercentChange ? 0.18 : 0.16);
+  const displayMax = valueMax + valueRange * (displaysPercentChange ? 0.18 : 0.16);
   const displayRange = displayMax - displayMin || 1;
   const coordinatesBySeries = displaySeries.map((seriesItem) => ({
     ...seriesItem,
@@ -1290,12 +1326,12 @@ function NavChart({ series }: { series: FundOverviewLineSeries[] }) {
     coordinates: seriesItem.points
       .slice(activeZoomRange.startIndex, activeZoomRange.endIndex + 1)
       .map((point, index) => ({
-      x: getChartXForIndex(index, pointCount, chartWidth, padding.left),
-      y:
-        padding.top +
-        chartHeight -
-        ((point.value - displayMin) / displayRange) * chartHeight,
-    })),
+        x: getChartXForIndex(index, pointCount, chartWidth, padding.left),
+        y:
+          padding.top +
+          chartHeight -
+          ((point.value - displayMin) / displayRange) * chartHeight,
+      })),
   }));
   const tickIndexes = getTickIndexes(pointCount);
   const activeIndex =
@@ -1314,6 +1350,11 @@ function NavChart({ series }: { series: FundOverviewLineSeries[] }) {
       ? 0
       : clamp((activeX / width) * 100, 12, 82);
   const activePoint = activeIndex === null ? null : visibleSeries[0].points[activeIndex];
+  const zeroLineY =
+    displaysPercentChange && displayMin <= 0 && displayMax >= 0
+      ? padding.top + chartHeight - ((0 - displayMin) / displayRange) * chartHeight
+      : null;
+  const axisFormat: FundOverviewMetricFormat = displaysPercentChange ? 'percent' : 'nav';
   const visibleSelectionRange = getVisibleSelectionRange(selectionRange, activeZoomRange);
   const selectionStartX =
     visibleSelectionRange === null
@@ -1400,19 +1441,32 @@ function NavChart({ series }: { series: FundOverviewLineSeries[] }) {
         <div className="fund-overview__chart-tooltip" style={{ left: `${tooltipLeft}%`, top: '0.85rem' }}>
           <strong>{formatDateLabel(activePoint.date)}</strong>
           <div className="fund-overview__chart-tooltip-list">
-            {visibleSeries.map((seriesItem) => (
-              <span key={seriesItem.id}>
-                <i className="fund-overview__legend-dot" style={{ background: seriesItem.color }} />
-                {seriesItem.label}: {formatMetricValue(seriesItem.points[activeIndex].value, 'nav')}
-              </span>
-            ))}
+            {visibleSeries.map((seriesItem) => {
+              const currentPoint = seriesItem.points[activeIndex];
+
+              return (
+                <span key={seriesItem.id}>
+                  <i className="fund-overview__legend-dot" style={{ background: seriesItem.color }} />
+                  {seriesItem.label}:{' '}
+                  {displaysPercentChange ? (
+                    formatSignedMetricValue(currentPoint.value, 'percent')
+                  ) : (
+                    formatMetricValue(currentPoint.value, 'nav')
+                  )}
+                </span>
+              );
+            })}
           </div>
         </div>
       ) : null}
 
       <svg
         viewBox={`0 0 ${width} ${height}`}
-        aria-label="Net Asset Value for valgt utvalg"
+        aria-label={
+          displaysPercentChange
+            ? 'Prosentvis NAV-endring fra grafstart for valgt utvalg'
+            : 'NAV-verdi over tid per fond'
+        }
         className="fund-overview__chart-svg"
         role="img"
         onPointerDown={handlePointerDown}
@@ -1448,16 +1502,35 @@ function NavChart({ series }: { series: FundOverviewLineSeries[] }) {
                 strokeDasharray="4 6"
               />
               <text
-                x={width - padding.right}
+                x={width - 8}
                 y={y - 6}
                 className="fund-overview__chart-text fund-overview__chart-text--value"
                 textAnchor="end"
               >
-                {formatMetricValue(axisValue, 'nav')}
+                {formatMetricValue(axisValue, axisFormat)}
               </text>
             </g>
           );
         })}
+
+        {zeroLineY !== null ? (
+          <g>
+            <line
+              x1={padding.left}
+              y1={zeroLineY}
+              x2={width - padding.right}
+              y2={zeroLineY}
+              className="fund-overview__chart-zero-line"
+            />
+            <text
+              x={padding.left + 8}
+              y={zeroLineY - 7}
+              className="fund-overview__chart-zero-label"
+            >
+              0%
+            </text>
+          </g>
+        ) : null}
 
         {activeX !== null ? (
           <line
@@ -1482,7 +1555,7 @@ function NavChart({ series }: { series: FundOverviewLineSeries[] }) {
         {coordinatesBySeries.length === 1 ? (
           <path
             d={buildAreaPath(coordinatesBySeries[0].coordinates, padding.top + chartHeight)}
-            fill="rgba(15, 118, 110, 0.14)"
+            fill={FUND_CHART_AREA_FILL}
           />
         ) : null}
 
@@ -1524,7 +1597,7 @@ function NavChart({ series }: { series: FundOverviewLineSeries[] }) {
           </text>
         ))}
       </svg>
-      <NavRangeSummary range={selectionRange} series={displaySeries} />
+      <NavRangeSummary range={selectionRange} series={rawDisplaySeries} />
       <ChartRangeBadge range={activeZoomRange} pointCount={totalPointCount} onReset={resetZoom} />
       <MiniLineOverview
         series={displaySeries}
@@ -1546,12 +1619,12 @@ function FlowChart({
   const displaySeries = series.filter((seriesItem) => seriesItem.points.length > 0);
 
   if (combinedPoints.length === 0 || displaySeries.length === 0) {
-    return <div className="fund-overview__chart-empty">Ingen tegningsdata i valgt utvalg.</div>;
+    return <div className="fund-overview__chart-empty">Ingen kapitalflyt i valgt utvalg.</div>;
   }
 
-  const width = 820;
-  const height = 310;
-  const padding = { top: 18, right: 20, bottom: 42, left: 20 };
+  const width = 900;
+  const height = 350;
+  const padding = { top: 18, right: 64, bottom: 36, left: 16 };
   const chartWidth = width - padding.left - padding.right;
   const chartHeight = height - padding.top - padding.bottom;
   const halfHeight = chartHeight / 2;
@@ -1589,15 +1662,15 @@ function FlowChart({
           <div className="fund-overview__chart-tooltip-list">
             <span>
               <i className="fund-overview__legend-dot fund-overview__legend-dot--buy" />
-              Brutto kjøp: {formatMetricValue(combinedPoints[activeIndex].grossBuy, 'currency')}
+              Tegninger: {formatMetricValue(combinedPoints[activeIndex].grossBuy, 'currency')}
             </span>
             <span>
               <i className="fund-overview__legend-dot fund-overview__legend-dot--sell" />
-              Brutto salg: {formatMetricValue(combinedPoints[activeIndex].grossSell, 'currency')}
+              Innløsninger: {formatMetricValue(combinedPoints[activeIndex].grossSell, 'currency')}
             </span>
             <span>
               <i className="fund-overview__legend-dot fund-overview__legend-dot--net" />
-              Netto: {formatMetricValue(combinedPoints[activeIndex].net, 'currency')}
+              Nettoflyt: {formatMetricValue(combinedPoints[activeIndex].net, 'currency')}
             </span>
             {displaySeries.length > 1
               ? displaySeries.map((seriesItem) => (
@@ -1613,7 +1686,7 @@ function FlowChart({
 
       <svg
         viewBox={`0 0 ${width} ${height}`}
-        aria-label="Netto tegninger med brutto kjøp og brutto salg"
+        aria-label="Kapitalflyt med tegninger, innløsninger og nettoflyt"
         className="fund-overview__chart-svg"
         role="img"
         onMouseMove={(event) =>
@@ -1661,7 +1734,7 @@ function FlowChart({
         ) : null}
 
         <text
-          x={width - padding.right}
+          x={width - 8}
           y={padding.top - 2}
           className="fund-overview__chart-text fund-overview__chart-text--value"
           textAnchor="end"
@@ -1669,7 +1742,7 @@ function FlowChart({
           {formatMetricValue(maxAbs, 'currency')}
         </text>
         <text
-          x={width - padding.right}
+          x={width - 8}
           y={height - 48}
           className="fund-overview__chart-text fund-overview__chart-text--value"
           textAnchor="end"
@@ -1691,7 +1764,7 @@ function FlowChart({
                 width={barWidth}
                 height={buyHeight}
                 rx="2"
-                fill="#16a34a"
+                fill={FUND_CHART_PRIMARY}
               />
               <rect
                 x={centerX + 2}
@@ -1699,7 +1772,7 @@ function FlowChart({
                 width={barWidth}
                 height={sellHeight}
                 rx="2"
-                fill="#dc2626"
+                fill={FUND_CHART_MUTED}
               />
             </g>
           );
@@ -1771,12 +1844,12 @@ function ZoomableFlowChart({
   }, [chartDataKey]);
 
   if (combinedPoints.length === 0 || displaySeries.length === 0) {
-    return <div className="fund-overview__chart-empty">Ingen tegningsdata i valgt utvalg.</div>;
+    return <div className="fund-overview__chart-empty">Ingen kapitalflyt i valgt utvalg.</div>;
   }
 
-  const width = 820;
-  const height = 310;
-  const padding = { top: 18, right: 20, bottom: 42, left: 20 };
+  const width = 900;
+  const height = 350;
+  const padding = { top: 18, right: 64, bottom: 36, left: 16 };
   const chartWidth = width - padding.left - padding.right;
   const chartHeight = height - padding.top - padding.bottom;
   const halfHeight = chartHeight / 2;
@@ -1837,8 +1910,8 @@ function ZoomableFlowChart({
   const overviewSeries: FundOverviewLineSeries[] = [
     {
       id: 'combined-flow-overview',
-      label: 'Netto tegninger',
-      color: '#111827',
+      label: 'Nettoflyt',
+      color: FUND_CHART_NET,
       points: combinedPoints.map((point) => ({
         date: point.date,
         label: point.label,
@@ -1919,15 +1992,15 @@ function ZoomableFlowChart({
           <div className="fund-overview__chart-tooltip-list">
             <span>
               <i className="fund-overview__legend-dot fund-overview__legend-dot--buy" />
-              Brutto kjøp: {formatMetricValue(activePoint.grossBuy, 'currency')}
+              Tegninger: {formatMetricValue(activePoint.grossBuy, 'currency')}
             </span>
             <span>
               <i className="fund-overview__legend-dot fund-overview__legend-dot--sell" />
-              Brutto salg: {formatMetricValue(activePoint.grossSell, 'currency')}
+              Innløsninger: {formatMetricValue(activePoint.grossSell, 'currency')}
             </span>
             <span>
               <i className="fund-overview__legend-dot fund-overview__legend-dot--net" />
-              Netto: {formatMetricValue(activePoint.net, 'currency')}
+              Nettoflyt: {formatMetricValue(activePoint.net, 'currency')}
             </span>
             {displaySeries.length > 1
               ? visibleSeries.map((seriesItem) => (
@@ -1943,7 +2016,7 @@ function ZoomableFlowChart({
 
       <svg
         viewBox={`0 0 ${width} ${height}`}
-        aria-label="Netto tegninger med brutto kjøp og brutto salg"
+        aria-label="Kapitalflyt med tegninger, innløsninger og nettoflyt"
         className="fund-overview__chart-svg"
         role="img"
         onPointerDown={handlePointerDown}
@@ -2012,7 +2085,7 @@ function ZoomableFlowChart({
         ) : null}
 
         <text
-          x={width - padding.right}
+          x={width - 8}
           y={padding.top - 2}
           className="fund-overview__chart-text fund-overview__chart-text--value"
           textAnchor="end"
@@ -2020,7 +2093,7 @@ function ZoomableFlowChart({
           {formatMetricValue(maxAbs, 'currency')}
         </text>
         <text
-          x={width - padding.right}
+          x={width - 8}
           y={height - 48}
           className="fund-overview__chart-text fund-overview__chart-text--value"
           textAnchor="end"
@@ -2042,7 +2115,7 @@ function ZoomableFlowChart({
                 width={barWidth}
                 height={buyHeight}
                 rx="2"
-                fill="#16a34a"
+                fill={FUND_CHART_PRIMARY}
               />
               <rect
                 x={centerX - barWidth / 2}
@@ -2050,7 +2123,7 @@ function ZoomableFlowChart({
                 width={barWidth}
                 height={sellHeight}
                 rx="2"
-                fill="#dc2626"
+                fill={FUND_CHART_MUTED}
               />
             </g>
           );
@@ -2107,10 +2180,13 @@ function ZoomableFlowChart({
 function FundOverviewPage() {
   const [selectedFundIds, setSelectedFundIds] = useState<string[]>([]);
   const [selectedClassIds, setSelectedClassIds] = useState<FundOverviewShareClassId[]>([]);
+  const [selectedInvestorCategoryIds, setSelectedInvestorCategoryIds] = useState<string[]>([]);
+  const [selectedInvestorTypeIds, setSelectedInvestorTypeIds] = useState<string[]>([]);
   const [selectedPeriodId, setSelectedPeriodId] = useState<FundOverviewPeriodId>('12m');
   const [selectedStartDate, setSelectedStartDate] = useState<string | undefined>(undefined);
   const [selectedEndDate, setSelectedEndDate] = useState<string | undefined>(undefined);
   const [navGrouping, setNavGrouping] = useState<FundOverviewChartGrouping>('combined');
+  const [navValueMode, setNavValueMode] = useState<NavValueMode>('nav');
   const [flowGrouping, setFlowGrouping] = useState<FundOverviewChartGrouping>('combined');
   const [dividendPage, setDividendPage] = useState(1);
   const [shareholderPage, setShareholderPage] = useState(1);
@@ -2129,6 +2205,8 @@ function FundOverviewPage() {
       getFundOverviewData({
         fundIds: selectedFundIds,
         classIds: selectedClassIds,
+        investorCategoryIds: selectedInvestorCategoryIds,
+        investorTypeIds: selectedInvestorTypeIds,
         periodId: selectedPeriodId,
         startDate: selectedStartDate,
         endDate: selectedEndDate,
@@ -2141,6 +2219,8 @@ function FundOverviewPage() {
       selectedClassIds,
       selectedEndDate,
       selectedFundIds,
+      selectedInvestorCategoryIds,
+      selectedInvestorTypeIds,
       selectedPeriodId,
       selectedStartDate,
     ],
@@ -2154,6 +2234,28 @@ function FundOverviewPage() {
   const shareholderRows = getPaginatedRows(sortedShareholderRows, shareholderPage, TABLE_PAGE_SIZE);
   const topMetrics = overview.metrics.filter((metric) => !TOP_METRIC_IDS_TO_HIDE.has(metric.id));
   const compositionPoints = overview.compositionSection[compositionMode];
+  const selectedInvestorCategoryLabel = getMultiSelectSummary(
+    overview.investorCategoryOptions,
+    overview.filters.investorCategoryIds,
+    'Alle segmenter',
+  );
+  const selectedInvestorTypeLabel = getMultiSelectSummary(
+    overview.investorTypeOptions,
+    overview.filters.investorTypeIds,
+    'Alle investortyper',
+  );
+  const selectedFilterSummary = [
+    { label: 'Fond', value: overview.selectedFundLabel },
+    { label: 'Andelsklasse', value: overview.selectedClassLabel },
+    { label: 'Investorsegment', value: selectedInvestorCategoryLabel },
+    { label: 'Investortype', value: selectedInvestorTypeLabel },
+    {
+      label: 'Periode',
+      value: `${overview.selectedPeriodLabel}: ${formatDateLabel(
+        overview.periodStartDate,
+      )} - ${formatDateLabel(overview.asOfDate)}`,
+    },
+  ];
   const handleDividendSort = (key: DividendSortKey) => {
     setDividendSort((currentSort) => getNextSortState(currentSort, key));
     setDividendPage(1);
@@ -2169,6 +2271,8 @@ function FundOverviewPage() {
   }, [
     overview.filters.fundIds,
     overview.filters.classIds,
+    overview.filters.investorCategoryIds,
+    overview.filters.investorTypeIds,
     overview.filters.periodId,
     overview.filters.startDate,
     overview.filters.endDate,
@@ -2176,11 +2280,13 @@ function FundOverviewPage() {
 
   return (
     <div className="content-card fund-overview-page">
-      <p className="content-card__eyebrow">Funds</p>
-      <h1>Fondsoversikt</h1>
-      <p className="content-card__description">
-        Filtrer på fond, andelsklasse og periode for å følge kapital, eiere, utbytte og utvikling i ett samlet overblikk.
-      </p>
+      <div className="fund-overview__page-header">
+        <p className="content-card__eyebrow">Fond</p>
+        <h1>Escali fondsanalyse</h1>
+        <p className="content-card__description">
+          Analyser mockdata for Escali Global, Escali Kreditt og Escali Norden med NAV-historikk, kapitalflyt, utbytter og eierbok samlet på én side.
+        </p>
+      </div>
 
       <section className="fund-overview__toolbar" aria-label="Filtre for fondsoversikt">
         <div className="fund-overview__toolbar-main">
@@ -2189,20 +2295,36 @@ function FundOverviewPage() {
               label="Fond"
               options={overview.fundOptions}
               selectedIds={overview.filters.fundIds}
-              allLabel="Alle fond"
+              allLabel="Alle Escali-fond"
               onChange={setSelectedFundIds}
             />
 
             <MultiSelectFilter
-              label="Klasse"
+              label="Andelsklasse"
               options={overview.classOptions}
               selectedIds={overview.filters.classIds}
-              allLabel="Alle klasser"
+              allLabel="Alle andelsklasser"
               onChange={(ids) => setSelectedClassIds(ids as FundOverviewShareClassId[])}
             />
 
+            <MultiSelectFilter
+              label="Investorsegment"
+              options={overview.investorCategoryOptions}
+              selectedIds={overview.filters.investorCategoryIds}
+              allLabel="Alle segmenter"
+              onChange={setSelectedInvestorCategoryIds}
+            />
+
+            <MultiSelectFilter
+              label="Investortype"
+              options={overview.investorTypeOptions}
+              selectedIds={overview.filters.investorTypeIds}
+              allLabel="Alle investortyper"
+              onChange={setSelectedInvestorTypeIds}
+            />
+
             <label className="trade-field">
-              <span>Periode</span>
+              <span>NAV-periode</span>
               <select
                 value={overview.filters.periodId}
                 onChange={(event) => {
@@ -2245,11 +2367,16 @@ function FundOverviewPage() {
         </div>
 
         <div className="fund-overview__toolbar-meta">
-          <p className="fund-overview__toolbar-label">Siste datapunkt</p>
+          <p className="fund-overview__toolbar-label">Siste NAV-dato</p>
           <strong>{formatDateLabel(overview.asOfDate)}</strong>
-          <span>
-            {overview.selectedFundLabel} / {overview.selectedClassLabel} / {overview.selectedPeriodLabel}
-          </span>
+          <div className="fund-overview__toolbar-filter-list">
+            {selectedFilterSummary.map((filter) => (
+              <span key={filter.label}>
+                <b>{filter.label}</b>
+                {filter.value}
+              </span>
+            ))}
+          </div>
         </div>
       </section>
 
@@ -2259,9 +2386,9 @@ function FundOverviewPage() {
         ))}
       </section>
 
-      <section className="fund-overview__detail-grid" aria-label="Detaljer om valgt utvalg">
+      <section className="fund-overview__detail-grid" aria-label="Datagrunnlag for valgt fondsutvalg">
         <article className="fund-overview__detail-card">
-          <p className="fund-overview__detail-label">Utvalg</p>
+          <p className="fund-overview__detail-label">Valgt univers</p>
           <strong>
             {overview.selectedFundLabel} / {overview.selectedClassLabel}
           </strong>
@@ -2269,7 +2396,7 @@ function FundOverviewPage() {
         </article>
 
         <article className="fund-overview__detail-card">
-          <p className="fund-overview__detail-label">Periode</p>
+          <p className="fund-overview__detail-label">Analyseperiode</p>
           <strong>{overview.selectedPeriodLabel}</strong>
           <span>
             {formatDateLabel(overview.periodStartDate)} - {formatDateLabel(overview.asOfDate)}
@@ -2277,8 +2404,8 @@ function FundOverviewPage() {
         </article>
 
         <article className="fund-overview__detail-card">
-          <p className="fund-overview__detail-label">Datagrunnlag</p>
-          <strong>NAV, transaksjoner og utbytte</strong>
+          <p className="fund-overview__detail-label">Mockdata</p>
+          <strong>NAV, transaksjoner, utbytte og investorer</strong>
           <span>{overview.notes[1]}</span>
         </article>
       </section>
@@ -2287,48 +2414,95 @@ function FundOverviewPage() {
         <div className="data-table-card__header fund-overview__section-header">
           <div>
             <p className="feature-section__eyebrow">NAV</p>
-            <h2 className="data-table-card__title">Net Asset Value</h2>
+            <h2 className="data-table-card__title">NAV og avkastning</h2>
             <p className="data-table-card__description">{overview.navSection.description}</p>
           </div>
         </div>
 
         <div className="fund-overview__section-grid">
-          <div className="fund-overview__chart-card">
-            <div className="fund-overview__chart-card-header">
-              <div className="fund-overview__chart-card-copy">
-                <strong>NAV-utvikling</strong>
-                <span>
-                  {formatDateLabel(overview.periodStartDate)} - {formatDateLabel(overview.asOfDate)}
-                </span>
+          <div className="fund-overview__chart-stack">
+            <div className="fund-overview__chart-card">
+              <div className="fund-overview__chart-card-header">
+                <div className="fund-overview__chart-card-copy">
+                  <strong>Avkastning per fond og klasse</strong>
+                  <span>
+                    {formatDateLabel(overview.periodStartDate)} - {formatDateLabel(overview.asOfDate)}
+                  </span>
+                </div>
+
+                <label className="trade-field fund-overview__chart-select">
+                  <span>Vis som</span>
+                  <select
+                    value={overview.navSection.activeGrouping}
+                    onChange={(event) => setNavGrouping(event.target.value as FundOverviewChartGrouping)}
+                  >
+                    {overview.navSection.groupingOptions.map((option) => (
+                      <option key={option.id} value={option.id}>
+                        {option.label}
+                      </option>
+                    ))}
+                  </select>
+                </label>
               </div>
 
-              <label className="trade-field fund-overview__chart-select">
-                <span>Vis som</span>
-                <select
-                  value={overview.navSection.activeGrouping}
-                  onChange={(event) => setNavGrouping(event.target.value as FundOverviewChartGrouping)}
-                >
-                  {overview.navSection.groupingOptions.map((option) => (
-                    <option key={option.id} value={option.id}>
-                      {option.label}
-                    </option>
+              {overview.navSection.series.length > 1 ? (
+                <div className="fund-overview__chart-legend">
+                  {overview.navSection.series.map((seriesItem) => (
+                    <span key={seriesItem.id}>
+                      <i className="fund-overview__legend-dot" style={{ background: seriesItem.color }} />
+                      {seriesItem.label}
+                    </span>
                   ))}
-                </select>
-              </label>
+                </div>
+              ) : null}
+
+              <NavChart series={overview.navSection.series} />
+
+              <div className="fund-overview__chart-kpi-panel">
+                <SectionKpiGrid metrics={overview.navSection.returnKpis} compact />
+              </div>
             </div>
 
-            {overview.navSection.series.length > 1 ? (
-              <div className="fund-overview__chart-legend">
-                {overview.navSection.series.map((seriesItem) => (
-                  <span key={seriesItem.id}>
-                    <i className="fund-overview__legend-dot" style={{ background: seriesItem.color }} />
-                    {seriesItem.label}
+            <div className="fund-overview__chart-card">
+              <div className="fund-overview__chart-card-header">
+                <div className="fund-overview__chart-card-copy">
+                  <strong>NAV per fond</strong>
+                  <span>
+                    {navValueMode === 'nav'
+                      ? 'Faktisk NAV-verdi over tid'
+                      : 'Prosentvis endring fra periodestart'}
                   </span>
-                ))}
-              </div>
-            ) : null}
+                </div>
 
-            <NavChart series={overview.navSection.series} />
+                <label className="trade-field fund-overview__chart-select">
+                  <span>Visning</span>
+                  <select
+                    value={navValueMode}
+                    onChange={(event) => setNavValueMode(event.target.value as NavValueMode)}
+                  >
+                    <option value="nav">NAV-verdi</option>
+                    <option value="return">Prosent fra start</option>
+                  </select>
+                </label>
+              </div>
+
+              {overview.navSection.fundNavSeries.length > 1 ? (
+                <div className="fund-overview__chart-legend">
+                  {overview.navSection.fundNavSeries.map((seriesItem) => (
+                    <span key={seriesItem.id}>
+                      <i className="fund-overview__legend-dot" style={{ background: seriesItem.color }} />
+                      {seriesItem.label}
+                    </span>
+                  ))}
+                </div>
+              ) : null}
+
+              <NavChart series={overview.navSection.fundNavSeries} mode={navValueMode} />
+
+              <div className="fund-overview__chart-kpi-panel">
+                <SectionKpiGrid metrics={overview.navSection.fundNavKpis} compact />
+              </div>
+            </div>
           </div>
 
           <div className="fund-overview__side-panel">
@@ -2345,8 +2519,8 @@ function FundOverviewPage() {
       <section className="data-table-card data-table-card--tight fund-overview__section">
         <div className="data-table-card__header fund-overview__section-header">
           <div>
-            <p className="feature-section__eyebrow">Tegninger</p>
-            <h2 className="data-table-card__title">Netto tegninger</h2>
+            <p className="feature-section__eyebrow">Kapitalflyt</p>
+            <h2 className="data-table-card__title">Tegninger og innløsninger</h2>
             <p className="data-table-card__description">{overview.flowSection.description}</p>
           </div>
         </div>
@@ -2355,12 +2529,12 @@ function FundOverviewPage() {
           <div className="fund-overview__chart-card">
             <div className="fund-overview__chart-card-header">
               <div className="fund-overview__chart-card-copy">
-                <strong>Brutto kjøp og brutto salg</strong>
+                <strong>Kapital inn og ut</strong>
                 <span>Aggregert per {overview.flowSection.granularityLabel}</span>
               </div>
 
               <label className="trade-field fund-overview__chart-select">
-                <span>Vis som</span>
+                <span>Gruppering</span>
                 <select
                   value={overview.flowSection.activeGrouping}
                   onChange={(event) => setFlowGrouping(event.target.value as FundOverviewChartGrouping)}
@@ -2377,16 +2551,16 @@ function FundOverviewPage() {
             <div className="fund-overview__chart-legend">
               <span>
                 <i className="fund-overview__legend-dot fund-overview__legend-dot--buy" />
-                Brutto kjøp
+                Tegninger
               </span>
               <span>
                 <i className="fund-overview__legend-dot fund-overview__legend-dot--sell" />
-                Brutto salg
+                Innløsninger
               </span>
               {overview.flowSection.series.map((seriesItem) => (
                 <span key={seriesItem.id}>
                   <i className="fund-overview__legend-dot" style={{ background: seriesItem.color }} />
-                  {seriesItem.label === 'Kombinert' ? 'Netto tegninger' : seriesItem.label}
+                  {seriesItem.id === 'combined' ? 'Nettoflyt' : seriesItem.label}
                 </span>
               ))}
             </div>
@@ -2411,7 +2585,7 @@ function FundOverviewPage() {
         <div className="data-table-card__header fund-overview__section-header">
           <div>
             <p className="feature-section__eyebrow">Utbytte</p>
-            <h2 className="data-table-card__title">Utbytteoversikt</h2>
+            <h2 className="data-table-card__title">Utbytteutbetalinger</h2>
             <p className="data-table-card__description">{overview.dividendSection.description}</p>
           </div>
         </div>
@@ -2448,7 +2622,7 @@ function FundOverviewPage() {
                 </th>
                 <th>
                   <SortableHeader
-                    label="Klasse"
+                    label="Andelsklasse"
                     sortKey="classLabel"
                     sortState={dividendSort}
                     onSort={handleDividendSort}
@@ -2456,7 +2630,7 @@ function FundOverviewPage() {
                 </th>
                 <th>
                   <SortableHeader
-                    label="Beløp"
+                    label="Utbetalt beløp"
                     sortKey="amount"
                     sortState={dividendSort}
                     onSort={handleDividendSort}
@@ -2483,7 +2657,7 @@ function FundOverviewPage() {
               ) : (
                 <tr>
                   <td colSpan={5} className="fund-overview__table-empty">
-                    Ingen utbyttehendelser i valgt utvalg.
+                    Ingen utbytteutbetalinger i valgt utvalg.
                   </td>
                 </tr>
               )}
@@ -2504,8 +2678,8 @@ function FundOverviewPage() {
       <section className="data-table-card data-table-card--tight fund-overview__section">
         <div className="data-table-card__header fund-overview__section-header">
           <div>
-            <p className="feature-section__eyebrow">Andelseiere</p>
-            <h2 className="data-table-card__title">Andelseiere</h2>
+            <p className="feature-section__eyebrow">Eierbok</p>
+            <h2 className="data-table-card__title">Andelseiere og konsentrasjon</h2>
             <p className="data-table-card__description">{overview.shareholderSection.description}</p>
           </div>
         </div>
@@ -2534,7 +2708,7 @@ function FundOverviewPage() {
                 </th>
                 <th>
                   <SortableHeader
-                    label={overview.shareholderSection.showUnits ? 'Andeler' : 'Eksponeringer'}
+                    label={overview.shareholderSection.showUnits ? 'Andeler' : 'Fond/klasser'}
                     sortKey={overview.shareholderSection.showUnits ? 'units' : 'exposureCount'}
                     sortState={shareholderSort}
                     onSort={handleShareholderSort}
@@ -2550,7 +2724,7 @@ function FundOverviewPage() {
                 </th>
                 <th>
                   <SortableHeader
-                    label="Andel av AUM"
+                    label="Eierandel"
                     sortKey="ownershipShare"
                     sortState={shareholderSort}
                     onSort={handleShareholderSort}

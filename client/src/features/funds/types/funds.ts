@@ -20,6 +20,8 @@ export type FundOverviewFilters = {
   classIds?: FundOverviewShareClassId[];
   fundId?: string;
   classId?: FundOverviewClassId;
+  investorCategoryIds?: string[];
+  investorTypeIds?: string[];
   periodId: FundOverviewPeriodId;
   startDate?: string;
   endDate?: string;
@@ -30,6 +32,8 @@ export type FundOverviewFilters = {
 export type FundOverviewResolvedFilters = Omit<FundOverviewFilters, 'fundIds' | 'classIds'> & {
   fundIds: string[];
   classIds: FundOverviewShareClassId[];
+  investorCategoryIds: string[];
+  investorTypeIds: string[];
 };
 
 export type FundOverviewSelectOption = {
@@ -98,7 +102,11 @@ export type FundOverviewCompositionSection = {
 
 export type FundOverviewNavSection = {
   series: FundOverviewLineSeries[];
+  returnSeries: FundOverviewLineSeries[];
+  fundNavSeries: FundOverviewLineSeries[];
   kpis: FundOverviewMetric[];
+  returnKpis: FundOverviewMetric[];
+  fundNavKpis: FundOverviewMetric[];
   description: string;
   groupingOptions: FundOverviewSelectOption[];
   activeGrouping: FundOverviewChartGrouping;
@@ -155,6 +163,8 @@ export type FundOverviewShareholderSection = {
 export type FundOverviewSnapshot = {
   fundOptions: FundOverviewSelectOption[];
   classOptions: FundOverviewSelectOption[];
+  investorCategoryOptions: FundOverviewSelectOption[];
+  investorTypeOptions: FundOverviewSelectOption[];
   periodOptions: FundOverviewSelectOption[];
   groupingOptions: FundOverviewSelectOption[];
   availableDateOptions: FundOverviewDateOption[];

@@ -1970,6 +1970,10 @@ textarea {
   gap: 1.25rem;
 }
 
+.fund-overview__page-header .content-card__description {
+  margin-bottom: 0;
+}
+
 .fund-overview__toolbar {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(240px, 320px);
@@ -1988,8 +1992,8 @@ textarea {
 
 .fund-overview__filter-grid {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 0.9rem;
+  grid-template-columns: repeat(auto-fit, minmax(155px, 1fr));
+  gap: 0.75rem;
 }
 
 .fund-overview__multi-filter {
@@ -2060,7 +2064,7 @@ textarea {
   width: 1rem;
   height: 1rem;
   margin: 0;
-  accent-color: #0f766e;
+  accent-color: #ff7415;
 }
 
 .fund-overview__multi-filter-option--all {
@@ -2138,7 +2142,7 @@ textarea {
 }
 
 .fund-overview__range-fill {
-  background: linear-gradient(90deg, #0f766e 0%, #0ea5a4 100%);
+  background: linear-gradient(90deg, #ff7415 0%, #b85717 100%);
 }
 
 .fund-overview__range-input {
@@ -2162,7 +2166,7 @@ textarea {
   margin-top: -8px;
   border: 3px solid #fff;
   border-radius: 50%;
-  background: #111827;
+  background: #ff7415;
   box-shadow: 0 2px 8px rgba(15, 23, 42, 0.2);
   cursor: pointer;
   pointer-events: auto;
@@ -2179,7 +2183,7 @@ textarea {
   height: 18px;
   border: 3px solid #fff;
   border-radius: 50%;
-  background: #111827;
+  background: #ff7415;
   box-shadow: 0 2px 8px rgba(15, 23, 42, 0.2);
   cursor: pointer;
   pointer-events: auto;
@@ -2193,7 +2197,7 @@ textarea {
   min-width: 0;
   padding: 1rem 1.1rem;
   border-radius: 0.4rem;
-  background: #111827;
+  background: linear-gradient(135deg, #ff7415 0%, #b85717 100%);
   color: #fff;
 }
 
@@ -2211,10 +2215,29 @@ textarea {
   line-height: 1.1;
 }
 
-.fund-overview__toolbar-meta span {
+.fund-overview__toolbar-filter-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.28rem;
+  min-width: 0;
+}
+
+.fund-overview__toolbar-filter-list span {
+  display: grid;
+  grid-template-columns: minmax(0, 0.75fr) minmax(0, 1.35fr);
+  gap: 0.45rem;
+  min-width: 0;
   color: rgba(255, 255, 255, 0.82);
-  font-size: 0.92rem;
-  line-height: 1.45;
+  font-size: 0.78rem;
+  line-height: 1.35;
+  overflow-wrap: anywhere;
+}
+
+.fund-overview__toolbar-filter-list b {
+  color: rgba(255, 255, 255, 0.72);
+  font-size: 0.68rem;
+  font-weight: 800;
+  text-transform: uppercase;
 }
 
 .fund-overview__metric-grid {
@@ -2266,7 +2289,7 @@ textarea {
 }
 
 .fund-overview__delta--up {
-  color: #0f766e;
+  color: #b85717;
 }
 
 .fund-overview__delta--down {
@@ -2338,13 +2361,24 @@ textarea {
 
 .fund-overview__section-grid {
   display: grid;
-  grid-template-columns: minmax(0, 1.6fr) minmax(260px, 1fr);
-  gap: 1rem;
+  grid-template-columns: minmax(0, 2.7fr) minmax(230px, 0.75fr);
+  align-items: start;
+  gap: 0.85rem;
+}
+
+.fund-overview__chart-stack {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  gap: 0.85rem;
 }
 
 .fund-overview__chart-card {
+  display: flex;
+  flex-direction: column;
   min-width: 0;
-  padding: 1rem;
+  overflow: hidden;
+  padding: 0.85rem;
   border: 1px solid rgba(17, 24, 39, 0.08);
   border-radius: 0.45rem;
   background: linear-gradient(180deg, #fbfcfd 0%, #f7f9fb 100%);
@@ -2355,7 +2389,7 @@ textarea {
   align-items: baseline;
   justify-content: space-between;
   gap: 1rem;
-  margin-bottom: 0.85rem;
+  margin-bottom: 0.65rem;
 }
 
 .fund-overview__chart-card-copy {
@@ -2386,7 +2420,7 @@ textarea {
   position: relative;
   overflow: hidden;
   border-radius: 0.4rem;
-  padding: 0.5rem 0 0;
+  padding: 0.25rem 0 0;
   background: #fff;
   user-select: none;
   -webkit-user-select: none;
@@ -2396,8 +2430,21 @@ textarea {
   display: block;
   width: 100%;
   height: auto;
+  min-height: 0;
   touch-action: none;
   cursor: crosshair;
+}
+
+.fund-overview__chart-kpi-panel {
+  margin-top: 0.85rem;
+}
+
+.fund-overview__chart-kpi-panel .fund-overview__section-kpi-grid {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.fund-overview__mini-chart {
+  min-height: 52px;
 }
 
 .fund-overview__chart-hover-line {
@@ -2406,9 +2453,25 @@ textarea {
   stroke-dasharray: 4 6;
 }
 
+.fund-overview__chart-zero-line {
+  stroke: rgba(17, 24, 39, 0.28);
+  stroke-width: 1.5;
+  stroke-dasharray: 4 6;
+}
+
+.fund-overview__chart-zero-label {
+  fill: #111827;
+  font-size: 12px;
+  font-family: "Segoe UI", sans-serif;
+  font-weight: 800;
+  paint-order: stroke;
+  stroke: #fff;
+  stroke-width: 3px;
+}
+
 .fund-overview__chart-selection {
-  fill: rgba(14, 165, 164, 0.12);
-  stroke: rgba(15, 118, 110, 0.42);
+  fill: rgba(255, 116, 21, 0.12);
+  stroke: rgba(255, 116, 21, 0.48);
   stroke-width: 1;
 }
 
@@ -2462,9 +2525,10 @@ textarea {
   gap: 1rem;
   margin: 0.75rem 0 0;
   padding: 0.75rem 0.85rem;
-  border: 1px solid rgba(15, 118, 110, 0.16);
+  border: 1px solid rgba(255, 116, 21, 0.18);
   border-radius: 0.35rem;
-  background: #f0fdfa;
+  background: #fff7ed;
+  min-width: 0;
 }
 
 .fund-overview__chart-period span {
@@ -2484,20 +2548,26 @@ textarea {
   flex-wrap: wrap;
   justify-content: flex-end;
   gap: 0.45rem 0.85rem;
+  min-width: 0;
 }
 
 .fund-overview__chart-period-list span {
   display: inline-flex;
   align-items: center;
+  flex-wrap: wrap;
   gap: 0.45rem;
+  min-width: 0;
+  max-width: 100%;
   color: #111827;
   font-weight: 700;
+  overflow-wrap: anywhere;
 }
 
 .fund-overview__chart-actions {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  flex-wrap: wrap;
   gap: 0.75rem;
   margin-top: 0.75rem;
   color: #4b5563;
@@ -2517,8 +2587,8 @@ textarea {
 }
 
 .fund-overview__chart-actions button:hover {
-  border-color: rgba(15, 118, 110, 0.35);
-  color: #0f766e;
+  border-color: rgba(255, 116, 21, 0.45);
+  color: #b85717;
 }
 
 .fund-overview__mini-chart {
@@ -2534,8 +2604,8 @@ textarea {
 }
 
 .fund-overview__mini-chart-window {
-  fill: rgba(15, 118, 110, 0.12);
-  stroke: rgba(15, 118, 110, 0.56);
+  fill: rgba(255, 116, 21, 0.12);
+  stroke: rgba(255, 116, 21, 0.62);
   stroke-width: 1.5;
 }
 
@@ -2575,7 +2645,7 @@ textarea {
   display: flex;
   flex-wrap: wrap;
   gap: 0.75rem 1rem;
-  margin-bottom: 0.65rem;
+  margin-bottom: 0.45rem;
   color: #4b5563;
   font-size: 0.84rem;
 }
@@ -2583,7 +2653,10 @@ textarea {
 .fund-overview__chart-legend span {
   display: inline-flex;
   align-items: center;
+  min-width: 0;
+  max-width: 100%;
   gap: 0.45rem;
+  overflow-wrap: anywhere;
 }
 
 .fund-overview__legend-dot {
@@ -2595,15 +2668,15 @@ textarea {
 }
 
 .fund-overview__legend-dot--buy {
-  background: #16a34a;
+  background: #ff7415;
 }
 
 .fund-overview__legend-dot--sell {
-  background: #dc2626;
+  background: #6b7280;
 }
 
 .fund-overview__legend-dot--net {
-  background: #111827;
+  background: #1f2937;
 }
 
 .fund-overview__section-kpi-grid {
@@ -2714,6 +2787,7 @@ textarea {
 .fund-overview__composition-card,
 .fund-overview__impact-card {
   min-width: 0;
+  overflow: hidden;
   padding: 0.85rem;
   border: 1px solid rgba(17, 24, 39, 0.08);
   border-radius: 0.45rem;
@@ -2725,6 +2799,7 @@ textarea {
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
+  flex-wrap: wrap;
   gap: 0.75rem;
 }
 
@@ -2741,7 +2816,8 @@ textarea {
 }
 
 .fund-overview__composition-select {
-  min-width: 132px;
+  flex: 1 1 132px;
+  min-width: min(132px, 100%);
 }
 
 .fund-overview__composition-select span {
@@ -2756,15 +2832,16 @@ textarea {
 
 .fund-overview__composition-body {
   display: grid;
-  grid-template-columns: 180px minmax(0, 1fr);
-  gap: 1rem;
+  grid-template-columns: 1fr;
+  gap: 0.85rem;
   align-items: center;
   margin-top: 0.85rem;
 }
 
 .fund-overview__composition-pie-shell {
   position: relative;
-  width: 180px;
+  justify-self: center;
+  width: min(180px, 100%);
   max-width: 100%;
 }
 
@@ -2772,7 +2849,7 @@ textarea {
   display: block;
   width: 100%;
   height: auto;
-  overflow: visible;
+  overflow: hidden;
 }
 
 .fund-overview__composition-slice {
@@ -2825,6 +2902,7 @@ textarea {
   display: flex;
   flex-direction: column;
   gap: 0.42rem;
+  width: 100%;
   min-width: 0;
 }
 
@@ -2833,6 +2911,8 @@ textarea {
   grid-template-columns: auto minmax(0, 1fr) auto;
   align-items: center;
   gap: 0.4rem;
+  min-width: 0;
+  max-width: 100%;
   color: #4b5563;
   font-size: 0.78rem;
 }
@@ -2899,7 +2979,7 @@ textarea {
 
 .fund-overview__sort-button--active span:last-child,
 .fund-overview__sort-button:hover span:last-child {
-  color: #0f766e;
+  color: #b85717;
 }
 
 .fund-overview__pagination {
@@ -2937,8 +3017,8 @@ textarea {
 
 .fund-overview__pagination button:hover:not(:disabled),
 .fund-overview__pagination-current {
-  border-color: rgba(15, 118, 110, 0.35);
-  background: #0f766e;
+  border-color: rgba(255, 116, 21, 0.45);
+  background: #ff7415;
   color: #fff;
 }
 
@@ -2964,6 +3044,10 @@ textarea {
 
   .fund-overview__section-grid {
     grid-template-columns: 1fr;
+  }
+
+  .fund-overview__chart-kpi-panel .fund-overview__section-kpi-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
 
@@ -3114,6 +3198,10 @@ textarea {
   .fund-overview__metric-grid,
   .fund-overview__detail-grid,
   .fund-overview__section-kpi-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .fund-overview__chart-kpi-panel .fund-overview__section-kpi-grid {
     grid-template-columns: 1fr;
   }
 
