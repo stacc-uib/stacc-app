@@ -6,12 +6,54 @@ import getIncomeData from '../lib/getIncomeData';
 import IncomePeriodFilter from '../components/IncomePeriodFilter';
 import { applyDateRange, getPresetRange, getIncomeDateRange, type Preset } from '../lib/getIncomeDateRange';
 import type { DateRange } from "../types/dateRange";
+import type { ReactNode } from 'react';
 
 import fundPrices from "../../../mocks/fundPrices.json";
 import investors from "../../../mocks/investors.json";
 import trades from "../../../mocks/trades.json";
 
 import { useMemo, useEffect, useState } from 'react';
+
+export function SummaryCard({
+  title,
+  description,
+  children,
+}: {
+  title: string;
+  description: string;
+  children: ReactNode;
+}) {
+  return (
+    <article
+      className="summary-card h-100"
+      style={{ minHeight: '160px', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}
+    >
+      <p className="summary-card__label" style={{ fontWeight: 700, color: '#374151', fontSize: '0.9rem', marginBottom: 0 }}>
+        {title}
+      </p>
+      <p style={{ color: '#9ca3af', fontSize: '0.82rem', margin: 0 }}>{description}</p>
+      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '0.15rem', paddingTop: '0.25rem' }}>
+        {children}
+      </div>
+    </article>
+  );
+}
+
+export function StatRow({ label, value, sub }: { label: string; value: string; sub?: string }) {
+  return (
+    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', gap: '0.5rem', padding: '0.2rem 0' }}>
+      <span style={{ fontSize: '0.78rem', color: '#6b7280' }}>{label}</span>
+      <span style={{ fontSize: '0.85rem', fontWeight: 600, color: '#111827', textAlign: 'right' }}>
+        {value}
+        {sub && (
+          <span style={{ fontSize: '0.7rem', fontWeight: 400, color: '#9ca3af', marginLeft: '0.3rem' }}>
+            {sub}
+          </span>
+        )}
+      </span>
+    </div>
+  );
+}
 
 const incomeSubnavItems = [
     {

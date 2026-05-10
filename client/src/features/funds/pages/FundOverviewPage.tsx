@@ -48,7 +48,7 @@ type ZoomDragState = {
 } | null;
 
 type CompositionMode = 'funds' | 'classes' | 'investorCategories' | 'largestOwners';
-type NavValueMode = 'nav' | 'return';
+export type NavValueMode = 'nav' | 'return';
 type SortDirection = 'asc' | 'desc';
 type SortState<TSortKey extends string> = {
   key: TSortKey;
@@ -98,7 +98,7 @@ const integerFormatter = new Intl.NumberFormat('nb-NO', {
   maximumFractionDigits: 0,
 });
 
-function formatMetricValue(value: number, format: FundOverviewMetricFormat) {
+export function formatMetricValue(value: number, format: FundOverviewMetricFormat) {
   if (format === 'currency') {
     return currencyFormatter.format(value);
   }
@@ -981,12 +981,14 @@ function FlowRangeSummary({
   );
 }
 
-function LineChart({
+export function LineChart({
   series,
   mode = 'return',
+  compact = false,
 }: {
   series: FundOverviewLineSeries[];
   mode?: NavValueMode;
+  compact?: boolean;
 }) {
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
   const [selectionRange, setSelectionRange] = useState<ChartRange | null>(null);
@@ -1242,12 +1244,16 @@ function LineChart({
         ))}
       </svg>
       <LineRangeSummary range={selectionRange} series={displaySeries} mode={mode} />
-      <ChartRangeBadge range={activeZoomRange} pointCount={totalPointCount} onReset={() => setZoomRange(null)} />
-      <MiniLineOverview
-        series={displaySeries}
-        zoomRange={activeZoomRange}
-        onZoomRangeChange={(range) => setZoomRange(isFullChartRange(range, totalPointCount) ? null : range)}
-      />
+      {!compact && (
+        <>
+          <ChartRangeBadge range={activeZoomRange} pointCount={totalPointCount} onReset={() => setZoomRange(null)} />
+          <MiniLineOverview
+            series={displaySeries}
+            zoomRange={activeZoomRange}
+            onZoomRangeChange={(range) => setZoomRange(isFullChartRange(range, totalPointCount) ? null : range)}
+          />
+        </>
+      )}
     </div>
   );
 }
@@ -1793,7 +1799,7 @@ function getSortedShareholderRows(rows: FundOverviewTopShareholder[], sortState:
   });
 }
 
-function ChartLegend({ series }: { series: FundOverviewLineSeries[] }) {
+export function ChartLegend({ series }: { series: FundOverviewLineSeries[] }) {
   if (series.length <= 1) {
     return null;
   }
