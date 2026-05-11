@@ -2,7 +2,7 @@ import type { IncomeData } from "../lib/getIncomeData";
 import type { FundPrice } from "../types/fundPrice";
 import type { Trade } from "../types/trade";
 
-const MetricDelta = ({initialValue, currentValue, label}: {initialValue: number, currentValue: number, label: string }) => {
+export const MetricDelta = ({initialValue, currentValue, label}: {initialValue: number, currentValue: number, label: string }) => {
     const percentageChange = 100 * (currentValue - initialValue) / initialValue;
     const percentageChangeFormatted = formatPercentageChange(percentageChange);
 
@@ -20,7 +20,7 @@ const MetricDelta = ({initialValue, currentValue, label}: {initialValue: number,
     )
 }
 
-const MetricDeltaPP = ({initialValue, currentValue, label}: {initialValue: number, currentValue: number, label: string }) => {
+export const MetricDeltaPP = ({initialValue, currentValue, label}: {initialValue: number, currentValue: number, label: string }) => {
     const percentageChange = currentValue - initialValue;
     const percentageChangeFormatted = formatPercentageChangePoints(percentageChange);
 
@@ -98,7 +98,7 @@ const KpiBoxPercentage = ({initialValue, currentValue, label, deltaLabel}: {init
     )
 };
 
-function ytdIncome(incomeData: IncomeData): number {
+export function ytdIncome(incomeData: IncomeData): number {
     const firstDayOfYear = new Date(new Date().getFullYear(), 0, 1);
     const today = new Date(incomeData.events[incomeData.events.length - 1].date!)
 
@@ -113,7 +113,7 @@ function ytdIncome(incomeData: IncomeData): number {
     return income;
 }
 
-function ytdIncomeLastPeriod(incomeData: IncomeData): number {
+export function ytdIncomeLastPeriod(incomeData: IncomeData): number {
     const firstDayOfLastYear = new Date(new Date().getFullYear() - 1, 0, 1);
     let thisDayLastYear = new Date(incomeData.events[incomeData.events.length - 1].date!)
     thisDayLastYear.setFullYear(thisDayLastYear.getFullYear() - 1);
@@ -129,7 +129,7 @@ function ytdIncomeLastPeriod(incomeData: IncomeData): number {
     return income;
 }
 
-function annualIncomeLastYear(incomeData: IncomeData): number {
+export function annualIncomeLastYear(incomeData: IncomeData): number {
     const firstDayOfLastYear = new Date(new Date().getFullYear() - 1, 0, 1);
     const lastDayOfLastYear = new Date(new Date().getFullYear() - 1, 11, 31);
 
@@ -149,7 +149,7 @@ interface MonthlyIncome {
     total: number;
 }
 
-function projectedAnnualIncome(incomeData: IncomeData, alpha: number): number {
+export function projectedAnnualIncome(incomeData: IncomeData, alpha: number): number {
     const now = new Date();
     const thisMonth = now.toISOString().substring(0, 7);
 
@@ -221,7 +221,7 @@ const ProjectedIncomeBox = ({incomeData} : {incomeData: IncomeData}) => {
     )
 }
 
-function aumAtDate(trades: Trade[], fundPrices: FundPrice[], maxDate: Date): number {
+export function aumAtDate(trades: Trade[], fundPrices: FundPrice[], maxDate: Date): number {
     let validTrades = trades.filter((t) => 
         t.tradeDate !== null &&
         t.customerName !== null &&

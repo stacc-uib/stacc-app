@@ -1,7 +1,10 @@
 import { useMemo } from 'react';
 import getIncomeData, { getIncomeDateRange, getPresetRange } from '../lib/incomeCalc';
+import getIncomeDataFull from '../../income/lib/getIncomeData';
+import { ytdIncome, ytdIncomeLastPeriod, annualIncomeLastYear, projectedAnnualIncome, aumAtDate, MetricDelta, MetricDeltaPP } from '../../income/components/IncomeOverview';
 import fundPricesJson from '../../../mocks/fundPrices.json';
 import tradesJson from '../../../mocks/trades.json';
+import investorsJson from '../../../mocks/investors.json';
 import { getFundOverviewData } from '../../funds/lib/getFundOverviewData';
 import { LineChart, ChartLegend, formatMetricValue } from '../../funds/pages/FundOverviewPage';
 import { getCompliancePageData } from '../../compliance/lib/getCompliancePageData';
@@ -11,7 +14,7 @@ import { SummaryCard, StatRow } from '../../income/pages/IncomePage';
 
 // ── Dashboard ──────────────────────────────────────────────────────────────
 function DashboardPage() {
-  // Inntekter: sum management fees for the last 12 months
+  // Inntekter: compute all 4 income KPIs (same as Income Oversikt)
   const incomeStats = useMemo(() => {
     const incomeData = getIncomeData(
       tradesJson as Parameters<typeof getIncomeData>[0],
@@ -25,7 +28,31 @@ function DashboardPage() {
     const totalFee = events12m
       .filter((e) => e.incomeType === 'management fee')
       .reduce((acc, e) => acc + e.amount, 0);
-    return { total: totalFee, totalFee };
+
+    // Full income data for KPI calculations (uses income lib)
+    const incomeDataFull = getIncomeDataFull(
+      tradesJson as Parameters<typeof getIncomeDataFull>[0],
+      investorsJson as Parameters<typeof getIncomeDataFull>[1],
+      fundPricesJson as Parameters<typeof getIncomeDataFull>[2],
+    );
+    const ytd = ytdIncome(incomeDataFull);
+    const ytdPrev = ytdIncomeLastPeriod(incomeDataFull);
+    const projected = projectedAnnualIncome(incomeDataFull, 0.3);
+    const annualPrev = annualIncomeLastYear(incomeDataFull);
+    const aum = aumAtDate(
+      tradesJson as Parameters<typeof aumAtDate>[0],
+      fundPricesJson as Parameters<typeof aumAtDate>[1],
+      new Date('2026-01-31'),
+    );
+    const aumPrev = aumAtDate(
+      tradesJson as Parameters<typeof aumAtDate>[0],
+      fundPricesJson as Parameters<typeof aumAtDate>[1],
+      new Date('2025-01-31'),
+    );
+    const effRate = 12 * 100 * ytd / aum;
+    const effRatePrev = 12 * 100 * ytdPrev / aumPrev;
+
+    return { total: totalFee, totalFee, ytd, ytdPrev, projected, annualPrev, aum, aumPrev, effRate, effRatePrev };
   }, []);
 
   // Forvaltning + Tegning + Topp 5: reuse fund overview for 12m period, nav grouped per fund
@@ -67,8 +94,35 @@ function DashboardPage() {
       {/* Rad 1: Inntekter + Forvaltning */}
       <div className="row g-3" style={{ marginBottom: '1rem' }}>
         <div className="col-12 col-md-6">
-          <SummaryCard title="Inntekter" description="Forvaltningshonorar siste 12 mnd">
-            <StatRow label="Forvaltningshonorar" value={formatMetricValue(incomeStats.totalFee, 'currency')} />
+          <SummaryCard title="Inntekter" description="Nøkkeltall fra inntektsoversikten">
+            <div style={{ padding: '0.2rem 0' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', gap: '0.5rem' }}>
+                <span style={{ fontSize: '0.78rem', color: '#6b7280' }}>YTD inntekter</span>
+                <span style={{ fontSize: '0.85rem', fontWeight: 600, color: '#111827' }}>{formatMetricValue(incomeStats.ytd, 'currency')}</span>
+              </div>
+              <MetricDelta currentValue={incomeStats.ytd} initialValue={incomeStats.ytdPrev} label="Samme dato forrige år" />
+            </div>
+            <div style={{ padding: '0.2rem 0' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', gap: '0.5rem' }}>
+                <span style={{ fontSize: '0.78rem', color: '#6b7280' }}>Projisert årsinntekt</span>
+                <span style={{ fontSize: '0.85rem', fontWeight: 600, color: '#111827' }}>{formatMetricValue(incomeStats.projected, 'currency')}</span>
+              </div>
+              <MetricDelta currentValue={incomeStats.projected} initialValue={incomeStats.annualPrev} label="Endring fra forrige år" />
+            </div>
+            <div style={{ padding: '0.2rem 0' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', gap: '0.5rem' }}>
+                <span style={{ fontSize: '0.78rem', color: '#6b7280' }}>AUM</span>
+                <span style={{ fontSize: '0.85rem', fontWeight: 600, color: '#111827' }}>{formatMetricValue(incomeStats.aum, 'currency')}</span>
+              </div>
+              <MetricDelta currentValue={incomeStats.aum} initialValue={incomeStats.aumPrev} label="Endring fra forrige år" />
+            </div>
+            <div style={{ padding: '0.2rem 0' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', gap: '0.5rem' }}>
+                <span style={{ fontSize: '0.78rem', color: '#6b7280' }}>Eff. forvaltningshonorar</span>
+                <span style={{ fontSize: '0.85rem', fontWeight: 600, color: '#111827' }}>{`${new Intl.NumberFormat('nb-NO', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(incomeStats.effRate)} %`}</span>
+              </div>
+              <MetricDeltaPP currentValue={incomeStats.effRate} initialValue={incomeStats.effRatePrev} label="Endring fra forrige år" />
+            </div>
           </SummaryCard>
         </div>
         <div className="col-12 col-md-6">
