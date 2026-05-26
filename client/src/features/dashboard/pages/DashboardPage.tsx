@@ -94,7 +94,7 @@ function DashboardPage() {
       {/* Rad 1: Inntekter + Forvaltning */}
       <div className="row g-3" style={{ marginBottom: '1rem' }}>
         <div className="col-12 col-md-6">
-          <SummaryCard title="Inntekter" description="Nøkkeltall fra inntektsoversikten">
+          <SummaryCard title="Inntekter" description="Nøkkeltall fra inntektsoversikten" onClick={() => { window.location.hash = '#inntekt'; }}>
             <div style={{ padding: '0.2rem 0' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', gap: '0.5rem' }}>
                 <span style={{ fontSize: '0.78rem', color: '#6b7280' }}>YTD inntekter</span>
@@ -126,7 +126,7 @@ function DashboardPage() {
           </SummaryCard>
         </div>
         <div className="col-12 col-md-6">
-          <SummaryCard title="Forvaltning" description="NAV-utvikling per fond siste 12 mnd">
+          <SummaryCard title="Forvaltning" description="NAV-utvikling per fond siste 12 mnd" onClick={() => { window.location.hash = '#fondsoversikt'; }}>
             <ChartLegend series={fundOverview.navSection.series} />
             <LineChart series={fundOverview.navSection.series} mode="return" compact />
           </SummaryCard>
@@ -136,7 +136,7 @@ function DashboardPage() {
       {/* Rad 2: Tegning + Compliance + Topp 5 kunder */}
       <div className="row g-3">
         <div className="col-12 col-md-4">
-          <SummaryCard title="Tegning" description="Brutto og netto tegning siste 12 mnd">
+          <SummaryCard title="Tegning" description="Brutto og netto tegning siste 12 mnd" onClick={() => { window.location.hash = '#fondsoversikt'; }}>
             {grossBuyKpi && (
               <StatRow label={grossBuyKpi.label} value={formatMetricValue(grossBuyKpi.value, grossBuyKpi.format)} />
             )}
@@ -149,7 +149,7 @@ function DashboardPage() {
           </SummaryCard>
         </div>
         <div className="col-12 col-md-4">
-          <SummaryCard title="Compliance" description="PEP-kontroll og neste aktivitet">
+          <SummaryCard title="Compliance" description="PEP-kontroll og neste aktivitet" onClick={() => { window.location.hash = '#rapporter/oversikt'; }}>
             {pepOverdue && (
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0.2rem 0' }}>
                 <span style={{ fontSize: '0.78rem', color: '#6b7280' }}>{pepOverdue.label}</span>
@@ -183,7 +183,7 @@ function DashboardPage() {
           </SummaryCard>
         </div>
         <div className="col-12 col-md-4">
-          <SummaryCard title="Topp 5 kunder" description="Oversikt over største kunder">
+          <SummaryCard title="Topp 5 kunder" description="Oversikt over største kunder" onClick={() => { window.location.hash = '#kundeoversikt'; }}>
             {top5.map((shareholder, idx) => (
               <div
                 key={shareholder.customerId}

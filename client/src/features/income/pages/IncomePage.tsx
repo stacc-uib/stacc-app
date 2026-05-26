@@ -18,15 +18,24 @@ export function SummaryCard({
   title,
   description,
   children,
+  onClick,
 }: {
   title: string;
   description: string;
   children: ReactNode;
+  onClick?: () => void;
 }) {
   return (
     <article
       className="summary-card h-100"
-      style={{ minHeight: '160px', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}
+      style={{
+        minHeight: '160px',
+        display: 'flex',
+        flexDirection: 'column',
+        gap: '0.5rem',
+        ...(onClick ? { cursor: 'pointer' } : {}),
+      }}
+      onClick={onClick}
     >
       <p className="summary-card__label" style={{ fontWeight: 700, color: '#374151', fontSize: '0.9rem', marginBottom: 0 }}>
         {title}

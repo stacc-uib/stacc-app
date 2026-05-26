@@ -1,6 +1,6 @@
 import React from 'react';
 
-export type HoldingFilter = 'sterk' | 'naer' | null;
+export type HoldingFilter = 'naer' | null;
 
 type Props = {
   activeFilter: HoldingFilter;
@@ -8,22 +8,15 @@ type Props = {
 };
 
 function CustomerChanges({ activeFilter, onFilterChange }: Props) {
-  const toggle = (filter: 'sterk' | 'naer') => {
-    onFilterChange(activeFilter === filter ? null : filter);
+  const toggle = () => {
+    onFilterChange(activeFilter === 'naer' ? null : 'naer');
   };
 
   return (
     <div className="holding-filter-buttons">
       <button
-        className={`holding-filter-btn holding-filter-btn--yellow${activeFilter === 'sterk' ? ' holding-filter-btn--active' : ''}`}
-        onClick={() => toggle('sterk')}
-        aria-pressed={activeFilter === 'sterk'}
-      >
-        Stor kunde i klasse C
-      </button>
-      <button
         className={`holding-filter-btn holding-filter-btn--orange${activeFilter === 'naer' ? ' holding-filter-btn--active' : ''}`}
-        onClick={() => toggle('naer')}
+        onClick={toggle}
         aria-pressed={activeFilter === 'naer'}
       >
         Potensielle Klasse B – Nær
