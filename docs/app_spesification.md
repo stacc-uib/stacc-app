@@ -28,7 +28,7 @@ Applikasjonen har en fast toppbar med logo og en sidebar til venstre med hovedme
 |---|---|---|---|
 | 2 | Dashboard | Ferdig | Startside |
 | 3 | Inntekt | Placeholder | Inntektsanalyse (ikke implementert) |
-| 4 | Fondsoversikt | Placeholder | Fondsinformasjon (ikke implementert) |
+| 4 | Fondsoversikt | Ferdig | Fondsanalyse, NAV, kapitalflyt og eierbok |
 | 5 | Kundeoversikt | Ferdig | Investorregister |
 | 6 | Transaksjoner | Ferdig | Transaksjonsliste |
 | 7 | Rapporter | Ferdig | Compliance og rapportering |
@@ -130,9 +130,138 @@ Inntektsanalyse, honorarutvikling og relaterte oversikter. Ikke implementert.
 
 **Menyvalg:** Fondsoversikt
 **Hash:** `#fondsoversikt`
-**Status:** Placeholder
+**Status:** Ferdig
 
-Fondsdata, klasser, beholdning og status per fond. Ikke implementert.
+Fondsanalyse for Escali Global, Escali Kreditt og Escali Norden. Siden samler NAV-historikk, avkastning, kapitalflyt, utbytter og eierbok for valgt fondsutvalg.
+
+### 4.1 Layout
+
+Elementer på siden:
+- Filterrad for fond, andelsklasse, investorsegment, investortype og NAV-periode
+- Nøkkeltall for valgt fondsutvalg
+- Datagrunnlag for valgt univers, analyseperiode og mockdata
+- Avkastningsgraf
+- NAV-graf med kapitalfordeling
+- Kapitalflyt med tegninger og innløsninger
+- Utbyttetabell
+- Eierbok og konsentrasjonstabell
+
+### 4.2 Filtrering
+
+Filtrene øverst styrer alle nøkkeltall, grafer og tabeller på siden.
+
+Består av:
+- Multivalg for fond: Escali Global, Escali Kreditt og Escali Norden
+- Multivalg for andelsklasse: Andelsklasse A, B og C
+- Multivalg for investorsegment, blant annet profesjonelle og ikke-profesjonelle investorer
+- Multivalg for investortype basert på kundedata
+- NAV-periode med valgene "Siste måned", "Kvartal til dato", "Hittil i år", "Siste 12 måneder", "Hele NAV-historikken" og "Egendefinert intervall"
+- Intervallslider der bruker kan velge start- og sluttdato direkte fra tilgjengelige NAV-datoer
+- Oppsummering av aktive filtre og siste NAV-dato til høyre for filterraden
+
+### 4.3 Nøkkeltall
+
+KPI-rad øverst viser status for valgt fondsunivers og periode.
+
+Består av:
+- Forvaltet kapital per siste NAV-dato
+- Aktive andelseiere
+- Netto kapitalflyt
+- Avkastning
+- Siste NAV
+- Utbetalt utbytte
+
+Nøkkeltallene viser også endring fra periodestart der det finnes et relevant sammenligningsgrunnlag.
+
+### 4.4 Avkastning
+
+Avkastningsseksjonen viser prosentvis utvikling fra periodestart.
+
+Består av:
+- Linjediagram for avkastning
+- Forklaringsnøkkel for seriene i grafen
+- Valg for å vise utviklingen samlet, fordelt på fond eller fordelt på andelsklasse
+- KPI-panel med samlet avkastning, annualisert avkastning, beste fond, svakeste fond, volatilitet og maks fall
+
+Grafen støtter hover for å vise verdier per dato, markering av intervall i grafen og zoom i tidsserien.
+
+### 4.5 NAV og kapitalfordeling
+
+NAV-seksjonen viser faktisk NAV per fond over tid, med mulighet for å sammenligne prosentvis utvikling fra periodestart.
+
+Består av:
+- Linjediagram for NAV per fond
+- Valg mellom "NAV-verdi" og "Prosent fra start"
+- KPI-panel for høyeste siste NAV, laveste siste NAV, høyeste NAV-punkt, laveste NAV-punkt og størst NAV-spenn
+- Sammenlignende NAV-nøkkeltall for start, slutt, høyeste og laveste nivå i perioden
+- Kakediagram for kapitalfordeling
+
+Kapitalfordelingen kan vises fordelt på fond, andelsklasse, investorsegment eller største eiere.
+
+### 4.6 Kapitalflyt
+
+Kapitalflytseksjonen viser tegninger, innløsninger og netto kapitalflyt i valgt periode.
+
+Består av:
+- Graf der tegninger vises over nullinjen, innløsninger under nullinjen og nettoflyt som linje
+- Valg for å vise nettoflyt samlet, fordelt på fond eller fordelt på andelsklasse
+- KPI-panel med brutto tegninger, brutto innløsninger, netto kapitalflyt, innløsning/tegning, største tegningsperiode og største innløsningsperiode
+- Tabell for største tegninger
+- Tabell for største innløsninger
+
+Bidragstabellene viser investor, kapital, andel av flyten og antall handler, med paginering.
+
+### 4.7 Utbytte
+
+Utbytteseksjonen viser registrerte utbytteutbetalinger i valgt periode.
+
+Består av:
+- KPI-rad med totalt utbytte, antall utbetalinger, mottakere, største utbetaling og snitt per utbetaling
+- Sorterbar tabell med dato, investor, fond, andelsklasse og utbetalt beløp
+- Paginering med 10 utbytter per side
+- Tomtilstand dersom valgt utvalg ikke har utbyttehendelser
+
+### 4.8 Eierbok
+
+Eierbokseksjonen viser aktive andelseiere og kapitalfordeling per siste NAV-dato.
+
+Består av:
+- KPI-rad med største eierandel, topp 3 eierandel, topp 10 eierandel, profesjonell kapital og snittkapital per eier
+- Sorterbar tabell med rang, investor, andeler eller antall fond/klasser, markedsverdi og eierandel
+- Paginering med 10 andelseiere per side
+
+Dersom bruker har valgt ett instrument, viser tabellen antall andeler. Ved bredere utvalg viser tabellen hvor mange fond eller andelsklasser investoren har eksponering mot.
+
+### 4.9 Interaksjon med andre sider
+
+Fondsoversikten interagerer med "Dashboard", "Kundeoversikt" og "Registrer ny handel".
+
+Dashboardet gjenbruker fondsnøkkeltall og grafdata fra fondsoversikten.
+
+Når bruker trykker på investornavn i kapitalflyt, utbytte eller eierbok, åpnes kundedetaljsiden for aktuell kunde.
+
+Når nye handler registreres og blir en del av transaksjonsgrunnlaget, vil beholdning, kapitalflyt, eierbok og relevante nøkkeltall kunne beregnes på nytt fra samme datakilder.
+
+### 4.10 Beregninger og datakilder
+
+Beregningene på siden er basert på fond, fondskurser, investorer og transaksjoner.
+
+Logikk:
+- Fond og andelsklasser normaliseres til instrumenter per fond og klasse
+- Beholdning beregnes fra historiske andelsbevegelser frem til valgt dato
+- Forvaltet kapital beregnes som positive andeler multiplisert med siste tilgjengelige NAV for instrumentet
+- Samlet NAV vektes etter forvaltet kapital når flere instrumenter inngår i utvalget
+- Avkastning beregnes fra NAV-endring mellom periodestart og siste NAV-dato
+- Kapitalflyt beregnes fra kjøp og salg i valgt periode
+- Utbytte beregnes fra transaksjoner med type utbytte
+- Eierbok beregnes fra positive beholdninger per investor og verdsettes med siste NAV
+
+Elementene på siden er basert på:
+- Fond: `mocks/funds.json`
+- Fondskurser og NAV-historikk: `mocks/fundPrices.json`
+- Investorer og investorsegment: `mocks/investors.json`
+- Transaksjoner, kapitalflyt og utbytte: `mocks/trades.json`
+- Beregninger: `features/funds/lib/getFundOverviewData.ts`
 
 ---
 
