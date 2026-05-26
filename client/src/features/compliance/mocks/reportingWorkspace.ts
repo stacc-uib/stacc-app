@@ -13,7 +13,8 @@ export const reportingWorkspaceMock: ReportingWorkspaceOverview = {
       owner: 'CCO',
       statusLabel: 'Pågår',
       statusTone: 'warning',
-      nextAction: 'Fyll inn manglende næringsgruppe før rapportering',
+      nextAction: 'Fyll inn manglende næringsgruppe før rapportering.',
+      checkIds: ['check-2'],
     },
     {
       id: 'run-2',
@@ -23,6 +24,7 @@ export const reportingWorkspaceMock: ReportingWorkspaceOverview = {
       statusLabel: 'Klar til godkjenning',
       statusTone: 'ok',
       nextAction: 'Gjennomfør siste kontroll og godkjenn rapport.',
+      checkIds: ['check-1', 'check-3'],
     },
     {
       id: 'run-3',
@@ -32,6 +34,7 @@ export const reportingWorkspaceMock: ReportingWorkspaceOverview = {
       statusLabel: 'Ikke startet',
       statusTone: 'neutral',
       nextAction: 'Opprett kontrollplan og fordel ansvar i teamet.',
+      checkIds: [],
     },
   ],
   validationChecks: [
@@ -43,9 +46,9 @@ export const reportingWorkspaceMock: ReportingWorkspaceOverview = {
     },
     {
       id: 'check-2',
-      label: 'Nærings for Finanstilsynet',
+      label: 'Næringsgruppe for Finanstilsynet',
       status: 'critical',
-      detail: '3 investorer mangler næring og blokkerer innsending.',
+      detail: '3 investorer mangler næringsgruppe og blokkerer innsending.',
     },
     {
       id: 'check-3',

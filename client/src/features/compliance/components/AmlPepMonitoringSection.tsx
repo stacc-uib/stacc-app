@@ -55,7 +55,11 @@ function getTimelineForRow(row: AmlPepFollowUpRow, isUpdated: boolean): ReviewTi
       label: isUpdated ? 'Kontroll oppdatert' : 'Kontrollstatus',
       detail: isUpdated
         ? 'Kontrollen er markert som gjennomført og ny frist er lagt inn.'
-        : `Status er ${row.reviewStatus.toLowerCase()} med neste kontroll ${row.nextReviewLabel}.`,
+        : row.reviewStatus === 'Forfalt'
+          ? `Kontrollen er forfalt. Neste planlagte gjennomgang: ${row.nextReviewLabel}.`
+          : row.reviewStatus === 'Forfaller snart'
+            ? `Kontrollen forfaller snart. Planlegg gjennomgang innen ${row.nextReviewLabel}.`
+            : `Kontrollen er planlagt. Neste gjennomgang: ${row.nextReviewLabel}.`,
       tone:
         isUpdated
           ? 'ok'
@@ -68,7 +72,12 @@ function getTimelineForRow(row: AmlPepFollowUpRow, isUpdated: boolean): ReviewTi
     {
       id: `${row.customerId}-documentation`,
       label: 'Dokumentasjon',
-      detail: `Dokumentasjonsstatus er ${row.documentationStatus.toLowerCase()}.`,
+      detail:
+        row.documentationStatus === 'Mangler dokumentasjon'
+          ? 'Dokumentasjon mangler — last opp nødvendige dokumenter før neste kontroll.'
+          : row.documentationStatus === 'Mangler oppdatering'
+            ? 'Dokumentasjonen er utdatert og bør oppdateres.'
+            : 'All dokumentasjon er registrert og oppdatert.',
       tone:
         row.documentationStatus === 'Mangler dokumentasjon'
           ? 'critical'
@@ -120,10 +129,6 @@ function AmlPepMonitoringSection({ overview }: AmlPepMonitoringSectionProps) {
 
   const visibleRows = useMemo(() => getVisibleRows(rows, activeFilter), [activeFilter, rows]);
 
-  const selectedRow = useMemo(
-    () => visibleRows.find((row) => row.customerId === selectedCustomerId) ?? null,
-    [selectedCustomerId, visibleRows],
-  );
 
   function handleSelectRow(customerId: string) {
     setSelectedCustomerId((current) => (current === customerId ? '' : customerId));
@@ -286,7 +291,7 @@ function AmlPepMonitoringSection({ overview }: AmlPepMonitoringSectionProps) {
                           <p className="aml-review-popover__eyebrow">Valgt investor</p>
                           <h3 className="data-table-card__title">{row.investorName}</h3>
                           <p className="data-table-card__description">
-                            PEP-status {row.pepStatus}. Neste kontroll {row.nextReviewLabel}.
+                            {row.pepStatus === 'Ja' ? 'Registrert som PEP. ' : ''}Neste oppfølging: {row.nextReviewLabel}.
                           </p>
                         </div>
 

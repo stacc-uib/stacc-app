@@ -32,13 +32,6 @@ type ComplianceDashboardSectionProps = {
   onOpenSubpage: (subpageId: ComplianceSubpageId) => void;
 };
 
-function getMetricClassName(tone?: 'ok' | 'warning' | 'critical') {
-  if (tone === 'critical') return 'status-badge status-badge--critical';
-  if (tone === 'warning') return 'status-badge status-badge--warning';
-  if (tone === 'ok') return 'status-badge status-badge--ok';
-  return 'status-badge status-badge--neutral';
-}
-
 function ComplianceDashboardSection({
   pageData,
   onOpenSubpage,
@@ -60,12 +53,18 @@ function ComplianceDashboardSection({
               {metric.value}
             </span>
             <span className="compliance-overview__stat-label">{metric.label}</span>
-            <span className={getMetricClassName(metric.tone)}>
-              {metric.tone === 'critical'
-                ? 'Kritisk'
-                : metric.tone === 'warning'
-                  ? 'Avvik'
-                  : 'OK'}
+            <span
+              style={{
+                fontSize: '0.7rem',
+                color:
+                  metric.tone === 'critical'
+                    ? '#dc2626'
+                    : metric.tone === 'warning'
+                      ? '#d97706'
+                      : '#16a34a',
+              }}
+            >
+              {metric.context}
             </span>
           </div>
         ))}

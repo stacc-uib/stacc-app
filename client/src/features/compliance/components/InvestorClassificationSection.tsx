@@ -31,7 +31,7 @@ const statusLabelByType: Record<InvestorClassificationStatus, string> = {
   'mangler-naering': 'Mangler næringsgruppe',
   'pep-forfaller-snart': 'PEP forfaller snart',
   'pep-forfalt': 'PEP forfalt',
-  'ikke-profesjonell': 'Ikke-profesjonell',
+  'ikke-profesjonell': 'Begrenset adgang',
 };
 
 const filterOptions: { id: RegistryFilter; label: string }[] = [
@@ -44,22 +44,15 @@ const filterOptions: { id: RegistryFilter; label: string }[] = [
 function getStatusClassName(status: InvestorClassificationStatus) {
   switch (status) {
     case 'pep-forfalt':
-    case 'ikke-profesjonell':
       return 'status-badge status-badge--critical';
     case 'mangler-naering':
     case 'pep-forfaller-snart':
       return 'status-badge status-badge--warning';
+    case 'ikke-profesjonell':
+      return 'status-badge status-badge--neutral';
     default:
       return 'status-badge status-badge--ok';
   }
-}
-
-function getReportingReadinessClassName(
-  readiness: InvestorRegistryRow['reportingReadiness'],
-) {
-  return readiness === 'Klar'
-    ? 'status-badge status-badge--ok'
-    : 'status-badge status-badge--warning';
 }
 
 function toDateFromLabel(dateLabel: string) {
@@ -320,14 +313,11 @@ function InvestorClassificationSection({
                 <tr>
                   <th>Investor</th>
                   <th>Kundetype</th>
-                  <th>Kategori</th>
                   <th>PEP</th>
-                  <th>Siste PEP-kontroll</th>
-                  <th>Neste PEP-kontroll</th>
+                  <th>PEP-kontroll</th>
                   <th>Næring</th>
-                  <th>Compliance status</th>
-                  <th>Manglende felt</th>
-                  <th>Rapporteringsklar</th>
+                  <th>Status</th>
+                  <th>Mangler</th>
                 </tr>
               </thead>
               <tbody>
@@ -348,11 +338,24 @@ function InvestorClassificationSection({
                       </div>
                     </td>
                     <td>{row.investorType}</td>
-                    <td>{row.investorClass}</td>
                     <td>{row.pepStatus}</td>
-                    <td>{row.lastPepCheckLabel}</td>
-                    <td>{row.nextPepCheckLabel}</td>
-                    <td>{row.industryGroup ?? 'Mangler'}</td>
+                    <td>
+                      <div style={{ fontSize: '0.82rem', lineHeight: 1.5 }}>
+                        <div>
+                          <span style={{ color: '#9ca3af', fontSize: '0.7rem' }}>Forrige </span>
+                          {row.lastPepCheckLabel}
+                        </div>
+                        <div>
+                          <span style={{ color: '#9ca3af', fontSize: '0.7rem' }}>Neste </span>
+                          {row.nextPepCheckLabel}
+                        </div>
+                      </div>
+                    </td>
+                    <td>
+                      {row.industryGroup ?? (
+                        <span className="status-badge status-badge--warning">Mangler</span>
+                      )}
+                    </td>
                     <td>
                       <span className={getStatusClassName(row.complianceStatus)}>
                         {statusLabelByType[row.complianceStatus]}
@@ -371,19 +374,12 @@ function InvestorClassificationSection({
                         <span className="status-badge status-badge--ok">Komplett</span>
                       )}
                     </td>
-                    <td>
-                      <span
-                        className={getReportingReadinessClassName(row.reportingReadiness)}
-                      >
-                        {row.reportingReadiness}
-                      </span>
-                    </td>
                   </tr>
                 ))}
 
                 {visibleRows.length === 0 ? (
                   <tr>
-                    <td colSpan={10} className="compliance-registry__empty">
+                    <td colSpan={7} className="compliance-registry__empty">
                       Ingen investorer matcher søket eller det valgte filteret.
                     </td>
                   </tr>

@@ -8,7 +8,7 @@ import { getCompliancePageData } from '../lib/getCompliancePageData';
 const complianceSubnavItems = [
   {
     id: 'oversikt',
-    label: 'Arbeidsflate',
+    label: 'Arbeidskø',
     description: '',
   },
   {

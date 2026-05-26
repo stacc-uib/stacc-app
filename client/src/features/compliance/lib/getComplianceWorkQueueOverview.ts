@@ -15,10 +15,6 @@ function toPriorityRank(priority: ComplianceWorkQueueItem['priority']) {
   }
 }
 
-function formatClassificationStatus(status: string) {
-  return status.split('-').join(' ');
-}
-
 function getTaskTargetSubpageId(title: string) {
   const normalizedTitle = title.toLowerCase();
 
@@ -59,7 +55,7 @@ export function getComplianceWorkQueueOverview(
       actionType: 'gjennomga',
       targetSubpageId: 'investorer',
       customerId: row.customerId,
-      summary: `Status ${row.reviewStatus.toLowerCase()} med ${row.amlRiskLevel.toLowerCase()} risiko og dokumentasjon: ${row.documentationStatus.toLowerCase()}.`,
+      summary: `${row.reviewStatus === 'Forfalt' ? 'Kontrollen er forfalt og krever umiddelbar oppfølging' : 'Kontrollen forfaller snart — planlegg gjennomgang'}. AML-risiko: ${row.amlRiskLevel.toLowerCase()}${row.documentationStatus !== 'Komplett' ? ` · ${row.documentationStatus.toLowerCase()}` : ''}.`,
       filterTags: [
         'alle',
         row.reviewStatus === 'Forfalt' ? 'kritiske' : 'denne-uken',
@@ -99,14 +95,21 @@ export function getComplianceWorkQueueOverview(
         title: `Oppdater investorstatus for ${row.investorName}`,
         category: 'Klassifisering',
         priority:
-          row.classificationStatus === 'ikke-profesjonell' ? 'Kritisk' : 'Medium',
+          row.classificationStatus === 'pep-forfalt' ? 'Kritisk' : 'Medium',
         dueLabel: row.pepNextReviewLabel,
         owner: 'Drift',
         actionLabel: 'Åpne sak',
         actionType: 'apne-sak',
         targetSubpageId: 'investorer',
         customerId: row.customerId,
-        summary: `Investor er markert som ${row.investorCategory.toLowerCase()} med status ${formatClassificationStatus(row.classificationStatus)}.`,
+        summary:
+          row.classificationStatus === 'mangler-naering'
+            ? 'Næringsgruppe mangler — påkrevd for rapportering til Finanstilsynet.'
+            : row.classificationStatus === 'pep-forfalt'
+              ? `PEP-kontrollen er forfalt. Neste planlagte gjennomgang: ${row.pepNextReviewLabel}.`
+              : row.classificationStatus === 'pep-forfaller-snart'
+                ? `PEP-kontrollen forfaller snart. Planlegg gjennomgang innen ${row.pepNextReviewLabel}.`
+                : 'Investor er klassifisert som ikke-profesjonell og har begrenset handelsadgang.',
         filterTags: [
           'alle',
           row.classificationStatus === 'ikke-profesjonell'

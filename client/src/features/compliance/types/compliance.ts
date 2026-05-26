@@ -114,6 +114,8 @@ export type ReportingWorkspaceRun = {
   statusLabel: string;
   statusTone: 'ok' | 'warning' | 'critical' | 'neutral';
   nextAction: string;
+  /** IDs til valideringskontroller som er forutsetninger for denne rapporten */
+  checkIds: string[];
 };
 
 export type ReportingWorkspaceOverview = {
