@@ -407,6 +407,22 @@ function MetricCard({ metric }: { metric: FundOverviewMetric }) {
   );
 }
 
+function MetricRowList({ metric }: { metric: FundOverviewMetric }) {
+  const rows = metric.rows ?? [];
+
+  return (
+    <div className="fund-overview__metric-row-list">
+      {rows.map((row) => (
+        <div key={row.id} className="fund-overview__metric-row">
+          <span>{row.label}</span>
+          <strong>{formatMetricValue(row.value, row.format ?? metric.format)}</strong>
+          {row.meta ? <small>{row.meta}</small> : null}
+        </div>
+      ))}
+    </div>
+  );
+}
+
 function SectionKpiGrid({
   metrics,
   compact = false,
@@ -419,11 +435,36 @@ function SectionKpiGrid({
       {metrics.map((metric) => (
         <article key={metric.id} className="fund-overview__section-kpi">
           <p className="fund-overview__section-kpi-label">{metric.label}</p>
-          <p className="fund-overview__section-kpi-value">{formatMetricValue(metric.value, metric.format)}</p>
-          <MetricDelta delta={metric.delta} />
-          <p className="fund-overview__section-kpi-meta">{metric.meta}</p>
+          {metric.rows?.length ? (
+            <MetricRowList metric={metric} />
+          ) : (
+            <>
+              <p className="fund-overview__section-kpi-value">{formatMetricValue(metric.value, metric.format)}</p>
+              <MetricDelta delta={metric.delta} />
+              <p className="fund-overview__section-kpi-meta">{metric.meta}</p>
+            </>
+          )}
         </article>
       ))}
+    </div>
+  );
+}
+
+function PairedNavMetric({ metric }: { metric: FundOverviewMetric }) {
+  if (metric.rows?.length) {
+    return (
+      <div className="fund-overview__paired-kpi-block">
+        <p className="fund-overview__paired-kpi-subtitle">{metric.label}</p>
+        <MetricRowList metric={metric} />
+      </div>
+    );
+  }
+
+  return (
+    <div className="fund-overview__paired-kpi-row">
+      <span>{metric.label}</span>
+      <strong>{formatMetricValue(metric.value, metric.format)}</strong>
+      <small>{metric.meta}</small>
     </div>
   );
 }
@@ -445,11 +486,7 @@ function PairedNavKpiGrid({ metrics }: { metrics: FundOverviewMetric[] }) {
           <p className="fund-overview__section-kpi-label">{pair.title}</p>
           {pair.metrics.map((metric) =>
             metric ? (
-              <div key={metric.id} className="fund-overview__paired-kpi-row">
-                <span>{metric.label}</span>
-                <strong>{formatMetricValue(metric.value, metric.format)}</strong>
-                <small>{metric.meta}</small>
-              </div>
+              <PairedNavMetric key={metric.id} metric={metric} />
             ) : null,
           )}
         </article>
