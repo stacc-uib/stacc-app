@@ -1,19 +1,13 @@
 ﻿import { useEffect, useState } from 'react';
 import ComplianceInvestorsView from '../components/ComplianceInvestorsView';
 import ComplianceOverviewView from '../components/ComplianceOverviewView';
-import ComplianceReportingView from '../components/ComplianceReportingView';
 import ComplianceSubnav from '../components/ComplianceSubnav';
 import { getCompliancePageData } from '../lib/getCompliancePageData';
 
 const complianceSubnavItems = [
   {
     id: 'oversikt',
-    label: 'Arbeidskø',
-    description: '',
-  },
-  {
-    id: 'rapportering',
-    label: 'Rapportering',
+    label: 'Oversikt',
     description: '',
   },
   {
@@ -73,10 +67,6 @@ function CompliancePage() {
           pageData={pageData}
           onOpenSubpage={handleSubpageSelect}
         />
-      ) : null}
-
-      {activeSubpageId === 'rapportering' ? (
-        <ComplianceReportingView pageData={pageData} />
       ) : null}
 
       {activeSubpageId === 'investorer' ? (
