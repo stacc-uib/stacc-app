@@ -1,19 +1,13 @@
 ﻿import { useEffect, useState } from 'react';
 import ComplianceInvestorsView from '../components/ComplianceInvestorsView';
 import ComplianceOverviewView from '../components/ComplianceOverviewView';
-import ComplianceReportingView from '../components/ComplianceReportingView';
 import ComplianceSubnav from '../components/ComplianceSubnav';
 import { getCompliancePageData } from '../lib/getCompliancePageData';
 
 const complianceSubnavItems = [
   {
     id: 'oversikt',
-    label: 'Arbeidskø',
-    description: '',
-  },
-  {
-    id: 'rapportering',
-    label: 'Rapportering',
+    label: 'Oversikt',
     description: '',
   },
   {
@@ -23,17 +17,18 @@ const complianceSubnavItems = [
   },
 ] as const;
 
-function getComplianceSubpageIdFromHash() {
+type ComplianceSubpageId = (typeof complianceSubnavItems)[number]['id'];
+
+function getComplianceSubpageIdFromHash(): ComplianceSubpageId {
   const hash = window.location.hash.replace(/^#/, '');
   const [, subpageId] = hash.split('/');
-
   return complianceSubnavItems.some((item) => item.id === subpageId)
-    ? subpageId
+    ? (subpageId as ComplianceSubpageId)
     : 'oversikt';
 }
 
 function CompliancePage() {
-  const [activeSubpageId, setActiveSubpageId] = useState(
+  const [activeSubpageId, setActiveSubpageId] = useState<ComplianceSubpageId>(
     getComplianceSubpageIdFromHash,
   );
   const pageData = getCompliancePageData();
@@ -42,12 +37,8 @@ function CompliancePage() {
     const handleHashChange = () => {
       setActiveSubpageId(getComplianceSubpageIdFromHash());
     };
-
     window.addEventListener('hashchange', handleHashChange);
-
-    return () => {
-      window.removeEventListener('hashchange', handleHashChange);
-    };
+    return () => window.removeEventListener('hashchange', handleHashChange);
   }, []);
 
   function handleSubpageSelect(nextSubpageId: string) {
@@ -73,10 +64,6 @@ function CompliancePage() {
           pageData={pageData}
           onOpenSubpage={handleSubpageSelect}
         />
-      ) : null}
-
-      {activeSubpageId === 'rapportering' ? (
-        <ComplianceReportingView pageData={pageData} />
       ) : null}
 
       {activeSubpageId === 'investorer' ? (

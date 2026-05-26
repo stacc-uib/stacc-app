@@ -193,13 +193,6 @@ function ComplianceWorkQueueSection({
                     ? 'Tildelt meg'
                     : item.actionLabel}
                 </button>
-                <button
-                  type="button"
-                  className="queue-action"
-                  onClick={() => setCompletedIds((current) => [...current, item.id])}
-                >
-                  Marker som gjennomgått
-                </button>
               </div>
             </article>
           ))}
@@ -269,13 +262,6 @@ function ComplianceWorkQueueSection({
                     onClick={handleDialogSecondary}
                   >
                     {content.secondaryLabel}
-                  </button>
-                  <button
-                    type="button"
-                    className="queue-action"
-                    onClick={() => setDialog(null)}
-                  >
-                    Avbryt
                   </button>
                 </div>
               </div>

@@ -49,18 +49,9 @@ function getEventsByDate(events: ComplianceCalendarEvent[]) {
 function getToneClassName(
   tone: ReportingWorkspaceRun['statusTone'] | ReportingValidationCheck['status'],
 ) {
-  if (tone === 'critical') {
-    return 'status-badge status-badge--critical';
-  }
-
-  if (tone === 'warning') {
-    return 'status-badge status-badge--warning';
-  }
-
-  if (tone === 'ok') {
-    return 'status-badge status-badge--ok';
-  }
-
+  if (tone === 'critical') return 'status-badge status-badge--critical';
+  if (tone === 'warning') return 'status-badge status-badge--warning';
+  if (tone === 'ok') return 'status-badge status-badge--ok';
   return 'status-badge status-badge--neutral';
 }
 
@@ -95,10 +86,9 @@ function ReportingWorkspaceSection({ overview, calendar }: ReportingWorkspaceSec
     return { dateKey, dayNumber, event: eventsByDate.get(dateKey) };
   });
 
-  const upcomingDeadlines = calendar.events
+  const allUpcomingDeadlines = calendar.events
     .slice()
-    .sort((a, b) => a.date.localeCompare(b.date))
-    .slice(0, 5);
+    .sort((a, b) => a.date.localeCompare(b.date));
 
   const checksById = useMemo(
     () => new Map(overview.validationChecks.map((c) => [c.id, c])),
@@ -108,108 +98,103 @@ function ReportingWorkspaceSection({ overview, calendar }: ReportingWorkspaceSec
   return (
     <section className="feature-section feature-section--reporting">
       <div className="feature-section__surface">
+
+        {/* ── Kalender øverst — frister er det viktigste for CCO ── */}
         <div className="feature-section__header">
           <div>
-            <p className="feature-section__eyebrow">Rapportering</p>
-            <h2 className="feature-section__title">Rapporteringsstatus</h2>
+            <p className="feature-section__eyebrow">Compliance-kalender</p>
+            <h2 className="feature-section__title">Frister og rapporteringsstatus</h2>
             <p className="feature-section__description">
-              Oversikt over rapporter med tilhørende forutsetninger for innsending.
-              En rapport kan ikke sendes inn før alle blokkerende kontroller er lukket.
+              Oversikt over kommende frister og status på rapporter som skal sendes inn.
             </p>
           </div>
         </div>
 
-        {/* ── Kalender øverst — gir frister kontekst før man leser rapportene ── */}
-        <section className="feature-subsection">
-          <div className="feature-subsection__header">
-            <p className="feature-subsection__eyebrow">Compliance-kalender</p>
-            <h3 className="feature-subsection__title">Kommende frister</h3>
-          </div>
-
-          <div className="feature-panel-grid feature-panel-grid--two-up">
-            <div className="calendar-card">
-              <div className="calendar-card__header">
-                <button
-                  type="button"
-                  className="calendar-card__nav"
-                  onClick={() => setActiveMonthIndex((c) => Math.max(0, c - 1))}
-                  disabled={activeMonthIndex === 0}
-                  aria-label="Forrige måned"
-                >
-                  ‹
-                </button>
-                <h4 className="calendar-card__title">{getMonthLabel(activeMonth)}</h4>
-                <button
-                  type="button"
-                  className="calendar-card__nav"
-                  onClick={() =>
-                    setActiveMonthIndex((c) => Math.min(availableMonths.length - 1, c + 1))
-                  }
-                  disabled={activeMonthIndex === availableMonths.length - 1}
-                  aria-label="Neste måned"
-                >
-                  ›
-                </button>
-              </div>
-
-              <div className="calendar-grid">
-                {weekdayLabels.map((label) => (
-                  <div key={label} className="calendar-grid__weekday">{label}</div>
-                ))}
-                {dayCells.map((cell, index) =>
-                  !cell ? (
-                    <div key={`empty-${index}`} className="calendar-grid__cell calendar-grid__cell--empty" />
-                  ) : (
-                    <div key={cell.dateKey} className="calendar-grid__cell">
-                      {cell.event ? (
-                        <button
-                          type="button"
-                          className={`calendar-day calendar-day--${cell.event.category}`}
-                        >
-                          {cell.dayNumber}
-                          <span className="calendar-day__tooltip">
-                            <strong>{cell.event.title}</strong>
-                            <span>{cell.event.dateLabel}</span>
-                            <span>{cell.event.summary}</span>
-                          </span>
-                        </button>
-                      ) : (
-                        <div className="calendar-day">{cell.dayNumber}</div>
-                      )}
-                    </div>
-                  ),
-                )}
-              </div>
-
-              <div className="calendar-legend">
-                {(['finanstilsynet', 'skatt', 'pep'] as ComplianceCalendarCategory[]).map((cat) => (
-                  <div key={cat} className="calendar-legend__item">
-                    <span className={`calendar-legend__dot calendar-legend__dot--${cat}`} />
-                    <span>{categoryLabels[cat]}</span>
-                  </div>
-                ))}
-              </div>
+        <div className="feature-panel-grid feature-panel-grid--two-up">
+          {/* Kalender */}
+          <div className="calendar-card">
+            <div className="calendar-card__header">
+              <button
+                type="button"
+                className="calendar-card__nav"
+                onClick={() => setActiveMonthIndex((c) => Math.max(0, c - 1))}
+                disabled={activeMonthIndex === 0}
+                aria-label="Forrige måned"
+              >
+                ‹
+              </button>
+              <h4 className="calendar-card__title">{getMonthLabel(activeMonth)}</h4>
+              <button
+                type="button"
+                className="calendar-card__nav"
+                onClick={() =>
+                  setActiveMonthIndex((c) => Math.min(availableMonths.length - 1, c + 1))
+                }
+                disabled={activeMonthIndex === availableMonths.length - 1}
+                aria-label="Neste måned"
+              >
+                ›
+              </button>
             </div>
 
-            <div className="stack-list">
-              {upcomingDeadlines.map((event) => (
-                <article key={event.id} className="stack-card">
-                  <div className="stack-card__row">
-                    <div className="stack-card__row stack-card__row--dense">
-                      <span className={`calendar-legend__dot calendar-legend__dot--${event.category}`} />
-                      <h3 className="stack-card__title">{event.title}</h3>
-                    </div>
-                    <span className="stack-card__meta">{categoryLabels[event.category]}</span>
+            <div className="calendar-grid">
+              {weekdayLabels.map((label) => (
+                <div key={label} className="calendar-grid__weekday">{label}</div>
+              ))}
+              {dayCells.map((cell, index) =>
+                !cell ? (
+                  <div key={`empty-${index}`} className="calendar-grid__cell calendar-grid__cell--empty" />
+                ) : (
+                  <div key={cell.dateKey} className="calendar-grid__cell">
+                    {cell.event ? (
+                      <button
+                        type="button"
+                        className={`calendar-day calendar-day--${cell.event.category}`}
+                      >
+                        {cell.dayNumber}
+                        <span className="calendar-day__tooltip">
+                          <strong>{cell.event.title}</strong>
+                          <span>{cell.event.dateLabel}</span>
+                          <span>{cell.event.summary}</span>
+                        </span>
+                      </button>
+                    ) : (
+                      <div className="calendar-day">{cell.dayNumber}</div>
+                    )}
                   </div>
-                  <p className="stack-card__body">{event.dateLabel} — {event.summary}</p>
-                </article>
+                ),
+              )}
+            </div>
+
+            <div className="calendar-legend">
+              {(['finanstilsynet', 'skatt', 'pep'] as ComplianceCalendarCategory[]).map((cat) => (
+                <div key={cat} className="calendar-legend__item">
+                  <span className={`calendar-legend__dot calendar-legend__dot--${cat}`} />
+                  <span>{categoryLabels[cat]}</span>
+                </div>
               ))}
             </div>
           </div>
-        </section>
 
-        {/* ── KPI-sammendrag — 3 kort, uten det redundante valideringsfunn-kortet ── */}
-        <div className="row g-3" style={{ marginBottom: '0.5rem' }}>
+          {/* Alle frister som liste */}
+          <div className="stack-list">
+            {allUpcomingDeadlines.map((event) => (
+              <article key={event.id} className="stack-card">
+                <div className="stack-card__row">
+                  <div className="stack-card__row stack-card__row--dense">
+                    <span className={`calendar-legend__dot calendar-legend__dot--${event.category}`} />
+                    <h3 className="stack-card__title">{event.title}</h3>
+                  </div>
+                  <span className="stack-card__meta">{categoryLabels[event.category]}</span>
+                </div>
+                <p className="stack-card__body">{event.dateLabel} — {event.summary}</p>
+              </article>
+            ))}
+          </div>
+        </div>
+
+        {/* ── KPI-sammendrag ── */}
+        <div className="row g-3" style={{ marginTop: '1.5rem', marginBottom: '0.5rem' }}>
           <div className="col-12 col-md-4">
             <article className="summary-card summary-card--ok h-100">
               <p className="summary-card__label">Klare for innsending</p>
@@ -230,7 +215,7 @@ function ReportingWorkspaceSection({ overview, calendar }: ReportingWorkspaceSec
           </div>
         </div>
 
-        {/* ── Rapporter med forutsetninger for innsending ── */}
+        {/* ── Rapporter med forutsetninger ── */}
         <section className="feature-subsection">
           <div className="feature-subsection__header">
             <p className="feature-subsection__eyebrow">Rapporter</p>
@@ -243,7 +228,8 @@ function ReportingWorkspaceSection({ overview, calendar }: ReportingWorkspaceSec
                 .map((id) => checksById.get(id))
                 .filter((c): c is ReportingValidationCheck => c !== undefined);
 
-              const allPassed = linkedChecks.length > 0 && linkedChecks.every((c) => c.status === 'ok');
+              const allPassed =
+                linkedChecks.length > 0 && linkedChecks.every((c) => c.status === 'ok');
 
               return (
                 <article key={run.id} className="stack-card">
@@ -256,59 +242,54 @@ function ReportingWorkspaceSection({ overview, calendar }: ReportingWorkspaceSec
                   </p>
                   <p className="stack-card__body">Neste steg: {run.nextAction}</p>
 
-                  <div
-                    style={{
-                      marginTop: '0.6rem',
-                      paddingTop: '0.6rem',
-                      borderTop: '1px solid rgba(17, 24, 39, 0.08)',
-                    }}
-                  >
-                    <p
+                  {linkedChecks.length > 0 ? (
+                    <div
                       style={{
-                        fontSize: '0.72rem',
-                        fontWeight: 600,
-                        color: '#6b7280',
-                        marginBottom: '0.4rem',
+                        marginTop: '0.6rem',
+                        paddingTop: '0.6rem',
+                        borderTop: '1px solid rgba(17, 24, 39, 0.08)',
                       }}
                     >
-                      Forutsetninger for innsending
-                    </p>
-
-                    {linkedChecks.length === 0 ? (
                       <p
-                        className="stack-card__body"
-                        style={{ fontStyle: 'italic', color: '#9ca3af' }}
+                        style={{
+                          fontSize: '0.72rem',
+                          fontWeight: 600,
+                          color: '#6b7280',
+                          marginBottom: '0.4rem',
+                        }}
                       >
-                        Ingen valideringskontroller koblet til denne rapporten ennå.
+                        Forutsetninger for innsending
                       </p>
-                    ) : allPassed ? (
-                      <p className="stack-card__body" style={{ color: '#16a34a', fontWeight: 500 }}>
-                        Alle kontroller er bestått — rapporten kan sendes inn.
-                      </p>
-                    ) : (
-                      <div className="stack-list">
-                        {linkedChecks.map((check) => (
-                          <article
-                            key={check.id}
-                            className="stack-card"
-                            style={{ background: 'rgba(249, 250, 251, 0.8)' }}
-                          >
-                            <div className="stack-card__row stack-card__row--dense">
-                              <h4 className="stack-card__title">{check.label}</h4>
-                              <span className={getToneClassName(check.status)}>
-                                {check.status === 'ok'
-                                  ? 'Klar'
-                                  : check.status === 'warning'
-                                    ? 'Avventer'
-                                    : 'Blokkerer'}
-                              </span>
-                            </div>
-                            <p className="stack-card__body">{check.detail}</p>
-                          </article>
-                        ))}
-                      </div>
-                    )}
-                  </div>
+
+                      {allPassed ? (
+                        <p className="stack-card__body" style={{ color: '#16a34a', fontWeight: 500 }}>
+                          Alle kontroller er bestått — rapporten kan sendes inn.
+                        </p>
+                      ) : (
+                        <div className="stack-list">
+                          {linkedChecks.map((check) => (
+                            <article
+                              key={check.id}
+                              className="stack-card"
+                              style={{ background: 'rgba(249, 250, 251, 0.8)' }}
+                            >
+                              <div className="stack-card__row stack-card__row--dense">
+                                <h4 className="stack-card__title">{check.label}</h4>
+                                <span className={getToneClassName(check.status)}>
+                                  {check.status === 'ok'
+                                    ? 'Klar'
+                                    : check.status === 'warning'
+                                      ? 'Avventer'
+                                      : 'Blokkerer'}
+                                </span>
+                              </div>
+                              <p className="stack-card__body">{check.detail}</p>
+                            </article>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  ) : null}
                 </article>
               );
             })}
