@@ -1,4 +1,5 @@
 import investors from '../../../mocks/investors.json';
+import fundPricesData from '../../../mocks/fundPrices.json';
 import tradeRecords from '../../../mocks/trades.json';
 import { investorComplianceDetails } from '../../compliance/mocks/investorComplianceDetails';
 import { formatDateLabel } from '../../../shared/utils/formatDateLabel';
@@ -104,55 +105,38 @@ function getClassIdFromShareClass(shareClass: string | null) {
   return null;
 }
 
-function compareDatesDescending(left: string | null, right: string | null) {
-  if (!left && !right) {
-    return 0;
-  }
-
-  if (!left) {
-    return 1;
-  }
-
-  if (!right) {
-    return -1;
-  }
-
-  return right.localeCompare(left);
-}
+type FundPriceRecord = {
+  fundName: string;
+  date: string;
+  classA: number;
+  classB: number;
+  classC: number;
+};
 
 function getLatestTradePriceMap() {
-  const latestTradeByInstrument = new Map<
-    string,
-    { price: number; tradeDate: string | null }
-  >();
+  const latestNavByFund = new Map<string, FundPriceRecord>();
 
-  for (const trade of tradeRecords as RawTradeRecord[]) {
-    const transactionType = normalizeTransactionType(trade.transactionType);
-    const fundId = getFundIdFromName(trade.fundName);
-    const classId = getClassIdFromShareClass(trade.shareClass);
-
-    if (
-      transactionType === 'Utbytte' ||
-      !fundId ||
-      !classId ||
-      !trade.price ||
-      !trade.tradeDate
-    ) {
-      continue;
-    }
-
-    const instrumentId = `${fundId}-${classId}`;
-    const current = latestTradeByInstrument.get(instrumentId);
-
-    if (!current || compareDatesDescending(current.tradeDate, trade.tradeDate) > 0) {
-      latestTradeByInstrument.set(instrumentId, {
-        price: trade.price,
-        tradeDate: trade.tradeDate,
-      });
+  for (const record of fundPricesData as FundPriceRecord[]) {
+    if (!record.fundName || !record.date) continue;
+    const prev = latestNavByFund.get(record.fundName);
+    if (!prev || record.date > prev.date) {
+      latestNavByFund.set(record.fundName, record);
     }
   }
 
-  return latestTradeByInstrument;
+  const result = new Map<string, { price: number; tradeDate: string | null }>();
+
+  for (const fund of fundBlueprints) {
+    const fullName = `${fund.name} AS`;
+    const nav = latestNavByFund.get(fullName);
+    if (!nav) continue;
+
+    result.set(`${fund.id}-A`, { price: nav.classA, tradeDate: nav.date });
+    result.set(`${fund.id}-B`, { price: nav.classB, tradeDate: nav.date });
+    result.set(`${fund.id}-C`, { price: nav.classC, tradeDate: nav.date });
+  }
+
+  return result;
 }
 
 function getFunds(): TradeFundOption[] {
