@@ -2522,6 +2522,10 @@ textarea {
   -webkit-user-select: none;
 }
 
+.fund-overview__chart-shell.fund-overview__chart-shell--flow {
+  overflow: visible;
+}
+
 .fund-overview__chart-svg {
   display: block;
   width: 100%;
