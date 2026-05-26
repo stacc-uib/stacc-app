@@ -156,7 +156,6 @@ const DividendsPage = () => {
                                     <span>Beløp per andel</span>
                                     <input
                                         type="text"
-                                        inputMode="decimal"
                                         value={priceInput}
                                         onChange={(event) => setPriceInput(event.target.value)}
                                         placeholder="0"
@@ -202,6 +201,7 @@ const DividendsPage = () => {
                 <InvestorList 
                     investors={filteredInvestors} 
                     holdings={holdings!.get(selectedFund)!.get(selectedClass)!} 
+                    dividend={Number(priceInput)}
                 />
             </section> : null}
         </div>

@@ -21,7 +21,7 @@ const InvestorListHeader = ({investorListHeaders}: {investorListHeaders: string[
     ) 
 };
 
-const InvestorListBody = ({investors, holdings}: {investors: Investor[], holdings: Map<string, number>}) => {
+const InvestorListBody = ({investors, holdings, dividend}: {investors: Investor[], holdings: Map<string, number>, dividend: number}) => {
     return (
         <tbody>
             {investors.map((investor) => 
@@ -30,18 +30,20 @@ const InvestorListBody = ({investors, holdings}: {investors: Investor[], holding
                     <td><strong>{investor.name}</strong></td>
                     <td>{investor.customerType}</td>
                     <td style={{textAlign: "right"}}>{formatNumber(holdings.get(investor.customerId)!)}</td> 
+                    <td style={{textAlign: "right"}}>kr {formatNumber(holdings.get(investor.customerId)! * dividend)}</td>
                 </tr> 
             )}
         </tbody>
     )
 }
 
-const InvestorList = ({investors, holdings} : {investors: Investor[], holdings: Map<string, number>}) => {
+const InvestorList = ({investors, holdings, dividend} : {investors: Investor[], holdings: Map<string, number>, dividend: number}) => {
     const investorListHeaders: string[] = [
         "Kundeid",
         "Kundenavn",
         "Kundetype",
         "Andeler",
+        "Totalt utbytte",
     ];
 
 
@@ -50,7 +52,7 @@ const InvestorList = ({investors, holdings} : {investors: Investor[], holdings: 
             <h4 style={{paddingLeft: "0.5rem"}}>Berørte kunder</h4>
                 <table className="data-table customer-table">
                     <InvestorListHeader investorListHeaders={investorListHeaders} /> 
-                    <InvestorListBody investors={investors} holdings={holdings} />
+                    <InvestorListBody investors={investors} holdings={holdings} dividend={dividend} />
                 </table>
         </>
     );
