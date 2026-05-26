@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import InvestorPicker from '../../../shared/components/InvestorPicker';
 import type { InvestorPickerItem } from '../../../shared/components/InvestorPicker';
 import type { CompliancePageData, AmlPepFollowUpRow } from '../types/compliance';
@@ -163,6 +163,8 @@ function ComplianceInvestorsView({ pageData }: ComplianceInvestorsViewProps) {
   const [rows, setRows] = useState<InvestorRow[]>(initialRows);
   const [activeFilter, setActiveFilter] = useState<InvestorFilter>('alle');
   const [selectedInvestorId, setSelectedInvestorId] = useState('');
+  const [pendingReviewId, setPendingReviewId] = useState<string | null>(null);
+  const [completedIds, setCompletedIds] = useState<string[]>([]);
 
   const pickerItems: InvestorPickerItem[] = useMemo(
     () =>
@@ -182,11 +184,18 @@ function ComplianceInvestorsView({ pageData }: ComplianceInvestorsViewProps) {
   }, [rows, activeFilter, selectedInvestorId]);
 
   /**
-   * Registrerer at AML/PEP-kontrollen er gjennomført for denne investoren.
+   * Åpner bekreftelsespanelet for en rad. Lukker eventuelle andre åpne paneler.
+   */
+  function handleRequestReview(customerId: string) {
+    setPendingReviewId((current) => (current === customerId ? null : customerId));
+  }
+
+  /**
+   * Bekreftet av bruker: registrerer AML/PEP-kontrollen som gjennomført.
    * Oppdaterer reviewStatus og kontrolldatoer.
    * Påvirker IKKE dokumentasjonsstatus — det er en separat oppgave.
    */
-  function handleMarkReviewed(customerId: string) {
+  function handleConfirmReview(customerId: string) {
     setRows((prev) =>
       prev.map((r) =>
         r.customerId !== customerId
@@ -199,6 +208,8 @@ function ComplianceInvestorsView({ pageData }: ComplianceInvestorsViewProps) {
             },
       ),
     );
+    setCompletedIds((prev) => (prev.includes(customerId) ? prev : [...prev, customerId]));
+    setPendingReviewId(null);
   }
 
   const overdueCount = rows.filter((r) => r.reviewStatus === 'Forfalt').length;
@@ -297,77 +308,125 @@ function ComplianceInvestorsView({ pageData }: ComplianceInvestorsViewProps) {
               </thead>
               <tbody>
                 {visibleRows.map((row) => {
-                  // Handlingsknappen gjelder AML/PEP-kontrollen, ikke dokumentasjon.
-                  // Manglende næring kan ikke løses fra denne tabellen.
+                  // Knappen gjelder AML/PEP-kontrollen — ikke dokumentasjon eller næring.
                   const canMarkReviewed =
                     row.reviewStatus === 'Forfalt' || row.reviewStatus === 'Forfaller snart';
+                  const isConfirming = pendingReviewId === row.customerId;
+                  const isCompleted = completedIds.includes(row.customerId);
 
                   return (
-                    <tr key={row.customerId}>
-                      <td>
-                        <div className="table-primary-cell">
-                          <button
-                            type="button"
-                            className="compliance-customer-link"
-                            onClick={() => {
-                              window.location.hash = `kundeoversikt/${row.customerId}`;
-                            }}
+                    <React.Fragment key={row.customerId}>
+                      <tr>
+                        <td>
+                          <div className="table-primary-cell">
+                            <button
+                              type="button"
+                              className="compliance-customer-link"
+                              onClick={() => {
+                                window.location.hash = `kundeoversikt/${row.customerId}`;
+                              }}
+                            >
+                              <strong>{row.investorName}</strong>
+                            </button>
+                            <span>{row.investorType}</span>
+                          </div>
+                        </td>
+
+                        <td>
+                          {row.industryGroup ?? (
+                            <span
+                              className="status-badge status-badge--warning"
+                              title="Næringsgruppe er ikke registrert"
+                            >
+                              Ikke registrert
+                            </span>
+                          )}
+                        </td>
+
+                        <td>
+                          <AmlRiskCell level={row.amlRiskLevel} />
+                        </td>
+
+                        <td>
+                          <DocStatusCell status={row.documentationStatus} />
+                        </td>
+
+                        <td>
+                          <ReviewStatusCell
+                            reviewStatus={row.reviewStatus}
+                            nextReviewLabel={row.nextReviewLabel}
+                          />
+                        </td>
+
+                        <td style={{ whiteSpace: 'nowrap' }}>
+                          {isCompleted ? (
+                            <span className="status-badge status-badge--ok">Gjennomført</span>
+                          ) : canMarkReviewed ? (
+                            <button
+                              type="button"
+                              className={`queue-action queue-action--primary${isConfirming ? ' queue-action--active' : ''}`}
+                              onClick={() => handleRequestReview(row.customerId)}
+                              aria-expanded={isConfirming}
+                            >
+                              Marker gjennomført
+                            </button>
+                          ) : null}
+                        </td>
+                      </tr>
+
+                      {isConfirming && (
+                        <tr key={`${row.customerId}-confirm`}>
+                          <td
+                            colSpan={6}
+                            style={{ padding: 0, borderTop: 'none' }}
                           >
-                            <strong>{row.investorName}</strong>
-                          </button>
-                          <span>
-                            {row.investorType}
-                            {row.pepStatus === 'Ja' && (
-                              <span
-                                className="status-badge status-badge--critical"
-                                style={{ marginLeft: '0.4rem' }}
-                                title="Politisk eksponert person"
-                              >
-                                PEP
-                              </span>
-                            )}
-                          </span>
-                        </div>
-                      </td>
+                            <div className="aml-review-popover" role="region" aria-label="Bekreft kontrollregistrering">
+                              <div className="aml-review-popover__header">
+                                <div>
+                                  <p className="aml-review-popover__eyebrow">
+                                    Bekreft kontrollregistrering
+                                  </p>
+                                  <p style={{ margin: '0 0 0.3rem', fontWeight: 600, color: '#111827' }}>
+                                    {row.investorName}
+                                  </p>
+                                  <p style={{ margin: 0, fontSize: '0.85rem', color: '#4b5563', lineHeight: 1.5 }}>
+                                    AML/PEP-kontrollen registreres som gjennomført.
+                                    Siste kontroll settes til <strong>30.03.2026</strong> og
+                                    neste frist til <strong>30.03.2027</strong>.
+                                  </p>
+                                  {row.documentationStatus !== 'Komplett' && (
+                                    <p style={{ margin: '0.5rem 0 0', fontSize: '0.82rem', color: '#92400e' }}>
+                                      Merk: dokumentasjonen er{' '}
+                                      {row.documentationStatus === 'Mangler dokumentasjon'
+                                        ? 'ikke registrert'
+                                        : 'utdatert'}{' '}
+                                      og må følges opp separat.
+                                    </p>
+                                  )}
+                                </div>
 
-                      <td>
-                        {row.industryGroup ?? (
-                          <span
-                            className="status-badge status-badge--warning"
-                            title="Næringsgruppe er ikke registrert"
-                          >
-                            Ikke registrert
-                          </span>
-                        )}
-                      </td>
-
-                      <td>
-                        <AmlRiskCell level={row.amlRiskLevel} />
-                      </td>
-
-                      <td>
-                        <DocStatusCell status={row.documentationStatus} />
-                      </td>
-
-                      <td>
-                        <ReviewStatusCell
-                          reviewStatus={row.reviewStatus}
-                          nextReviewLabel={row.nextReviewLabel}
-                        />
-                      </td>
-
-                      <td style={{ whiteSpace: 'nowrap' }}>
-                        {canMarkReviewed && (
-                          <button
-                            type="button"
-                            className="queue-action queue-action--primary"
-                            onClick={() => handleMarkReviewed(row.customerId)}
-                          >
-                            Gjennomfør kontroll
-                          </button>
-                        )}
-                      </td>
-                    </tr>
+                                <div style={{ display: 'flex', gap: '0.5rem', flexShrink: 0, alignItems: 'flex-start' }}>
+                                  <button
+                                    type="button"
+                                    className="queue-action"
+                                    onClick={() => setPendingReviewId(null)}
+                                  >
+                                    Avbryt
+                                  </button>
+                                  <button
+                                    type="button"
+                                    className="queue-action queue-action--primary"
+                                    onClick={() => handleConfirmReview(row.customerId)}
+                                  >
+                                    Bekreft
+                                  </button>
+                                </div>
+                              </div>
+                            </div>
+                          </td>
+                        </tr>
+                      )}
+                    </React.Fragment>
                   );
                 })}
 

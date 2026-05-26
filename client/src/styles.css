@@ -1330,14 +1330,15 @@ textarea {
 
 .compliance-customer-link {
   all: unset;
-  color: #2563eb;
-  text-decoration: underline;
+  color: #111827;
+  text-decoration: none;
   cursor: pointer;
   font: inherit;
 }
 
 .compliance-customer-link:hover {
-  color: #1d4ed8;
+  color: #2563eb;
+  text-decoration: underline;
 }
 
 .compliance-customer-link:focus-visible {
