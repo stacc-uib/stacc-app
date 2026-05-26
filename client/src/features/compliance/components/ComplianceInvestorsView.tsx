@@ -20,7 +20,6 @@ type InvestorRow = {
   lastReviewLabel: string;
   nextReviewLabel: string;
   reviewStatus: 'Forfalt' | 'Forfaller snart' | 'Planlagt';
-  missingData: boolean;
 };
 
 const filterOptions: { id: InvestorFilter; label: string }[] = [
@@ -31,11 +30,43 @@ const filterOptions: { id: InvestorFilter; label: string }[] = [
   { id: 'mangler-data', label: 'Mangler data' },
 ];
 
+/**
+ * Sorteringsrekkefølge:
+ * 0 – Forfalt kontroll (krever umiddelbar handling)
+ * 1 – Høy AML-risiko (alvorlig uansett kontrollstatus)
+ * 2 – Forfaller snart (bør planlegges)
+ * 3 – Dokumentasjon mangler helt
+ * 4 – Dokumentasjon utdatert
+ * 5 – Mangler næringsgruppe
+ * 6 – Alt OK
+ */
 function severityOf(row: InvestorRow): number {
-  if (row.reviewStatus === 'Forfalt' || row.amlRiskLevel === 'Høy') return 0;
-  if (row.reviewStatus === 'Forfaller snart' || row.documentationStatus !== 'Komplett') return 1;
-  if (row.missingData) return 2;
-  return 3;
+  if (row.reviewStatus === 'Forfalt') return 0;
+  if (row.amlRiskLevel === 'Høy') return 1;
+  if (row.reviewStatus === 'Forfaller snart') return 2;
+  if (row.documentationStatus === 'Mangler dokumentasjon') return 3;
+  if (row.documentationStatus === 'Mangler oppdatering') return 4;
+  if (!row.industryGroup) return 5;
+  return 6;
+}
+
+function hasMissingData(row: InvestorRow): boolean {
+  return !row.industryGroup || row.documentationStatus !== 'Komplett';
+}
+
+function matchesFilter(row: InvestorRow, filter: InvestorFilter): boolean {
+  switch (filter) {
+    case 'forfalt':
+      return row.reviewStatus === 'Forfalt';
+    case 'snart':
+      return row.reviewStatus === 'Forfaller snart';
+    case 'hoy-risiko':
+      return row.amlRiskLevel === 'Høy';
+    case 'mangler-data':
+      return hasMissingData(row);
+    default:
+      return true;
+  }
 }
 
 function buildRows(pageData: CompliancePageData): InvestorRow[] {
@@ -57,79 +88,122 @@ function buildRows(pageData: CompliancePageData): InvestorRow[] {
         lastReviewLabel: aml?.lastReviewLabel ?? '—',
         nextReviewLabel: aml?.nextReviewLabel ?? cls.pepNextReviewLabel,
         reviewStatus: aml?.reviewStatus ?? 'Planlagt',
-        missingData: !cls.industryGroup || (aml?.documentationStatus ?? 'Komplett') !== 'Komplett',
       } satisfies InvestorRow;
     })
-    .sort((a, b) => severityOf(a) - severityOf(b) || a.investorName.localeCompare(b.investorName, 'nb'));
+    .sort(
+      (a, b) =>
+        severityOf(a) - severityOf(b) ||
+        a.investorName.localeCompare(b.investorName, 'nb'),
+    );
 }
 
-function riskBadge(level: InvestorRow['amlRiskLevel']) {
-  if (level === 'Høy') return 'status-badge status-badge--critical';
-  if (level === 'Medium') return 'status-badge status-badge--warning';
-  return 'status-badge status-badge--ok';
+// — Visningshjelpere —
+// Badges vises kun ved warning/critical. OK-tilstander vises som vanlig tekst
+// for å redusere visuell støy og gjøre problemer tydeligere.
+
+function AmlRiskCell({ level }: { level: InvestorRow['amlRiskLevel'] }) {
+  if (level === 'Høy') {
+    return <span className="status-badge status-badge--critical">Høy</span>;
+  }
+  if (level === 'Medium') {
+    return <span className="status-badge status-badge--warning">Medium</span>;
+  }
+  return <span style={{ color: '#6b7280', fontSize: '0.85rem' }}>Lav</span>;
 }
 
-function docBadge(status: InvestorRow['documentationStatus']) {
-  if (status === 'Mangler dokumentasjon') return 'status-badge status-badge--critical';
-  if (status === 'Mangler oppdatering') return 'status-badge status-badge--warning';
-  return 'status-badge status-badge--ok';
+function DocStatusCell({ status }: { status: InvestorRow['documentationStatus'] }) {
+  if (status === 'Mangler dokumentasjon') {
+    return (
+      <span className="status-badge status-badge--critical" title="Nødvendig dokumentasjon mangler">
+        Mangler
+      </span>
+    );
+  }
+  if (status === 'Mangler oppdatering') {
+    return (
+      <span className="status-badge status-badge--warning" title="Dokumentasjon er utdatert og må oppdateres">
+        Utdatert
+      </span>
+    );
+  }
+  return <span style={{ color: '#6b7280', fontSize: '0.85rem' }}>OK</span>;
 }
 
-function reviewBadge(status: InvestorRow['reviewStatus']) {
-  if (status === 'Forfalt') return 'status-badge status-badge--critical';
-  if (status === 'Forfaller snart') return 'status-badge status-badge--warning';
-  return 'status-badge status-badge--ok';
+function ReviewStatusCell({
+  reviewStatus,
+  nextReviewLabel,
+}: {
+  reviewStatus: InvestorRow['reviewStatus'];
+  nextReviewLabel: string;
+}) {
+  if (reviewStatus === 'Forfalt') {
+    return (
+      <div style={{ fontSize: '0.82rem', lineHeight: 1.6 }}>
+        <div style={{ color: '#111827' }}>{nextReviewLabel}</div>
+        <span className="status-badge status-badge--critical">Forfalt</span>
+      </div>
+    );
+  }
+  if (reviewStatus === 'Forfaller snart') {
+    return (
+      <div style={{ fontSize: '0.82rem', lineHeight: 1.6 }}>
+        <div style={{ color: '#111827' }}>{nextReviewLabel}</div>
+        <span className="status-badge status-badge--warning">Forfaller snart</span>
+      </div>
+    );
+  }
+  // Planlagt: vis kun datoen – ingen badge nødvendig
+  return (
+    <span style={{ color: '#6b7280', fontSize: '0.85rem' }}>{nextReviewLabel}</span>
+  );
 }
 
 function ComplianceInvestorsView({ pageData }: ComplianceInvestorsViewProps) {
-  const allRows = useMemo(() => buildRows(pageData), [pageData]);
-  const [rows, setRows] = useState<InvestorRow[]>(allRows);
-  const [updatedIds, setUpdatedIds] = useState<string[]>([]);
+  const initialRows = useMemo(() => buildRows(pageData), [pageData]);
+  const [rows, setRows] = useState<InvestorRow[]>(initialRows);
   const [activeFilter, setActiveFilter] = useState<InvestorFilter>('alle');
   const [selectedInvestorId, setSelectedInvestorId] = useState('');
 
   const pickerItems: InvestorPickerItem[] = useMemo(
-    () => rows.map((r) => ({ id: r.customerId, label: r.investorName, secondaryLabel: r.customerId })),
+    () =>
+      rows.map((r) => ({
+        id: r.customerId,
+        label: r.investorName,
+        secondaryLabel: r.customerId,
+      })),
     [rows],
   );
 
   const visibleRows = useMemo(() => {
-    if (selectedInvestorId) {
-      return rows.filter((r) => r.customerId === selectedInvestorId);
-    }
-    return rows.filter((r) => {
-      if (activeFilter === 'forfalt') return r.reviewStatus === 'Forfalt';
-      if (activeFilter === 'snart') return r.reviewStatus === 'Forfaller snart';
-      if (activeFilter === 'hoy-risiko') return r.amlRiskLevel === 'Høy';
-      if (activeFilter === 'mangler-data') return r.missingData;
-      return true;
-    });
+    const baseRows = selectedInvestorId
+      ? rows.filter((r) => r.customerId === selectedInvestorId)
+      : rows.filter((r) => matchesFilter(r, activeFilter));
+    return baseRows;
   }, [rows, activeFilter, selectedInvestorId]);
 
-  function handleUpdate(customerId: string) {
+  /**
+   * Registrerer at AML/PEP-kontrollen er gjennomført for denne investoren.
+   * Oppdaterer reviewStatus og kontrolldatoer.
+   * Påvirker IKKE dokumentasjonsstatus — det er en separat oppgave.
+   */
+  function handleMarkReviewed(customerId: string) {
     setRows((prev) =>
       prev.map((r) =>
-        r.customerId === customerId
-          ? {
+        r.customerId !== customerId
+          ? r
+          : {
               ...r,
-              lastReviewLabel: '31.03.2026',
-              nextReviewLabel: '31.03.2027',
+              lastReviewLabel: '30.03.2026',
+              nextReviewLabel: '30.03.2027',
               reviewStatus: 'Planlagt',
-              documentationStatus:
-                r.documentationStatus === 'Mangler dokumentasjon'
-                  ? 'Mangler oppdatering'
-                  : 'Komplett',
-              missingData: !r.industryGroup,
-            }
-          : r,
+            },
       ),
     );
-    setUpdatedIds((prev) => (prev.includes(customerId) ? prev : [...prev, customerId]));
   }
 
   const overdueCount = rows.filter((r) => r.reviewStatus === 'Forfalt').length;
   const highRiskCount = rows.filter((r) => r.amlRiskLevel === 'Høy').length;
-  const missingDataCount = rows.filter((r) => r.missingData).length;
+  const missingDataCount = rows.filter(hasMissingData).length;
 
   return (
     <section className="feature-section feature-section--classification">
@@ -140,7 +214,7 @@ function ComplianceInvestorsView({ pageData }: ComplianceInvestorsViewProps) {
             <h2 className="feature-section__title">Investoroversikt</h2>
             <p className="feature-section__description">
               Samlet oversikt over alle investorer med AML-risiko, dokumentasjonsstatus og
-              neste kontrollfrist.
+              kontrollfrist.
             </p>
           </div>
         </div>
@@ -223,10 +297,10 @@ function ComplianceInvestorsView({ pageData }: ComplianceInvestorsViewProps) {
               </thead>
               <tbody>
                 {visibleRows.map((row) => {
-                  const isUpdated = updatedIds.includes(row.customerId);
-                  const needsAction =
-                    !isUpdated &&
-                    (row.reviewStatus !== 'Planlagt' || row.documentationStatus !== 'Komplett');
+                  // Handlingsknappen gjelder AML/PEP-kontrollen, ikke dokumentasjon.
+                  // Manglende næring kan ikke løses fra denne tabellen.
+                  const canMarkReviewed =
+                    row.reviewStatus === 'Forfalt' || row.reviewStatus === 'Forfaller snart';
 
                   return (
                     <tr key={row.customerId}>
@@ -247,6 +321,7 @@ function ComplianceInvestorsView({ pageData }: ComplianceInvestorsViewProps) {
                               <span
                                 className="status-badge status-badge--critical"
                                 style={{ marginLeft: '0.4rem' }}
+                                title="Politisk eksponert person"
                               >
                                 PEP
                               </span>
@@ -254,39 +329,43 @@ function ComplianceInvestorsView({ pageData }: ComplianceInvestorsViewProps) {
                           </span>
                         </div>
                       </td>
+
                       <td>
                         {row.industryGroup ?? (
-                          <span className="status-badge status-badge--warning">Mangler</span>
+                          <span
+                            className="status-badge status-badge--warning"
+                            title="Næringsgruppe er ikke registrert"
+                          >
+                            Ikke registrert
+                          </span>
                         )}
                       </td>
+
                       <td>
-                        <span className={riskBadge(row.amlRiskLevel)}>{row.amlRiskLevel}</span>
+                        <AmlRiskCell level={row.amlRiskLevel} />
                       </td>
+
                       <td>
-                        <span className={docBadge(row.documentationStatus)}>
-                          {row.documentationStatus}
-                        </span>
+                        <DocStatusCell status={row.documentationStatus} />
                       </td>
+
                       <td>
-                        <div style={{ fontSize: '0.82rem', lineHeight: 1.5 }}>
-                          <div>{row.nextReviewLabel}</div>
-                          <span className={reviewBadge(row.reviewStatus)}>
-                            {row.reviewStatus}
-                          </span>
-                        </div>
+                        <ReviewStatusCell
+                          reviewStatus={row.reviewStatus}
+                          nextReviewLabel={row.nextReviewLabel}
+                        />
                       </td>
+
                       <td style={{ whiteSpace: 'nowrap' }}>
-                        {isUpdated ? (
-                          <span className="status-badge status-badge--ok">Oppdatert</span>
-                        ) : needsAction ? (
+                        {canMarkReviewed && (
                           <button
                             type="button"
                             className="queue-action queue-action--primary"
-                            onClick={() => handleUpdate(row.customerId)}
+                            onClick={() => handleMarkReviewed(row.customerId)}
                           >
-                            Oppdater
+                            Gjennomfør kontroll
                           </button>
-                        ) : null}
+                        )}
                       </td>
                     </tr>
                   );
