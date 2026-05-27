@@ -32,7 +32,7 @@ function formatCalendarDateLabel(dateString: string) {
 }
 
 function getUpcomingPepEvents(): ComplianceCalendarEvent[] {
-  const today = new Date('2026-03-30');
+  const today = new Date('2026-05-27');
   const investorByCustomerId = new Map(
     (investors as InvestorRecord[]).map((investor) => [investor.customerId, investor]),
   );

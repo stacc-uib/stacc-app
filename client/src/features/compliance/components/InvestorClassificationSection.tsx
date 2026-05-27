@@ -64,7 +64,7 @@ function deriveClassificationStatus(
     return 'mangler-naering';
   }
 
-  const today = new Date('2026-03-30');
+  const today = new Date('2026-05-27');
   const nextReviewDate = toDateFromLabel(nextPepCheckLabel);
   const diffInDays = Math.ceil(
     (nextReviewDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24),

@@ -1,7 +1,15 @@
 import { useMemo } from 'react';
 import getIncomeData, { getIncomeDateRange, getPresetRange } from '../lib/incomeCalc';
 import getIncomeDataFull from '../../income/lib/getIncomeData';
-import { ytdIncome, ytdIncomeLastPeriod, annualIncomeLastYear, projectedAnnualIncome, aumAtDate, MetricDelta, MetricDeltaPP } from '../../income/components/IncomeOverview';
+import {
+  ytdIncome,
+  ytdIncomeLastPeriod,
+  annualIncomeLastYear,
+  projectedAnnualIncome,
+  aumAtDate,
+  MetricDelta,
+  MetricDeltaPP,
+} from '../../income/components/IncomeOverview';
 import fundPricesJson from '../../../mocks/fundPrices.json';
 import tradesJson from '../../../mocks/trades.json';
 import investorsJson from '../../../mocks/investors.json';
@@ -10,11 +18,54 @@ import { LineChart, ChartLegend, formatMetricValue } from '../../funds/pages/Fun
 import { getCompliancePageData } from '../../compliance/lib/getCompliancePageData';
 import { getComplianceDashboardData } from '../../compliance/lib/getComplianceDashboardData';
 import { ToneTag, toneColor } from '../../compliance/components/ComplianceDashboardSection';
-import { SummaryCard, StatRow } from '../../income/pages/IncomePage';
+
+// ── Compact card primitives ────────────────────────────────────────────────
+function DashCard({
+  title,
+  desc,
+  onClick,
+  children,
+}: {
+  title: string;
+  desc: string;
+  onClick?: () => void;
+  children: React.ReactNode;
+}) {
+  return (
+    <div
+      className="dashboard-card"
+      onClick={onClick}
+      style={onClick ? { cursor: 'pointer' } : undefined}
+    >
+      <p className="dashboard-card__title">{title}</p>
+      <p className="dashboard-card__desc">{desc}</p>
+      <div className="dashboard-card__body">{children}</div>
+    </div>
+  );
+}
+
+function DStat({
+  label,
+  value,
+  delta,
+}: {
+  label: string;
+  value: string;
+  delta?: React.ReactNode;
+}) {
+  return (
+    <div className="dashboard-stat">
+      <span className="dashboard-stat__label">{label}</span>
+      <span className="dashboard-stat__value">
+        {value}
+        {delta && <span className="dashboard-stat__delta"> {delta}</span>}
+      </span>
+    </div>
+  );
+}
 
 // ── Dashboard ──────────────────────────────────────────────────────────────
 function DashboardPage() {
-  // Inntekter: compute all 4 income KPIs (same as Income Oversikt)
   const incomeStats = useMemo(() => {
     const incomeData = getIncomeData(
       tradesJson as Parameters<typeof getIncomeData>[0],
@@ -29,33 +80,31 @@ function DashboardPage() {
       .filter((e) => e.incomeType === 'management fee')
       .reduce((acc, e) => acc + e.amount, 0);
 
-    // Full income data for KPI calculations (uses income lib)
     const incomeDataFull = getIncomeDataFull(
       tradesJson as Parameters<typeof getIncomeDataFull>[0],
       investorsJson as Parameters<typeof getIncomeDataFull>[1],
       fundPricesJson as Parameters<typeof getIncomeDataFull>[2],
     );
-    const ytd = ytdIncome(incomeDataFull);
-    const ytdPrev = ytdIncomeLastPeriod(incomeDataFull);
-    const projected = projectedAnnualIncome(incomeDataFull, 0.3);
+    const ytd        = ytdIncome(incomeDataFull);
+    const ytdPrev    = ytdIncomeLastPeriod(incomeDataFull);
+    const projected  = projectedAnnualIncome(incomeDataFull, 0.3);
     const annualPrev = annualIncomeLastYear(incomeDataFull);
-    const aum = aumAtDate(
+    const aum        = aumAtDate(
       tradesJson as Parameters<typeof aumAtDate>[0],
       fundPricesJson as Parameters<typeof aumAtDate>[1],
       new Date('2026-01-31'),
     );
-    const aumPrev = aumAtDate(
+    const aumPrev    = aumAtDate(
       tradesJson as Parameters<typeof aumAtDate>[0],
       fundPricesJson as Parameters<typeof aumAtDate>[1],
       new Date('2025-01-31'),
     );
-    const effRate = 12 * 100 * ytd / aum;
+    const effRate     = 12 * 100 * ytd / aum;
     const effRatePrev = 12 * 100 * ytdPrev / aumPrev;
 
-    return { total: totalFee, totalFee, ytd, ytdPrev, projected, annualPrev, aum, aumPrev, effRate, effRatePrev };
+    return { totalFee, ytd, ytdPrev, projected, annualPrev, aum, aumPrev, effRate, effRatePrev };
   }, []);
 
-  // Forvaltning + Tegning + Topp 5: reuse fund overview for 12m period, nav grouped per fund
   const fundOverview = useMemo(
     () =>
       getFundOverviewData({
@@ -68,146 +117,142 @@ function DashboardPage() {
     [],
   );
 
-  // Compliance: PEP status + priority queue
   const complianceStats = useMemo(() => {
     const pageData = getCompliancePageData();
     return getComplianceDashboardData(pageData);
   }, []);
 
-  // Derived metric lookups
-  const grossBuyKpi = fundOverview.flowSection.kpis.find((k) => k.id === 'gross-buy');
+  const grossBuyKpi  = fundOverview.flowSection.kpis.find((k) => k.id === 'gross-buy');
   const grossSellKpi = fundOverview.flowSection.kpis.find((k) => k.id === 'gross-sell');
-  const netFlowKpi = fundOverview.flowSection.kpis.find((k) => k.id === 'net-flow');
-  const top5 = fundOverview.shareholderSection.rows.slice(0, 5);
-  const pepOverdue = complianceStats.metrics.find((m) => m.id === 'pep-overdue');
-  const missingData = complianceStats.metrics.find((m) => m.id === 'missing-required-data');
+  const netFlowKpi   = fundOverview.flowSection.kpis.find((k) => k.id === 'net-flow');
+  const top5         = fundOverview.shareholderSection.rows.slice(0, 5);
+  const pepOverdue   = complianceStats.metrics.find((m) => m.id === 'pep-overdue');
+  const missingData  = complianceStats.metrics.find((m) => m.id === 'missing-required-data');
   const nextPriority = complianceStats.priorityItems[0];
 
-  return (
-    <div className="content-card">
-      <p className="content-card__eyebrow">Dashboard</p>
-      <h1>Dashboard</h1>
-      <p className="content-card__description">
-        Nøkkeltall og aktivitet siste 12 måneder.
-      </p>
+  const fmt    = (v: number, f: string) => formatMetricValue(v, f as 'currency' | 'number' | 'percent');
+  const fmtPct = (v: number) =>
+    `${new Intl.NumberFormat('nb-NO', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(v)} %`;
 
-      {/* Rad 1: Inntekter + Forvaltning */}
-      <div className="row g-3" style={{ marginBottom: '1rem' }}>
-        <div className="col-12 col-md-6">
-          <SummaryCard title="Inntekter" description="Nøkkeltall fra inntektsoversikten" onClick={() => { window.location.hash = '#inntekt'; }}>
-            <div style={{ padding: '0.2rem 0' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', gap: '0.5rem' }}>
-                <span style={{ fontSize: '0.78rem', color: '#6b7280' }}>YTD inntekter</span>
-                <span style={{ fontSize: '0.85rem', fontWeight: 600, color: '#111827' }}>{formatMetricValue(incomeStats.ytd, 'currency')}</span>
-              </div>
-              <MetricDelta currentValue={incomeStats.ytd} initialValue={incomeStats.ytdPrev} label="Samme dato forrige år" />
-            </div>
-            <div style={{ padding: '0.2rem 0' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', gap: '0.5rem' }}>
-                <span style={{ fontSize: '0.78rem', color: '#6b7280' }}>Projisert årsinntekt</span>
-                <span style={{ fontSize: '0.85rem', fontWeight: 600, color: '#111827' }}>{formatMetricValue(incomeStats.projected, 'currency')}</span>
-              </div>
-              <MetricDelta currentValue={incomeStats.projected} initialValue={incomeStats.annualPrev} label="Endring fra forrige år" />
-            </div>
-            <div style={{ padding: '0.2rem 0' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', gap: '0.5rem' }}>
-                <span style={{ fontSize: '0.78rem', color: '#6b7280' }}>AUM</span>
-                <span style={{ fontSize: '0.85rem', fontWeight: 600, color: '#111827' }}>{formatMetricValue(incomeStats.aum, 'currency')}</span>
-              </div>
-              <MetricDelta currentValue={incomeStats.aum} initialValue={incomeStats.aumPrev} label="Endring fra forrige år" />
-            </div>
-            <div style={{ padding: '0.2rem 0' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', gap: '0.5rem' }}>
-                <span style={{ fontSize: '0.78rem', color: '#6b7280' }}>Eff. forvaltningshonorar</span>
-                <span style={{ fontSize: '0.85rem', fontWeight: 600, color: '#111827' }}>{`${new Intl.NumberFormat('nb-NO', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(incomeStats.effRate)} %`}</span>
-              </div>
-              <MetricDeltaPP currentValue={incomeStats.effRate} initialValue={incomeStats.effRatePrev} label="Endring fra forrige år" />
-            </div>
-          </SummaryCard>
+  return (
+    <div className="content-card content-card--dashboard">
+      <p className="content-card__eyebrow">Dashboard</p>
+      <h1>Nøkkeltall</h1>
+
+      {/* Rad 1: Inntekter · NAV-utvikling */}
+      <div className="row g-2" style={{ marginBottom: '0.5rem' }}>
+        <div className="col-12 col-md-5">
+          <DashCard
+            title="Inntekter"
+            desc="Siste 12 måneder"
+            onClick={() => { window.location.hash = '#inntekt'; }}
+          >
+            <DStat
+              label="YTD inntekter"
+              value={fmt(incomeStats.ytd, 'currency')}
+              delta={<MetricDelta currentValue={incomeStats.ytd} initialValue={incomeStats.ytdPrev} label="vs. i fjor" />}
+            />
+            <DStat
+              label="Projisert år"
+              value={fmt(incomeStats.projected, 'currency')}
+              delta={<MetricDelta currentValue={incomeStats.projected} initialValue={incomeStats.annualPrev} label="vs. i fjor" />}
+            />
+            <DStat
+              label="AUM"
+              value={fmt(incomeStats.aum, 'currency')}
+              delta={<MetricDelta currentValue={incomeStats.aum} initialValue={incomeStats.aumPrev} label="vs. i fjor" />}
+            />
+            <DStat
+              label="Eff. forvaltningshonorar"
+              value={fmtPct(incomeStats.effRate)}
+              delta={<MetricDeltaPP currentValue={incomeStats.effRate} initialValue={incomeStats.effRatePrev} label="vs. i fjor" />}
+            />
+          </DashCard>
         </div>
-        <div className="col-12 col-md-6">
-          <SummaryCard title="Forvaltning" description="NAV-utvikling per fond siste 12 mnd" onClick={() => { window.location.hash = '#fondsoversikt'; }}>
+
+        <div className="col-12 col-md-7">
+          <DashCard
+            title="NAV-utvikling"
+            desc="Per fond — siste 12 mnd"
+            onClick={() => { window.location.hash = '#fondsoversikt'; }}
+          >
             <ChartLegend series={fundOverview.navSection.series} />
             <LineChart series={fundOverview.navSection.series} mode="return" compact />
-          </SummaryCard>
+          </DashCard>
         </div>
       </div>
 
-      {/* Rad 2: Tegning + Compliance + Topp 5 kunder */}
-      <div className="row g-3">
+      {/* Rad 2: Tegning · Compliance · Topp 5 */}
+      <div className="row g-2">
         <div className="col-12 col-md-4">
-          <SummaryCard title="Tegning" description="Brutto og netto tegning siste 12 mnd" onClick={() => { window.location.hash = '#fondsoversikt'; }}>
-            {grossBuyKpi && (
-              <StatRow label={grossBuyKpi.label} value={formatMetricValue(grossBuyKpi.value, grossBuyKpi.format)} />
-            )}
-            {grossSellKpi && (
-              <StatRow label={grossSellKpi.label} value={formatMetricValue(grossSellKpi.value, grossSellKpi.format)} />
-            )}
-            {netFlowKpi && (
-              <StatRow label={netFlowKpi.label} value={formatMetricValue(netFlowKpi.value, netFlowKpi.format)} />
-            )}
-          </SummaryCard>
+          <DashCard
+            title="Tegning"
+            desc="Brutto/netto — siste 12 mnd"
+            onClick={() => { window.location.hash = '#fondsoversikt'; }}
+          >
+            {grossBuyKpi  && <DStat label={grossBuyKpi.label}  value={fmt(grossBuyKpi.value,  grossBuyKpi.format)}  />}
+            {grossSellKpi && <DStat label={grossSellKpi.label} value={fmt(grossSellKpi.value, grossSellKpi.format)} />}
+            {netFlowKpi   && <DStat label={netFlowKpi.label}   value={fmt(netFlowKpi.value,   netFlowKpi.format)}   />}
+          </DashCard>
         </div>
+
         <div className="col-12 col-md-4">
-          <SummaryCard title="Compliance" description="PEP-kontroll og neste aktivitet" onClick={() => { window.location.hash = '#rapporter/oversikt'; }}>
+          <DashCard
+            title="Compliance"
+            desc="PEP-kontroll og neste aktivitet"
+            onClick={() => { window.location.hash = '#rapporter/oversikt'; }}
+          >
             {pepOverdue && (
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0.2rem 0' }}>
-                <span style={{ fontSize: '0.78rem', color: '#6b7280' }}>{pepOverdue.label}</span>
+              <div className="dashboard-stat">
+                <span className="dashboard-stat__label">{pepOverdue.label}</span>
                 <ToneTag tone={pepOverdue.tone} label={pepOverdue.value} />
               </div>
             )}
             {missingData && (
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0.2rem 0' }}>
-                <span style={{ fontSize: '0.78rem', color: '#6b7280' }}>{missingData.label}</span>
+              <div className="dashboard-stat">
+                <span className="dashboard-stat__label">{missingData.label}</span>
                 <ToneTag tone={missingData.tone} label={missingData.value} />
               </div>
             )}
             {nextPriority && (
               <div
                 style={{
-                  marginTop: '0.35rem',
+                  marginTop: '0.4rem',
                   padding: '0.3rem 0.5rem',
                   background: '#f9fafb',
                   borderRadius: '0.3rem',
                   borderLeft: `3px solid ${toneColor[nextPriority.tone] ?? '#d1d5db'}`,
                 }}
               >
-                <p style={{ margin: 0, fontSize: '0.75rem', fontWeight: 600, color: '#374151' }}>
+                <p style={{ margin: 0, fontSize: '0.72rem', fontWeight: 600, color: '#374151' }}>
                   {nextPriority.title}
                 </p>
-                <p style={{ margin: 0, fontSize: '0.7rem', color: '#6b7280' }}>
+                <p style={{ margin: 0, fontSize: '0.68rem', color: '#6b7280' }}>
                   {nextPriority.summary}
                 </p>
               </div>
             )}
-          </SummaryCard>
+          </DashCard>
         </div>
+
         <div className="col-12 col-md-4">
-          <SummaryCard title="Topp 5 kunder" description="Oversikt over største kunder" onClick={() => { window.location.hash = '#kundeoversikt'; }}>
-            {top5.map((shareholder, idx) => (
-              <div
-                key={shareholder.customerId}
-                style={{ display: 'flex', alignItems: 'baseline', gap: '0.4rem', padding: '0.15rem 0' }}
-              >
-                <span style={{ fontSize: '0.7rem', color: '#9ca3af', minWidth: '1rem' }}>{idx + 1}.</span>
-                <span
-                  style={{
-                    fontSize: '0.78rem',
-                    color: '#374151',
-                    flex: 1,
-                    overflow: 'hidden',
-                    textOverflow: 'ellipsis',
-                    whiteSpace: 'nowrap',
-                  }}
-                >
-                  {shareholder.investorName}
+          <DashCard
+            title="Topp 5 kunder"
+            desc="Etter markedsverdi"
+            onClick={() => { window.location.hash = '#kundeoversikt'; }}
+          >
+            {top5.map((s, i) => (
+              <div key={s.customerId} className="dashboard-stat">
+                <span className="dashboard-stat__label" style={{ display: 'flex', gap: '0.35rem' }}>
+                  <span style={{ color: '#d1d5db', minWidth: '0.9rem' }}>{i + 1}.</span>
+                  <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                    {s.investorName}
+                  </span>
                 </span>
-                <span style={{ fontSize: '0.78rem', fontWeight: 600, color: '#111827', whiteSpace: 'nowrap' }}>
-                  {formatMetricValue(shareholder.marketValue, 'currency')}
-                </span>
+                <span className="dashboard-stat__value">{fmt(s.marketValue, 'currency')}</span>
               </div>
             ))}
-          </SummaryCard>
+          </DashCard>
         </div>
       </div>
     </div>
