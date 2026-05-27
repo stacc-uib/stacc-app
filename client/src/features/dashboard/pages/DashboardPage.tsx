@@ -23,14 +23,20 @@ import { ToneTag, toneColor } from '../../compliance/components/ComplianceDashbo
 function DashCard({
   title,
   desc,
+  onClick,
   children,
 }: {
   title: string;
   desc: string;
+  onClick?: () => void;
   children: React.ReactNode;
 }) {
   return (
-    <div className="dashboard-card">
+    <div
+      className="dashboard-card"
+      onClick={onClick}
+      style={onClick ? { cursor: 'pointer' } : undefined}
+    >
       <p className="dashboard-card__title">{title}</p>
       <p className="dashboard-card__desc">{desc}</p>
       <div className="dashboard-card__body">{children}</div>
@@ -79,16 +85,16 @@ function DashboardPage() {
       investorsJson as Parameters<typeof getIncomeDataFull>[1],
       fundPricesJson as Parameters<typeof getIncomeDataFull>[2],
     );
-    const ytd      = ytdIncome(incomeDataFull);
-    const ytdPrev  = ytdIncomeLastPeriod(incomeDataFull);
-    const projected = projectedAnnualIncome(incomeDataFull, 0.3);
+    const ytd        = ytdIncome(incomeDataFull);
+    const ytdPrev    = ytdIncomeLastPeriod(incomeDataFull);
+    const projected  = projectedAnnualIncome(incomeDataFull, 0.3);
     const annualPrev = annualIncomeLastYear(incomeDataFull);
-    const aum      = aumAtDate(
+    const aum        = aumAtDate(
       tradesJson as Parameters<typeof aumAtDate>[0],
       fundPricesJson as Parameters<typeof aumAtDate>[1],
       new Date('2026-01-31'),
     );
-    const aumPrev  = aumAtDate(
+    const aumPrev    = aumAtDate(
       tradesJson as Parameters<typeof aumAtDate>[0],
       fundPricesJson as Parameters<typeof aumAtDate>[1],
       new Date('2025-01-31'),
@@ -124,7 +130,7 @@ function DashboardPage() {
   const missingData  = complianceStats.metrics.find((m) => m.id === 'missing-required-data');
   const nextPriority = complianceStats.priorityItems[0];
 
-  const fmt = (v: number, f: string) => formatMetricValue(v, f as 'currency' | 'number' | 'percent');
+  const fmt    = (v: number, f: string) => formatMetricValue(v, f as 'currency' | 'number' | 'percent');
   const fmtPct = (v: number) =>
     `${new Intl.NumberFormat('nb-NO', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(v)} %`;
 
@@ -136,7 +142,11 @@ function DashboardPage() {
       {/* Rad 1: Inntekter · NAV-utvikling */}
       <div className="row g-2" style={{ marginBottom: '0.5rem' }}>
         <div className="col-12 col-md-5">
-          <DashCard title="Inntekter" desc="Siste 12 måneder">
+          <DashCard
+            title="Inntekter"
+            desc="Siste 12 måneder"
+            onClick={() => { window.location.hash = '#inntekt'; }}
+          >
             <DStat
               label="YTD inntekter"
               value={fmt(incomeStats.ytd, 'currency')}
@@ -161,7 +171,11 @@ function DashboardPage() {
         </div>
 
         <div className="col-12 col-md-7">
-          <DashCard title="NAV-utvikling" desc="Per fond — siste 12 mnd">
+          <DashCard
+            title="NAV-utvikling"
+            desc="Per fond — siste 12 mnd"
+            onClick={() => { window.location.hash = '#fondsoversikt'; }}
+          >
             <ChartLegend series={fundOverview.navSection.series} />
             <LineChart series={fundOverview.navSection.series} mode="return" compact />
           </DashCard>
@@ -171,7 +185,11 @@ function DashboardPage() {
       {/* Rad 2: Tegning · Compliance · Topp 5 */}
       <div className="row g-2">
         <div className="col-12 col-md-4">
-          <DashCard title="Tegning" desc="Brutto/netto — siste 12 mnd">
+          <DashCard
+            title="Tegning"
+            desc="Brutto/netto — siste 12 mnd"
+            onClick={() => { window.location.hash = '#fondsoversikt'; }}
+          >
             {grossBuyKpi  && <DStat label={grossBuyKpi.label}  value={fmt(grossBuyKpi.value,  grossBuyKpi.format)}  />}
             {grossSellKpi && <DStat label={grossSellKpi.label} value={fmt(grossSellKpi.value, grossSellKpi.format)} />}
             {netFlowKpi   && <DStat label={netFlowKpi.label}   value={fmt(netFlowKpi.value,   netFlowKpi.format)}   />}
@@ -179,7 +197,11 @@ function DashboardPage() {
         </div>
 
         <div className="col-12 col-md-4">
-          <DashCard title="Compliance" desc="PEP-kontroll og neste aktivitet">
+          <DashCard
+            title="Compliance"
+            desc="PEP-kontroll og neste aktivitet"
+            onClick={() => { window.location.hash = '#rapporter/oversikt'; }}
+          >
             {pepOverdue && (
               <div className="dashboard-stat">
                 <span className="dashboard-stat__label">{pepOverdue.label}</span>
@@ -214,7 +236,11 @@ function DashboardPage() {
         </div>
 
         <div className="col-12 col-md-4">
-          <DashCard title="Topp 5 kunder" desc="Etter markedsverdi">
+          <DashCard
+            title="Topp 5 kunder"
+            desc="Etter markedsverdi"
+            onClick={() => { window.location.hash = '#kundeoversikt'; }}
+          >
             {top5.map((s, i) => (
               <div key={s.customerId} className="dashboard-stat">
                 <span className="dashboard-stat__label" style={{ display: 'flex', gap: '0.35rem' }}>
