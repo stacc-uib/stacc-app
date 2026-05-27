@@ -10,8 +10,18 @@ vi.mock('../../../../shared/lib/getCustomerComplianceData', () => ({
   getCustomerComplianceData: vi.fn(),
 }));
 
+// Mock TradesContext — these tests focus on compliance, not trade history.
+// Use vi.fn() so mockReturnValue returns a stable object reference every render,
+// preventing the infinite re-render loop caused by a new [] reference each call.
+vi.mock('../../../trades/TradesContext', () => ({
+  useTradesContext: vi.fn(),
+}));
+
 import { getCustomerComplianceData } from '../../../../shared/lib/getCustomerComplianceData';
+import { useTradesContext } from '../../../trades/TradesContext';
+
 const mockedGetCustomerComplianceData = vi.mocked(getCustomerComplianceData);
+const mockedUseTradesContext = vi.mocked(useTradesContext);
 
 // Use a customer ID that exists in investors.json so the page renders
 const VALID_CUSTOMER_ID = '1001'; // Sirius Kapital AS
@@ -31,6 +41,8 @@ const sampleComplianceData: CustomerComplianceData = {
 describe('CustomerDetailPage — Compliance Summary card', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    // Stable return value so the registeredTrades reference doesn't change between renders
+    mockedUseTradesContext.mockReturnValue({ registeredTrades: [], addTrade: vi.fn() });
   });
 
   /**

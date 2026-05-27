@@ -229,7 +229,7 @@ function getClassIdFromShareClass(value: string | null): ShareClassId | null {
 }
 
 function getInvestorCategoryLabel(category: RawInvestorRecord['category']) {
-  return category === 'Professional' ? 'Profesjonell' : 'Ikke-profesjonell';
+  return category === 'Professional' ? 'Profesjonell' : 'Retail';
 }
 
 function getDayDifference(startDate: string, endDate: string) {

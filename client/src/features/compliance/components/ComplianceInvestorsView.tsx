@@ -114,19 +114,25 @@ function AmlRiskCell({ level }: { level: InvestorRow['amlRiskLevel'] }) {
 function DocStatusCell({ status }: { status: InvestorRow['documentationStatus'] }) {
   if (status === 'Mangler dokumentasjon') {
     return (
-      <span className="status-badge status-badge--critical" title="Nødvendig dokumentasjon mangler">
-        Mangler
+      <span
+        className="status-badge status-badge--critical"
+        title="KYC-dokumentasjon mangler helt — legitimasjon, kildeformue og/eller PEP-erklæring er ikke registrert"
+      >
+        KYC mangler
       </span>
     );
   }
   if (status === 'Mangler oppdatering') {
     return (
-      <span className="status-badge status-badge--warning" title="Dokumentasjon er utdatert og må oppdateres">
-        Utdatert
+      <span
+        className="status-badge status-badge--warning"
+        title="KYC-dokumentasjon er utdatert — legitimasjon eller kildeformue må fornyes"
+      >
+        KYC utdatert
       </span>
     );
   }
-  return <span style={{ color: '#6b7280', fontSize: '0.85rem' }}>OK</span>;
+  return <span style={{ color: '#6b7280', fontSize: '0.85rem' }}>KYC OK</span>;
 }
 
 function ReviewStatusCell({
@@ -301,7 +307,7 @@ function ComplianceInvestorsView({ pageData }: ComplianceInvestorsViewProps) {
                   <th>Investor</th>
                   <th>Næring</th>
                   <th>AML-risiko</th>
-                  <th>Dokumentasjon</th>
+                  <th>KYC-status</th>
                   <th>Neste kontroll</th>
                   <th></th>
                 </tr>
@@ -398,8 +404,8 @@ function ComplianceInvestorsView({ pageData }: ComplianceInvestorsViewProps) {
                                     <p style={{ margin: '0.5rem 0 0', fontSize: '0.82rem', color: '#92400e' }}>
                                       Merk: dokumentasjonen er{' '}
                                       {row.documentationStatus === 'Mangler dokumentasjon'
-                                        ? 'ikke registrert'
-                                        : 'utdatert'}{' '}
+                                        ? 'ikke registrert (KYC mangler)'
+                                        : 'utdatert (KYC må fornyes)'}{' '}
                                       og må følges opp separat.
                                     </p>
                                   )}

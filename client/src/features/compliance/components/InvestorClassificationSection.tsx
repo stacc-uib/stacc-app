@@ -10,7 +10,7 @@ type InvestorClassificationSectionProps = {
   pageData: CompliancePageData;
 };
 
-type RegistryFilter = 'alle' | 'mangler-data' | 'pep-oppfolging' | 'ikke-profesjonelle';
+type RegistryFilter = 'alle' | 'mangler-data' | 'pep-oppfolging';
 
 type InvestorRegistryRow = {
   customerId: string;
@@ -31,14 +31,12 @@ const statusLabelByType: Record<InvestorClassificationStatus, string> = {
   'mangler-naering': 'Mangler næringsgruppe',
   'pep-forfaller-snart': 'PEP forfaller snart',
   'pep-forfalt': 'PEP forfalt',
-  'ikke-profesjonell': 'Begrenset adgang',
 };
 
 const filterOptions: { id: RegistryFilter; label: string }[] = [
   { id: 'alle', label: 'Alle investorer' },
   { id: 'mangler-data', label: 'Mangler data' },
   { id: 'pep-oppfolging', label: 'PEP-oppfølging' },
-  { id: 'ikke-profesjonelle', label: 'Ikke-profesjonelle' },
 ];
 
 function getStatusClassName(status: InvestorClassificationStatus) {
@@ -48,8 +46,6 @@ function getStatusClassName(status: InvestorClassificationStatus) {
     case 'mangler-naering':
     case 'pep-forfaller-snart':
       return 'status-badge status-badge--warning';
-    case 'ikke-profesjonell':
-      return 'status-badge status-badge--neutral';
     default:
       return 'status-badge status-badge--ok';
   }
@@ -61,14 +57,9 @@ function toDateFromLabel(dateLabel: string) {
 }
 
 function deriveClassificationStatus(
-  investorClass: string,
   industryGroup: InvestorRegistryRow['industryGroup'],
   nextPepCheckLabel: string,
 ): InvestorClassificationStatus {
-  if (investorClass === 'Ikke-profesjonell') {
-    return 'ikke-profesjonell';
-  }
-
   if (!industryGroup) {
     return 'mangler-naering';
   }
@@ -92,7 +83,6 @@ function getRegistryRows(pageData: CompliancePageData): InvestorRegistryRow[] {
   return pageData.investorClassification.rows.map((row) => {
     const amlRow = amlByCustomerId.get(row.customerId);
     const complianceStatus = deriveClassificationStatus(
-      row.investorCategory,
       row.industryGroup,
       row.pepNextReviewLabel,
     );
@@ -122,8 +112,7 @@ function toSeverityRank(status: InvestorClassificationStatus) {
     case 'pep-forfalt': return 0;
     case 'mangler-naering':
     case 'pep-forfaller-snart': return 1;
-    case 'ikke-profesjonell': return 2;
-    default: return 3;
+    default: return 2;
   }
 }
 
@@ -148,7 +137,6 @@ function InvestorClassificationSection({ pageData }: InvestorClassificationSecti
         if (activeFilter === 'pep-oppfolging') {
           return row.complianceStatus === 'pep-forfalt' || row.complianceStatus === 'pep-forfaller-snart';
         }
-        if (activeFilter === 'ikke-profesjonelle') return row.complianceStatus === 'ikke-profesjonell';
         return true;
       })
       .sort((left, right) =>

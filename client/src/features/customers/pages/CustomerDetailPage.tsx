@@ -166,7 +166,6 @@ function mockPhone(customerId: string): string {
 function getComplianceBadgeClass(status: string): string {
   switch (status) {
     case 'pep-forfalt':
-    case 'ikke-profesjonell':
       return 'status-badge status-badge--critical';
     case 'mangler-naering':
     case 'pep-forfaller-snart':

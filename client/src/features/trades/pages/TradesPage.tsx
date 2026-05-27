@@ -123,10 +123,6 @@ function TradesPage() {
       return messages;
     }
 
-    if (selectedInvestor.investorCategory === 'Ikke-profesjonell') {
-      messages.push('Kun profesjonelle investorer kan registreres for ny handel i denne arbeidsflaten.');
-    }
-
     if (
       direction === 'kjop' &&
       selectedClass.minimumSubscriptionAmount > 0 &&

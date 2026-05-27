@@ -10,8 +10,17 @@ vi.mock('../../../../shared/lib/getCustomerComplianceData', () => ({
   getCustomerComplianceData: vi.fn(),
 }));
 
+// Mock TradesContext — compliance tests don't need real trade history.
+// vi.fn() + mockReturnValue keeps the registeredTrades reference stable across renders.
+vi.mock('../../../../features/trades/TradesContext', () => ({
+  useTradesContext: vi.fn(),
+}));
+
 import { getCustomerComplianceData } from '../../../../shared/lib/getCustomerComplianceData';
+import { useTradesContext } from '../../../../features/trades/TradesContext';
+
 const mockedGetCustomerComplianceData = vi.mocked(getCustomerComplianceData);
+const mockedUseTradesContext = vi.mocked(useTradesContext);
 
 // Customer ID that exists in investors.json and has trades
 const VALID_CUSTOMER_ID = '1001'; // Sirius Kapital AS
@@ -36,6 +45,8 @@ describe('CustomerData — Compliance Status Indicator column', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     window.location.hash = '';
+    // Stable return value so registeredTrades reference doesn't change between renders
+    mockedUseTradesContext.mockReturnValue({ registeredTrades: [], addTrade: vi.fn() });
   });
 
   /**
@@ -123,17 +134,17 @@ describe('CustomerData — Compliance Status Indicator column', () => {
     expect(badge).toHaveClass('status-badge', 'status-badge--critical');
   });
 
-  it('renders critical badge for "ikke-profesjonell" classification status', async () => {
+  it('renders warning badge for "mangler-naering" classification status', async () => {
     mockedGetCustomerComplianceData.mockReturnValue(
       makeComplianceData({
-        classificationStatus: 'ikke-profesjonell',
-        classificationLabel: 'Ikke-profesjonell',
+        classificationStatus: 'mangler-naering',
+        classificationLabel: 'Mangler næringsgruppe',
       }),
     );
     render(<CustomersList filteredCustomerId={VALID_CUSTOMER_ID} />);
 
-    const badge = await screen.findByText('Ikke-profesjonell');
-    expect(badge).toHaveClass('status-badge', 'status-badge--critical');
+    const badge = await screen.findByText('Mangler næringsgruppe');
+    expect(badge).toHaveClass('status-badge', 'status-badge--warning');
   });
 
   /**

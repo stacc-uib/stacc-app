@@ -15,11 +15,9 @@ const statusLabelByType: Record<InvestorClassificationStatus, string> = {
   'mangler-naering': 'Mangler næringsgruppe',
   'pep-forfaller-snart': 'PEP forfaller snart',
   'pep-forfalt': 'PEP forfalt',
-  'ikke-profesjonell': 'Ikke-profesjonell',
 };
 
 function getClassificationStatus(
-  investorCategory: InvestorRecord['category'],
   industryGroup: string | null,
   pepNextReviewDate: string,
 ): InvestorClassificationStatus {
@@ -31,10 +29,6 @@ function getClassificationStatus(
 
   if (!industryGroup) {
     return 'mangler-naering';
-  }
-
-  if (investorCategory !== 'Professional') {
-    return 'ikke-profesjonell';
   }
 
   if (diffInDays < 0) {
@@ -68,7 +62,6 @@ export function getCustomerComplianceData(customerId: string): CustomerComplianc
   }
 
   const classificationStatus = getClassificationStatus(
-    investor.category,
     detail.industryGroup,
     detail.pepNextReviewDate,
   );

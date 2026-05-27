@@ -67,6 +67,8 @@ const filterOptions: { id: ComplianceWorkQueueFilter; label: string }[] = [
   { id: 'denne-uken', label: 'Denne uken' },
   { id: 'mine-saker', label: 'Mine saker' },
 ];
+// Merk: kategori-taggene på elementene ('AML og PEP', 'Rapportering', 'Investorer')
+// brukes kun til visuell visning, ikke filtrering. Filtertaggene er separate.
 
 function getPriorityClassName(priority: ComplianceWorkQueueItem['priority']) {
   if (priority === 'Kritisk') {
@@ -201,13 +203,15 @@ function ComplianceWorkQueueSection({
                     ? 'Tildelt meg'
                     : item.actionLabel}
                 </button>
-                <button
-                  type="button"
-                  className="queue-action"
-                  onClick={() => setCompletedIds((current) => [...current, item.id])}
-                >
-                  Marker som gjennomgått
-                </button>
+                {item.actionType !== 'fullfor' && (
+                  <button
+                    type="button"
+                    className="queue-action"
+                    onClick={() => setCompletedIds((current) => [...current, item.id])}
+                  >
+                    Marker som gjennomgått
+                  </button>
+                )}
               </div>
             </article>
           ))}

@@ -57,8 +57,7 @@ export type InvestorClassificationStatus =
   | 'ok'
   | 'mangler-naering'
   | 'pep-forfaller-snart'
-  | 'pep-forfalt'
-  | 'ikke-profesjonell';
+  | 'pep-forfalt';
 
 export type InvestorClassificationRow = {
   customerId: string;

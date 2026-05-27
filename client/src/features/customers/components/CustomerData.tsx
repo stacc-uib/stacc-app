@@ -168,7 +168,6 @@ function matchesHoldingFilter(customer: Customer, filter: HoldingFilter): boolea
 function getComplianceBadgeClass(status: InvestorClassificationStatus): string {
   switch (status) {
     case 'pep-forfalt':
-    case 'ikke-profesjonell':
       return 'status-badge status-badge--critical';
     case 'mangler-naering':
     case 'pep-forfaller-snart':

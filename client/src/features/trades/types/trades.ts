@@ -47,7 +47,7 @@ export type TradeInvestorOption = {
   customerId: string;
   investorName: string;
   investorType: string;
-  investorCategory: 'Profesjonell' | 'Ikke-profesjonell';
+  investorCategory: 'Profesjonell' | 'Retail';
   pepStatus: 'Ja' | 'Nei';
   amlRiskLevel: 'Lav' | 'Medium' | 'Høy';
   documentationStatus: 'Komplett' | 'Mangler oppdatering' | 'Mangler dokumentasjon';
