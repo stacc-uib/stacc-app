@@ -317,9 +317,13 @@ function ComplianceInvestorsView({ pageData }: ComplianceInvestorsViewProps) {
               </thead>
               <tbody>
                 {visibleRows.map((row) => {
-                  // Knappen gjelder AML/PEP-kontrollen — ikke dokumentasjon eller næring.
+                  // Knappen vises for alle rader med utestående tiltak:
+                  // forfalt/snart kontroll, høy AML-risiko, eller ufullstendig KYC.
                   const canMarkReviewed =
-                    row.reviewStatus === 'Forfalt' || row.reviewStatus === 'Forfaller snart';
+                    row.reviewStatus === 'Forfalt' ||
+                    row.reviewStatus === 'Forfaller snart' ||
+                    row.amlRiskLevel === 'Høy' ||
+                    row.documentationStatus !== 'Komplett';
                   const isConfirming = pendingReviewId === row.customerId;
                   const isCompleted = completedIds.includes(row.customerId);
 
@@ -402,9 +406,15 @@ function ComplianceInvestorsView({ pageData }: ComplianceInvestorsViewProps) {
                                     Registrerer fullført gjennomgang. Følgende oppdateres:
                                   </p>
                                   <ul style={{ margin: '0.4rem 0 0', paddingLeft: '1.1rem', fontSize: '0.85rem', color: '#4b5563', lineHeight: 1.7 }}>
-                                    <li>Kontrolldato settes til <strong>27.05.2026</strong>, neste frist <strong>27.05.2027</strong></li>
-                                    <li>AML-risikonivå bekreftes som <strong>Lav</strong></li>
-                                    <li>KYC-dokumentasjon bekreftes som <strong>Komplett</strong></li>
+                                    {(row.reviewStatus === 'Forfalt' || row.reviewStatus === 'Forfaller snart') && (
+                                      <li>Kontrolldato settes til <strong>27.05.2026</strong>, neste frist <strong>27.05.2027</strong></li>
+                                    )}
+                                    {row.amlRiskLevel === 'Høy' && (
+                                      <li>AML-risikonivå tilbakestilles til <strong>Lav</strong></li>
+                                    )}
+                                    {row.documentationStatus !== 'Komplett' && (
+                                      <li>KYC-dokumentasjon bekreftes som <strong>Komplett</strong></li>
+                                    )}
                                   </ul>
                                 </div>
 
