@@ -26,10 +26,10 @@ Applikasjonen har en fast toppbar med logo og en sidebar til venstre med hovedme
 
 | # | Menyvalg | Status | Beskrivelse |
 |---|---|---|---|
-| 2 | Dashboard | Placeholder | Startside (ikke implementert) |
+| 2 | Dashboard | Ferdig | Startside |
 | 3 | Inntekt | Placeholder | Inntektsanalyse (ikke implementert) |
-| 4 | Fondsoversikt | Placeholder | Fondsinformasjon (ikke implementert) |
-| 5 | Kundeoversikt | Placeholder | Investorregister (ikke implementert) |
+| 4 | Fondsoversikt | Ferdig | Fondsanalyse, NAV, kapitalflyt og eierbok |
+| 5 | Kundeoversikt | Ferdig | Investorregister |
 | 6 | Transaksjoner | Ferdig | Transaksjonsliste |
 | 7 | Rapporter | Ferdig | Compliance og rapportering |
 | 8 | Registrer ny handel | Ferdig | Handelsregistrering |
@@ -41,9 +41,78 @@ Applikasjonen har en fast toppbar med logo og en sidebar til venstre med hovedme
 
 **Menyvalg:** Dashboard
 **Hash:** `#dashboard`
-**Status:** Placeholder
+**Status:** Ferdig
 
-Startside med oversikt over de viktigste tallene og siste aktivitet. Ikke implementert.
+Startside som samler de viktigste nøkkeltallene fra inntekt, forvaltning, tegning, compliance og største kunder. Siden gir bruker en rask oversikt over status siste 12 måneder.
+
+### 2.1 Layout
+
+Elementer på siden:
+- Inntektskort
+- Forvaltningskort med NAV-utvikling
+- Tegningskort
+- Compliance-kort
+- Topp 5 kunder
+
+### 2.2 Inntekter
+
+Kort øverst til venstre som viser sentrale inntektsnøkkeltall.
+
+Består av:
+- YTD inntekter med sammenligning mot samme dato forrige år
+- Projisert årsinntekt med endring fra forrige år
+- AUM med endring fra forrige år
+- Effektivt forvaltningshonorar med endring fra forrige år
+
+### 2.3 Forvaltning
+
+Kort øverst til høyre som viser NAV-utvikling per fond siste 12 måneder.
+
+Består av:
+- Forklaringsnøkkel for fondene som vises i grafen
+- Linjediagram som viser avkastningsutvikling per fond
+- Kompakt grafvisning tilpasset dashboardet
+
+### 2.4 Tegning
+
+Kort nederst til venstre som viser tegningsaktivitet siste 12 måneder.
+
+Består av:
+- Brutto tegning
+- Brutto innløsning
+- Netto tegning
+
+### 2.5 Compliance
+
+Kort nederst i midten som viser compliance-status og neste prioriterte aktivitet.
+
+Består av:
+- Antall forfalte PEP-kontroller
+- Antall investorer med manglende påkrevde opplysninger
+- Neste prioriterte compliance-oppgave med tittel og kort beskrivelse
+- Fargeindikator som viser alvorlighetsgrad på oppgaven
+
+### 2.6 Topp 5 kunder
+
+Kort nederst til høyre som viser de fem største kundene basert på markedsverdi.
+
+Består av:
+- Rangering fra 1 til 5
+- Kundenavn
+- Markedsverdi per kunde
+
+### 2.7 Interaksjon med andre sider
+
+Dashboardet gjenbruker beregninger og visuelle komponenter fra "Inntekt", "Fondsoversikt" og "Rapporter".
+
+Når data i transaksjoner, fondspriser, investorer eller compliance endres, vil nøkkeltallene på dashboardet oppdateres basert på de samme datakildene som resten av applikasjonen.
+
+### 2.8 Datakilder
+
+Elementene på siden er basert på:
+- Inntekter og AUM: `mocks/trades.json`, `mocks/investors.json` og `mocks/fundPrices.json`
+- Forvaltning, tegning og topp 5 kunder: beregninger fra fondsoversikten basert på fond-, pris- og transaksjonsdata
+- Compliance: beregninger fra compliance-modulen basert på investor- og rapporteringsdata
 
 ---
 
@@ -61,9 +130,138 @@ Inntektsanalyse, honorarutvikling og relaterte oversikter. Ikke implementert.
 
 **Menyvalg:** Fondsoversikt
 **Hash:** `#fondsoversikt`
-**Status:** Placeholder
+**Status:** Ferdig
 
-Fondsdata, klasser, beholdning og status per fond. Ikke implementert.
+Fondsanalyse for Escali Global, Escali Kreditt og Escali Norden. Siden samler NAV-historikk, avkastning, kapitalflyt, utbytter og eierbok for valgt fondsutvalg.
+
+### 4.1 Layout
+
+Elementer på siden:
+- Filterrad for fond, andelsklasse, investorsegment, investortype og NAV-periode
+- Nøkkeltall for valgt fondsutvalg
+- Datagrunnlag for valgt univers, analyseperiode og mockdata
+- Avkastningsgraf
+- NAV-graf med kapitalfordeling
+- Kapitalflyt med tegninger og innløsninger
+- Utbyttetabell
+- Eierbok og konsentrasjonstabell
+
+### 4.2 Filtrering
+
+Filtrene øverst styrer alle nøkkeltall, grafer og tabeller på siden.
+
+Består av:
+- Multivalg for fond: Escali Global, Escali Kreditt og Escali Norden
+- Multivalg for andelsklasse: Andelsklasse A, B og C
+- Multivalg for investorsegment, blant annet profesjonelle og ikke-profesjonelle investorer
+- Multivalg for investortype basert på kundedata
+- NAV-periode med valgene "Siste måned", "Kvartal til dato", "Hittil i år", "Siste 12 måneder", "Hele NAV-historikken" og "Egendefinert intervall"
+- Intervallslider der bruker kan velge start- og sluttdato direkte fra tilgjengelige NAV-datoer
+- Oppsummering av aktive filtre og siste NAV-dato til høyre for filterraden
+
+### 4.3 Nøkkeltall
+
+KPI-rad øverst viser status for valgt fondsunivers og periode.
+
+Består av:
+- Forvaltet kapital per siste NAV-dato
+- Aktive andelseiere
+- Netto kapitalflyt
+- Avkastning
+- Siste NAV
+- Utbetalt utbytte
+
+Nøkkeltallene viser også endring fra periodestart der det finnes et relevant sammenligningsgrunnlag.
+
+### 4.4 Avkastning
+
+Avkastningsseksjonen viser prosentvis utvikling fra periodestart.
+
+Består av:
+- Linjediagram for avkastning
+- Forklaringsnøkkel for seriene i grafen
+- Valg for å vise utviklingen samlet, fordelt på fond eller fordelt på andelsklasse
+- KPI-panel med samlet avkastning, annualisert avkastning, beste fond, svakeste fond, volatilitet og maks fall
+
+Grafen støtter hover for å vise verdier per dato, markering av intervall i grafen og zoom i tidsserien.
+
+### 4.5 NAV og kapitalfordeling
+
+NAV-seksjonen viser faktisk NAV per fond over tid, med mulighet for å sammenligne prosentvis utvikling fra periodestart.
+
+Består av:
+- Linjediagram for NAV per fond
+- Valg mellom "NAV-verdi" og "Prosent fra start"
+- KPI-panel for høyeste siste NAV, laveste siste NAV, høyeste NAV-punkt, laveste NAV-punkt og størst NAV-spenn
+- Sammenlignende NAV-nøkkeltall for start, slutt, høyeste og laveste nivå i perioden
+- Kakediagram for kapitalfordeling
+
+Kapitalfordelingen kan vises fordelt på fond, andelsklasse, investorsegment eller største eiere.
+
+### 4.6 Kapitalflyt
+
+Kapitalflytseksjonen viser tegninger, innløsninger og netto kapitalflyt i valgt periode.
+
+Består av:
+- Graf der tegninger vises over nullinjen, innløsninger under nullinjen og nettoflyt som linje
+- Valg for å vise nettoflyt samlet, fordelt på fond eller fordelt på andelsklasse
+- KPI-panel med brutto tegninger, brutto innløsninger, netto kapitalflyt, innløsning/tegning, største tegningsperiode og største innløsningsperiode
+- Tabell for største tegninger
+- Tabell for største innløsninger
+
+Bidragstabellene viser investor, kapital, andel av flyten og antall handler, med paginering.
+
+### 4.7 Utbytte
+
+Utbytteseksjonen viser registrerte utbytteutbetalinger i valgt periode.
+
+Består av:
+- KPI-rad med totalt utbytte, antall utbetalinger, mottakere, største utbetaling og snitt per utbetaling
+- Sorterbar tabell med dato, investor, fond, andelsklasse og utbetalt beløp
+- Paginering med 10 utbytter per side
+- Tomtilstand dersom valgt utvalg ikke har utbyttehendelser
+
+### 4.8 Eierbok
+
+Eierbokseksjonen viser aktive andelseiere og kapitalfordeling per siste NAV-dato.
+
+Består av:
+- KPI-rad med største eierandel, topp 3 eierandel, topp 10 eierandel, profesjonell kapital og snittkapital per eier
+- Sorterbar tabell med rang, investor, andeler eller antall fond/klasser, markedsverdi og eierandel
+- Paginering med 10 andelseiere per side
+
+Dersom bruker har valgt ett instrument, viser tabellen antall andeler. Ved bredere utvalg viser tabellen hvor mange fond eller andelsklasser investoren har eksponering mot.
+
+### 4.9 Interaksjon med andre sider
+
+Fondsoversikten interagerer med "Dashboard", "Kundeoversikt" og "Registrer ny handel".
+
+Dashboardet gjenbruker fondsnøkkeltall og grafdata fra fondsoversikten.
+
+Når bruker trykker på investornavn i kapitalflyt, utbytte eller eierbok, åpnes kundedetaljsiden for aktuell kunde.
+
+Når nye handler registreres og blir en del av transaksjonsgrunnlaget, vil beholdning, kapitalflyt, eierbok og relevante nøkkeltall kunne beregnes på nytt fra samme datakilder.
+
+### 4.10 Beregninger og datakilder
+
+Beregningene på siden er basert på fond, fondskurser, investorer og transaksjoner.
+
+Logikk:
+- Fond og andelsklasser normaliseres til instrumenter per fond og klasse
+- Beholdning beregnes fra historiske andelsbevegelser frem til valgt dato
+- Forvaltet kapital beregnes som positive andeler multiplisert med siste tilgjengelige NAV for instrumentet
+- Samlet NAV vektes etter forvaltet kapital når flere instrumenter inngår i utvalget
+- Avkastning beregnes fra NAV-endring mellom periodestart og siste NAV-dato
+- Kapitalflyt beregnes fra kjøp og salg i valgt periode
+- Utbytte beregnes fra transaksjoner med type utbytte
+- Eierbok beregnes fra positive beholdninger per investor og verdsettes med siste NAV
+
+Elementene på siden er basert på:
+- Fond: `mocks/funds.json`
+- Fondskurser og NAV-historikk: `mocks/fundPrices.json`
+- Investorer og investorsegment: `mocks/investors.json`
+- Transaksjoner, kapitalflyt og utbytte: `mocks/trades.json`
+- Beregninger: `features/funds/lib/getFundOverviewData.ts`
 
 ---
 
@@ -71,9 +269,134 @@ Fondsdata, klasser, beholdning og status per fond. Ikke implementert.
 
 **Menyvalg:** Kundeoversikt
 **Hash:** `#kundeoversikt`
-**Status:** Placeholder
+**Status:** Ferdig
 
-Investorregister, segmentering og kundedetaljer. Ikke implementert.
+Investorregister med søk, filtrering, beholdningsoversikt, compliance-status og egen detaljside per kunde.
+
+### 5.1 Layout
+
+Kundesiden består av to nivåer:
+- Kundeoversikt med søk, segmentfiltre og tabell
+- Kundedetaljside for valgt kunde
+
+### 5.2 Kundeoversikt
+
+Hovedsiden viser alle kunder i en tabell med beregnet beholdning og compliance-status.
+
+Består av:
+- Søkefelt der bruker kan søke på kunde og åpne valgt kunde direkte
+- Hurtigfiltre for "Stor kunde i klasse C" og "Potensielle Klasse B – Nær"
+- Kundetabell med kolonner for KundeID, kundenavn, klasse, kundetype, fondsbeholdning, compliance og total beholdning
+- Klikkbar rad som åpner kundedetaljsiden for valgt kunde
+
+### 5.3 Filtrering og segmentering
+
+Tabellen kan filtreres på flere dimensjoner samtidig.
+
+Består av:
+- Klassefilter med Klasse A, Klasse B og Klasse C
+- Kundetypefilter med blant annet Aksjeselskap, Ansatt, Fond, Fondsforvalter, Forsikringsselskap, Pensjonskasse, Privatperson og Stiftelse
+- Fondsfilter for Global, Norden og Kreditt
+- Beholdningsfilter for kunder som enten er store i Klasse C eller nær grensen for Klasse B
+
+### 5.4 Beholdningsberegning
+
+Kundeoversikten beregner beholdning per kunde basert på transaksjoner og siste tilgjengelige fondskurs.
+
+Logikk:
+- Transaksjoner summeres per kunde, fond og andelsklasse
+- Kun oppgjorte handler fra registreringsflyten påvirker beholdning
+- Historiske mock-transaksjoner regnes som oppgjort
+- Antall andeler verdsettes med siste NAV-pris per fond og klasse
+- Total beholdning beregnes som summen av positiv beholdning på tvers av fond
+- Kundegruppe beregnes fra kundetype og beholdning, der ansatte får Klasse A, fond over terskel får Klasse B, og mindre fondseksponeringer får Klasse C
+
+### 5.5 Compliance i kundeoversikten
+
+Hver kunde får en compliance-status i tabellen.
+
+Består av:
+- Statusbadge som viser om kunden er "Klar", mangler næringsgruppe, har PEP som forfaller snart, har PEP forfalt eller ikke er profesjonell
+- Fargekoding for OK, advarsel og kritisk status
+- Klikk på avvikende compliance-status sender bruker til investoroppfølging under "Rapporter"
+
+### 5.6 Kundedetaljside
+
+Når bruker åpner en kunde, vises en detaljside på `#kundeoversikt/{kundeId}`.
+
+Siden gir en samlet oversikt over valgt kunde, både som kontaktkort, beholdningsoversikt, compliance-status og aktivitetshistorikk.
+
+Består av:
+- Tilbakeknapp til kundeoversikten
+- Venstre kolonne med kundeinformasjon, fondsfordeling og compliance
+- Høyre kolonne med aktivitetsnøkkeltall og transaksjonshistorikk
+
+### 5.6.1 Kundeinformasjon
+
+Kundekort øverst i venstre kolonne viser grunnleggende informasjon om valgt kunde.
+
+Består av:
+- Kundenavn
+- KundeID
+- Kundetype
+- Kundegruppe / klasse
+- Total beholdning
+- Telefonnummer
+- Epostadresse
+
+Telefon og epost hentes fra kundedata dersom det finnes. Dersom feltene mangler, genereres midlertidige mock-verdier basert på kundenavn og KundeID.
+
+### 5.6.2 Fondsfordeling
+
+Fondsfordelingskortet viser hvordan kundens beholdning er fordelt mellom fondstypene.
+
+Består av:
+- Kakediagram med fordeling mellom Global, Norden og Kreditt
+- Forklaringsliste med farge, fondstype, prosentandel og markedsverdi
+- Tomtilstand dersom kunden ikke har beholdning
+
+Fondsfordelingen beregnes fra kundens oppgjorte transaksjoner og siste tilgjengelige NAV-pris per fond og andelsklasse.
+
+### 5.6.3 Compliance på kundesiden
+
+Compliance-kortet viser status for valgt kunde direkte på kundesiden.
+
+Består av:
+- PEP-status
+- AML-risikonivå
+- Klassifisering med statusbadge
+- Dokumentasjonsstatus
+- Neste PEP-gjennomgang
+- Knapp for "Se compliance-detaljer" som åpner investoroppfølging under "Rapporter"
+
+### 5.7 Aktivitet på kundedetaljsiden
+
+Detaljsiden viser kundens transaksjonsaktivitet og nøkkeltall.
+
+Består av:
+- KPI-rad med antall kjøp, antall salg og gjennomsnittlig transaksjonsbeløp
+- Aktivitetstabell med kolonner for ID, dato, type, fond, antall, kurs og beløp
+- Filtrering i aktivitetstabellen på år, transaksjonstype og fond
+- Paginering med 10 aktiviteter per side
+- Nyregistrerte handler vises sammen med historiske transaksjoner for kunden
+
+### 5.8 Interaksjon med andre sider
+
+Kundeoversikten interagerer med "Transaksjoner", "Registrer ny handel" og "Rapporter".
+
+Når bruker trykker på kundenavn i transaksjonstabellen, åpnes kundedetaljsiden for aktuell kunde.
+
+Når bruker registrerer en ny handel, blir kundens aktivitet og beholdning oppdatert dersom handelen er oppgjort.
+
+Når bruker trykker på compliance-status eller "Se compliance-detaljer", åpnes investoroppfølgingen i rapporteringsmodulen.
+
+### 5.9 Datakilder
+
+Elementene på siden er basert på:
+- Kundedata: `mocks/investors.json`
+- Transaksjoner og aktivitet: `mocks/trades.json` og registrerte handler fra `TradesContext`
+- Fondskurser og verdsettelse: `mocks/fundPrices.json`
+- Compliance-status: `investorComplianceDetails.ts` og `getCustomerComplianceData.ts`
 
 ---
 

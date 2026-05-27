@@ -15,6 +15,14 @@ export type FundOverviewMetricDelta = {
   label?: string;
 };
 
+export type FundOverviewMetricRow = {
+  id: string;
+  label: string;
+  value: number;
+  format?: FundOverviewMetricFormat;
+  meta?: string;
+};
+
 export type FundOverviewFilters = {
   fundIds?: string[];
   classIds?: FundOverviewShareClassId[];
@@ -53,6 +61,7 @@ export type FundOverviewMetric = {
   format: FundOverviewMetricFormat;
   meta: string;
   delta?: FundOverviewMetricDelta;
+  rows?: FundOverviewMetricRow[];
 };
 
 export type FundOverviewLinePoint = {

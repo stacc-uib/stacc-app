@@ -442,6 +442,7 @@ function createMetric(
   format: FundOverviewMetric['format'],
   meta: string,
   delta?: FundOverviewMetric['delta'],
+  rows?: FundOverviewMetric['rows'],
 ) {
   return {
     id,
@@ -450,6 +451,7 @@ function createMetric(
     format,
     meta,
     delta,
+    rows,
   } satisfies FundOverviewMetric;
 }
 
@@ -1159,16 +1161,6 @@ function getMaxDrawdown(seriesItem: FundOverviewLineSeries) {
   return maxDrawdown;
 }
 
-function getPositivePeriodRatio(seriesItem: FundOverviewLineSeries) {
-  const pointReturns = getSeriesPointReturns(seriesItem);
-
-  if (pointReturns.length === 0) {
-    return 0;
-  }
-
-  return pointReturns.filter((value) => value > 0).length / pointReturns.length;
-}
-
 function getReturnDelta(value: number, label = 'I perioden') {
   return {
     value,
@@ -1181,18 +1173,14 @@ function getReturnDelta(value: number, label = 'I perioden') {
 function createReturnKpis(
   combinedSeries: FundOverviewLineSeries,
   fundSeries: FundOverviewLineSeries[],
-  classSeries: FundOverviewLineSeries[],
   periodStartDate: string,
   asOfDate: string,
 ): FundOverviewMetric[] {
   const combinedReturn = getSeriesPeriodReturn(combinedSeries);
   const annualizedReturn = getAnnualizedReturn(combinedReturn, periodStartDate, asOfDate);
   const fundReturns = getSeriesReturnEntries(fundSeries).sort((left, right) => right.value - left.value);
-  const classReturns = getSeriesReturnEntries(classSeries).sort((left, right) => right.value - left.value);
   const bestFund = fundReturns[0];
   const weakestFund = fundReturns[fundReturns.length - 1];
-  const bestClass = classReturns[0];
-  const weakestClass = classReturns[classReturns.length - 1];
   const rangeLabel = getRangeLabel(periodStartDate, asOfDate);
 
   return [
@@ -1229,22 +1217,6 @@ function createReturnKpis(
       getReturnDelta(weakestFund?.value ?? 0),
     ),
     createMetric(
-      'return-best-class',
-      'Beste andelsklasse',
-      bestClass?.value ?? 0,
-      'percent',
-      bestClass?.label ?? 'Ingen klassedata',
-      getReturnDelta(bestClass?.value ?? 0),
-    ),
-    createMetric(
-      'return-weakest-class',
-      'Svakeste andelsklasse',
-      weakestClass?.value ?? 0,
-      'percent',
-      weakestClass?.label ?? 'Ingen klassedata',
-      getReturnDelta(weakestClass?.value ?? 0),
-    ),
-    createMetric(
       'return-volatility',
       'Volatilitet',
       getAnnualizedVolatility(combinedSeries, periodStartDate, asOfDate),
@@ -1259,56 +1231,89 @@ function createReturnKpis(
       'Største fall fra toppunkt i perioden',
       getReturnDelta(getMaxDrawdown(combinedSeries), 'Fra toppunkt'),
     ),
-    createMetric(
-      'return-positive-periods',
-      'Positive NAV-perioder',
-      getPositivePeriodRatio(combinedSeries),
-      'percent',
-      'Andel perioder med positiv NAV-endring',
-    ),
   ];
 }
 
-function createFundNavKpis(fundSeries: FundOverviewLineSeries[]): FundOverviewMetric[] {
-  const entries = fundSeries.map((seriesItem) => {
-    const values = seriesItem.points.map((point) => point.value);
-    const latestPoint = seriesItem.points[seriesItem.points.length - 1];
+type FundNavEntry = {
+  id: string;
+  label: string;
+  startNav: number;
+  startDate: string;
+  latestNav: number;
+  latestDate: string;
+  highestNav: number;
+  highestDate: string;
+  lowestNav: number;
+  lowestDate: string;
+  navRange: number;
+};
+
+function getFundNavEntries(fundSeries: FundOverviewLineSeries[]): FundNavEntry[] {
+  return fundSeries.map((seriesItem) => {
+    const fallbackPoint = seriesItem.points[0] ?? { date: '', label: '', value: 0 };
+    const startPoint = seriesItem.points[0] ?? fallbackPoint;
+    const latestPoint = seriesItem.points[seriesItem.points.length - 1] ?? fallbackPoint;
     const highestPoint = seriesItem.points.reduce(
       (highest, point) => (point.value > highest.value ? point : highest),
-      seriesItem.points[0] ?? { date: '', label: '', value: 0 },
+      fallbackPoint,
     );
     const lowestPoint = seriesItem.points.reduce(
       (lowest, point) => (point.value < lowest.value ? point : lowest),
-      seriesItem.points[0] ?? { date: '', label: '', value: 0 },
+      fallbackPoint,
     );
 
     return {
       id: seriesItem.id,
       label: seriesItem.label,
-      latestNav: latestPoint?.value ?? 0,
+      startNav: startPoint.value,
+      startDate: startPoint.date,
+      latestNav: latestPoint.value,
+      latestDate: latestPoint.date,
       highestNav: highestPoint.value,
       highestDate: highestPoint.date,
       lowestNav: lowestPoint.value,
       lowestDate: lowestPoint.date,
-      averageNav: average(values),
       navRange: highestPoint.value - lowestPoint.value,
     };
   });
-  const byLatestNav = [...entries].sort((left, right) => right.latestNav - left.latestNav);
+}
+
+function getNavDateMeta(prefix: string, date: string) {
+  return date ? `${prefix} ${formatDateLabel(date)}` : 'Ingen NAV-data';
+}
+
+function createFundNavRows(
+  entries: FundNavEntry[],
+  getValue: (entry: FundNavEntry) => number,
+  getMeta: (entry: FundNavEntry) => string,
+  sortCompare?: (left: FundNavEntry, right: FundNavEntry) => number,
+): FundOverviewMetric['rows'] {
+  const sortedEntries = [...entries];
+
+  if (sortCompare) {
+    sortedEntries.sort(sortCompare);
+  }
+
+  return sortedEntries.map((entry) => ({
+    id: entry.id,
+    label: entry.label,
+    value: getValue(entry),
+    format: 'nav',
+    meta: getMeta(entry),
+  }));
+}
+
+function createFundNavKpis(entries: FundNavEntry[]): FundOverviewMetric[] {
+  const byLatestNavDesc = [...entries].sort((left, right) => right.latestNav - left.latestNav);
+  const byLatestNavAsc = [...entries].sort((left, right) => left.latestNav - right.latestNav);
   const byHighestNav = [...entries].sort((left, right) => right.highestNav - left.highestNav);
   const byLowestNav = [...entries].sort((left, right) => left.lowestNav - right.lowestNav);
   const byNavRange = [...entries].sort((left, right) => right.navRange - left.navRange);
-  const highestLatest = byLatestNav[0];
-  const lowestLatest = byLatestNav[byLatestNav.length - 1];
+  const highestLatest = byLatestNavDesc[0];
+  const lowestLatest = byLatestNavAsc[0];
   const highestPoint = byHighestNav[0];
   const lowestPoint = byLowestNav[0];
   const widestRange = byNavRange[0];
-  const averageLatestNav =
-    entries.length > 0 ? average(entries.map((entry) => entry.latestNav)) : 0;
-  const aboveAverageCount = entries.filter((entry) => entry.latestNav > averageLatestNav).length;
-  const aboveAverageRatio = entries.length > 0 ? aboveAverageCount / entries.length : 0;
-  const currentNavSpread =
-    highestLatest && lowestLatest ? highestLatest.latestNav - lowestLatest.latestNav : 0;
 
   return [
     createMetric(
@@ -1316,42 +1321,52 @@ function createFundNavKpis(fundSeries: FundOverviewLineSeries[]): FundOverviewMe
       'Høyeste siste NAV',
       highestLatest?.latestNav ?? 0,
       'nav',
-      highestLatest?.label ?? 'Ingen fondsdata',
+      entries.length > 0 ? 'Per fond, sortert høyest til lavest' : 'Ingen fondsdata',
+      undefined,
+      createFundNavRows(
+        byLatestNavDesc,
+        (entry) => entry.latestNav,
+        (entry) => getNavDateMeta('Per', entry.latestDate),
+      ),
     ),
     createMetric(
       'fund-nav-lowest-latest',
       'Laveste siste NAV',
       lowestLatest?.latestNav ?? 0,
       'nav',
-      lowestLatest?.label ?? 'Ingen fondsdata',
-    ),
-    createMetric(
-      'fund-nav-average-latest',
-      'Snitt siste NAV',
-      averageLatestNav,
-      'nav',
-      'Gjennomsnitt for fondene i valgt utvalg',
-    ),
-    createMetric(
-      'fund-nav-current-spread',
-      'Spenn i siste NAV',
-      currentNavSpread,
-      'nav',
-      'Høyeste minus laveste siste NAV',
+      entries.length > 0 ? 'Per fond, sortert lavest til høyest' : 'Ingen fondsdata',
+      undefined,
+      createFundNavRows(
+        byLatestNavAsc,
+        (entry) => entry.latestNav,
+        (entry) => getNavDateMeta('Per', entry.latestDate),
+      ),
     ),
     createMetric(
       'fund-nav-highest-point',
       'Høyeste NAV-punkt',
       highestPoint?.highestNav ?? 0,
       'nav',
-      highestPoint ? `${highestPoint.label} / ${formatDateLabel(highestPoint.highestDate)}` : 'Ingen fondsdata',
+      entries.length > 0 ? 'Høyeste punkt per fond' : 'Ingen fondsdata',
+      undefined,
+      createFundNavRows(
+        byHighestNav,
+        (entry) => entry.highestNav,
+        (entry) => getNavDateMeta('Målt', entry.highestDate),
+      ),
     ),
     createMetric(
       'fund-nav-lowest-point',
       'Laveste NAV-punkt',
       lowestPoint?.lowestNav ?? 0,
       'nav',
-      lowestPoint ? `${lowestPoint.label} / ${formatDateLabel(lowestPoint.lowestDate)}` : 'Ingen fondsdata',
+      entries.length > 0 ? 'Laveste punkt per fond' : 'Ingen fondsdata',
+      undefined,
+      createFundNavRows(
+        byLowestNav,
+        (entry) => entry.lowestNav,
+        (entry) => getNavDateMeta('Målt', entry.lowestDate),
+      ),
     ),
     createMetric(
       'fund-nav-widest-range',
@@ -1360,12 +1375,64 @@ function createFundNavKpis(fundSeries: FundOverviewLineSeries[]): FundOverviewMe
       'nav',
       widestRange?.label ?? 'Ingen fondsdata',
     ),
+  ];
+}
+
+function createFundNavSummaryKpis(entries: FundNavEntry[]): FundOverviewMetric[] {
+  const firstEntry = entries[0];
+
+  return [
     createMetric(
-      'fund-nav-above-average',
-      'Fond over snitt',
-      aboveAverageRatio,
-      'percent',
-      `${aboveAverageCount} av ${entries.length} fond`,
+      'nav-start',
+      'NAV ved start',
+      firstEntry?.startNav ?? 0,
+      'nav',
+      entries.length > 0 ? 'Per fond' : 'Ingen fondsdata',
+      undefined,
+      createFundNavRows(
+        entries,
+        (entry) => entry.startNav,
+        (entry) => getNavDateMeta('Per', entry.startDate),
+      ),
+    ),
+    createMetric(
+      'nav-end',
+      'Siste NAV',
+      firstEntry?.latestNav ?? 0,
+      'nav',
+      entries.length > 0 ? 'Per fond' : 'Ingen fondsdata',
+      undefined,
+      createFundNavRows(
+        entries,
+        (entry) => entry.latestNav,
+        (entry) => getNavDateMeta('Per', entry.latestDate),
+      ),
+    ),
+    createMetric(
+      'nav-high',
+      'Høyeste NAV i perioden',
+      firstEntry?.highestNav ?? 0,
+      'nav',
+      entries.length > 0 ? 'Per fond' : 'Ingen fondsdata',
+      undefined,
+      createFundNavRows(
+        entries,
+        (entry) => entry.highestNav,
+        (entry) => getNavDateMeta('Målt', entry.highestDate),
+      ),
+    ),
+    createMetric(
+      'nav-low',
+      'Laveste NAV i perioden',
+      firstEntry?.lowestNav ?? 0,
+      'nav',
+      entries.length > 0 ? 'Per fond' : 'Ingen fondsdata',
+      undefined,
+      createFundNavRows(
+        entries,
+        (entry) => entry.lowestNav,
+        (entry) => getNavDateMeta('Målt', entry.lowestDate),
+      ),
     ),
   ];
 }
@@ -1416,35 +1483,12 @@ function createNavSection(
   const returnKpis = createReturnKpis(
     combinedSeries,
     fundSeries,
-    classSeries,
     periodStartDate,
     asOfDate,
   );
-  const fundNavKpis = createFundNavKpis(fundSeries);
-
-  const navAtStart = getAggregatedNavAtDate(
-    periodStartDate,
-    selectedInstruments,
-    getSnapshotForDate(periodStartDate),
-  ).nav;
-  const navAtEnd = getAggregatedNavAtDate(
-    asOfDate,
-    selectedInstruments,
-    getSnapshotForDate(asOfDate),
-  ).nav;
-  const fallbackPoint = combinedSeries.points[combinedSeries.points.length - 1] ?? {
-    date: asOfDate,
-    label: formatDateLabel(asOfDate),
-    value: navAtEnd,
-  };
-  const highestPoint = combinedSeries.points.reduce(
-    (highest, point) => (point.value > highest.value ? point : highest),
-    combinedSeries.points[0] ?? fallbackPoint,
-  );
-  const lowestPoint = combinedSeries.points.reduce(
-    (lowest, point) => (point.value < lowest.value ? point : lowest),
-    combinedSeries.points[0] ?? fallbackPoint,
-  );
+  const fundNavEntries = getFundNavEntries(fundSeries);
+  const fundNavKpis = createFundNavKpis(fundNavEntries);
+  const navKpis = createFundNavSummaryKpis(fundNavEntries);
 
   return {
     series,
@@ -1454,42 +1498,7 @@ function createNavSection(
     activeGrouping,
     returnKpis,
     fundNavKpis,
-    kpis: [
-      createMetric(
-        'nav-start',
-        'NAV ved start',
-        navAtStart,
-        'nav',
-        `Per ${formatDateLabel(periodStartDate)}`,
-      ),
-      createMetric(
-        'nav-end',
-        'Siste NAV',
-        navAtEnd,
-        'nav',
-        `Per ${formatDateLabel(asOfDate)}`,
-        {
-          value: navAtEnd - navAtStart,
-          format: 'nav',
-          direction: getDeltaDirection(navAtEnd - navAtStart),
-          label: 'Fra periodestart',
-        },
-      ),
-      createMetric(
-        'nav-high',
-        'Høyeste NAV i perioden',
-        highestPoint.value,
-        'nav',
-        `Målt ${formatDateLabel(highestPoint.date)}`,
-      ),
-      createMetric(
-        'nav-low',
-        'Laveste NAV i perioden',
-        lowestPoint.value,
-        'nav',
-        `Målt ${formatDateLabel(lowestPoint.date)}`,
-      ),
-    ],
+    kpis: navKpis,
     description:
       'Sammenligner prosentvis avkastning for samlet portefølje, hvert fond og hver andelsklasse.',
   };

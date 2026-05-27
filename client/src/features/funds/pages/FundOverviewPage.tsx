@@ -347,8 +347,9 @@ function getMultiSelectSummary(
   return labels.length === 0 ? allLabel : labels.join(', ');
 }
 
-function usePreventWheelScroll<TElement extends HTMLElement>() {
+function useMeasuredChartShell<TElement extends HTMLElement>(fallbackWidth = 900) {
   const ref = useRef<TElement>(null);
+  const [width, setWidth] = useState(fallbackWidth);
 
   useEffect(() => {
     const element = ref.current;
@@ -357,15 +358,24 @@ function usePreventWheelScroll<TElement extends HTMLElement>() {
       return undefined;
     }
 
+    const updateWidth = () => {
+      setWidth(Math.max(1, Math.round(element.clientWidth)));
+    };
     const handleWheel = (event: WheelEvent) => {
       event.preventDefault();
     };
+    const resizeObserver = typeof ResizeObserver === 'undefined' ? null : new ResizeObserver(updateWidth);
 
+    updateWidth();
+    resizeObserver?.observe(element);
     element.addEventListener('wheel', handleWheel, { passive: false });
-    return () => element.removeEventListener('wheel', handleWheel);
+    return () => {
+      resizeObserver?.disconnect();
+      element.removeEventListener('wheel', handleWheel);
+    };
   }, []);
 
-  return ref;
+  return [ref, width] as const;
 }
 
 function getDeltaArrow(direction: NonNullable<FundOverviewMetric['delta']>['direction']) {
@@ -407,6 +417,22 @@ function MetricCard({ metric }: { metric: FundOverviewMetric }) {
   );
 }
 
+function MetricRowList({ metric }: { metric: FundOverviewMetric }) {
+  const rows = metric.rows ?? [];
+
+  return (
+    <div className="fund-overview__metric-row-list">
+      {rows.map((row) => (
+        <div key={row.id} className="fund-overview__metric-row">
+          <span>{row.label}</span>
+          <strong>{formatMetricValue(row.value, row.format ?? metric.format)}</strong>
+          {row.meta ? <small>{row.meta}</small> : null}
+        </div>
+      ))}
+    </div>
+  );
+}
+
 function SectionKpiGrid({
   metrics,
   compact = false,
@@ -419,11 +445,36 @@ function SectionKpiGrid({
       {metrics.map((metric) => (
         <article key={metric.id} className="fund-overview__section-kpi">
           <p className="fund-overview__section-kpi-label">{metric.label}</p>
-          <p className="fund-overview__section-kpi-value">{formatMetricValue(metric.value, metric.format)}</p>
-          <MetricDelta delta={metric.delta} />
-          <p className="fund-overview__section-kpi-meta">{metric.meta}</p>
+          {metric.rows?.length ? (
+            <MetricRowList metric={metric} />
+          ) : (
+            <>
+              <p className="fund-overview__section-kpi-value">{formatMetricValue(metric.value, metric.format)}</p>
+              <MetricDelta delta={metric.delta} />
+              <p className="fund-overview__section-kpi-meta">{metric.meta}</p>
+            </>
+          )}
         </article>
       ))}
+    </div>
+  );
+}
+
+function PairedNavMetric({ metric }: { metric: FundOverviewMetric }) {
+  if (metric.rows?.length) {
+    return (
+      <div className="fund-overview__paired-kpi-block">
+        <p className="fund-overview__paired-kpi-subtitle">{metric.label}</p>
+        <MetricRowList metric={metric} />
+      </div>
+    );
+  }
+
+  return (
+    <div className="fund-overview__paired-kpi-row">
+      <span>{metric.label}</span>
+      <strong>{formatMetricValue(metric.value, metric.format)}</strong>
+      <small>{metric.meta}</small>
     </div>
   );
 }
@@ -445,11 +496,7 @@ function PairedNavKpiGrid({ metrics }: { metrics: FundOverviewMetric[] }) {
           <p className="fund-overview__section-kpi-label">{pair.title}</p>
           {pair.metrics.map((metric) =>
             metric ? (
-              <div key={metric.id} className="fund-overview__paired-kpi-row">
-                <span>{metric.label}</span>
-                <strong>{formatMetricValue(metric.value, metric.format)}</strong>
-                <small>{metric.meta}</small>
-              </div>
+              <PairedNavMetric key={metric.id} metric={metric} />
             ) : null,
           )}
         </article>
@@ -659,10 +706,12 @@ function MiniLineOverview({
   series,
   zoomRange,
   onZoomRangeChange,
+  width,
 }: {
   series: FundOverviewLineSeries[];
   zoomRange: ChartRange;
   onZoomRangeChange: (range: ChartRange) => void;
+  width: number;
 }) {
   const [dragState, setDragState] = useState<ZoomDragState>(null);
   const displaySeries = series.filter((seriesItem) => seriesItem.points.length > 0);
@@ -671,7 +720,6 @@ function MiniLineOverview({
     return null;
   }
 
-  const width = 900;
   const height = 58;
   const padding = { top: 7, right: 16, bottom: 9, left: 16 };
   const chartWidth = width - padding.left - padding.right;
@@ -994,7 +1042,7 @@ export function LineChart({
   const [selectionRange, setSelectionRange] = useState<ChartRange | null>(null);
   const [zoomRange, setZoomRange] = useState<ChartRange | null>(null);
   const [dragState, setDragState] = useState<ChartDragState>(null);
-  const chartShellRef = usePreventWheelScroll<HTMLDivElement>();
+  const [chartShellRef, measuredWidth] = useMeasuredChartShell<HTMLDivElement>();
   const rawDisplaySeries = series.filter((seriesItem) => seriesItem.points.length > 0);
   const displaySeries = mode === 'return' ? getSeriesAsPercentChangeFromStart(rawDisplaySeries) : rawDisplaySeries;
   const chartDataKey = `${mode}:${getChartDataKey(rawDisplaySeries)}`;
@@ -1010,7 +1058,7 @@ export function LineChart({
     return <div className="fund-overview__chart-empty">Ingen NAV-data i valgt utvalg.</div>;
   }
 
-  const width = 900;
+  const width = measuredWidth;
   const height = 300;
   const padding = { top: 18, right: 64, bottom: 36, left: 16 };
   const chartWidth = width - padding.left - padding.right;
@@ -1042,7 +1090,7 @@ export function LineChart({
   const activeIndex = hoveredIndex;
   const activeX = activeIndex === null ? null : getChartXForIndex(activeIndex, pointCount, chartWidth, padding.left);
   const activePoint = activeIndex === null ? null : visibleSeries[0].points[activeIndex];
-  const tooltipLeft = activeX === null ? 0 : clamp((activeX / width) * 100, 12, 82);
+  const tooltipLeft = activeX === null ? 0 : clamp(activeX, 140, width - 140);
   const zeroLineY =
     mode === 'return' && displayMin <= 0 && displayMax >= 0
       ? padding.top + chartHeight - ((0 - displayMin) / displayRange) * chartHeight
@@ -1116,7 +1164,7 @@ export function LineChart({
   return (
     <div className="fund-overview__chart-shell" ref={chartShellRef}>
       {activeIndex !== null && activePoint ? (
-        <div className="fund-overview__chart-tooltip" style={{ left: `${tooltipLeft}%`, top: '0.85rem' }}>
+        <div className="fund-overview__chart-tooltip" style={{ left: `${tooltipLeft}px`, top: '0.85rem' }}>
           <strong>{formatDateLabel(activePoint.date)}</strong>
           <div className="fund-overview__chart-tooltip-list">
             {visibleSeries.map((seriesItem) => (
@@ -1251,6 +1299,7 @@ export function LineChart({
             series={displaySeries}
             zoomRange={activeZoomRange}
             onZoomRangeChange={(range) => setZoomRange(isFullChartRange(range, totalPointCount) ? null : range)}
+            width={width}
           />
         </>
       )}
@@ -1269,7 +1318,7 @@ function FlowChart({
   const [selectionRange, setSelectionRange] = useState<ChartRange | null>(null);
   const [zoomRange, setZoomRange] = useState<ChartRange | null>(null);
   const [dragState, setDragState] = useState<ChartDragState>(null);
-  const chartShellRef = usePreventWheelScroll<HTMLDivElement>();
+  const [chartShellRef, measuredWidth] = useMeasuredChartShell<HTMLDivElement>();
   const displaySeries = series.filter((seriesItem) => seriesItem.points.length > 0);
   const chartDataKey = `${combinedPoints[0]?.date ?? 'empty'}:${combinedPoints[combinedPoints.length - 1]?.date ?? 'empty'}:${combinedPoints.length}:${getChartDataKey(displaySeries)}`;
 
@@ -1284,7 +1333,7 @@ function FlowChart({
     return <div className="fund-overview__chart-empty">Ingen kapitalflyt i valgt utvalg.</div>;
   }
 
-  const width = 900;
+  const width = measuredWidth;
   const height = 330;
   const padding = { top: 18, right: 64, bottom: 36, left: 16 };
   const chartWidth = width - padding.left - padding.right;
@@ -1315,7 +1364,7 @@ function FlowChart({
   const activeIndex = hoveredIndex;
   const activeX = activeIndex === null ? null : getChartXForIndex(activeIndex, pointCount, chartWidth, padding.left);
   const activePoint = activeIndex === null ? null : visibleCombinedPoints[activeIndex];
-  const tooltipLeft = activeX === null ? 0 : clamp((activeX / width) * 100, 12, 82);
+  const tooltipLeft = activeX === null ? 0 : clamp(activeX, 140, width - 140);
   const visibleSelectionRange = getVisibleSelectionRange(selectionRange, activeZoomRange);
   const selectionStartX =
     visibleSelectionRange === null
@@ -1385,7 +1434,7 @@ function FlowChart({
   return (
     <div className="fund-overview__chart-shell fund-overview__chart-shell--flow" ref={chartShellRef}>
       {activeIndex !== null && activePoint ? (
-        <div className="fund-overview__chart-tooltip" style={{ left: `${tooltipLeft}%`, top: '0.85rem' }}>
+        <div className="fund-overview__chart-tooltip" style={{ left: `${tooltipLeft}px`, top: '0.85rem' }}>
           <strong>{formatDateLabel(activePoint.date)}</strong>
           <div className="fund-overview__chart-tooltip-list">
             <span>
@@ -1524,6 +1573,7 @@ function FlowChart({
         series={displaySeries}
         zoomRange={activeZoomRange}
         onZoomRangeChange={(range) => setZoomRange(isFullChartRange(range, totalPointCount) ? null : range)}
+        width={width}
       />
     </div>
   );

@@ -2451,7 +2451,7 @@ textarea {
 }
 
 .fund-overview__delta--up {
-  color: #b85717;
+  color: #008A0D;
 }
 
 .fund-overview__delta--down {
@@ -2629,6 +2629,10 @@ textarea {
   background: #fff;
   user-select: none;
   -webkit-user-select: none;
+}
+
+.fund-overview__chart-shell.fund-overview__chart-shell--flow {
+  overflow: visible;
 }
 
 .fund-overview__chart-svg {
@@ -2944,6 +2948,19 @@ textarea {
   background: #fff;
 }
 
+.fund-overview__paired-kpi-block {
+  min-width: 0;
+  padding-top: 0.65rem;
+}
+
+.fund-overview__paired-kpi-subtitle {
+  margin: 0;
+  color: #111827;
+  font-size: 0.82rem;
+  font-weight: 700;
+  line-height: 1.35;
+}
+
 .fund-overview__paired-kpi-row {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
@@ -2964,6 +2981,49 @@ textarea {
 }
 
 .fund-overview__paired-kpi-row small {
+  grid-column: 1 / -1;
+}
+
+.fund-overview__metric-row-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  margin-top: 0.55rem;
+}
+
+.fund-overview__metric-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 0.12rem 0.65rem;
+  align-items: baseline;
+  min-width: 0;
+  padding-top: 0.35rem;
+  border-top: 1px solid rgba(17, 24, 39, 0.06);
+}
+
+.fund-overview__metric-row:first-child {
+  padding-top: 0;
+  border-top: 0;
+}
+
+.fund-overview__metric-row span,
+.fund-overview__metric-row small {
+  color: #6b7280;
+  font-size: 0.75rem;
+  line-height: 1.35;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.fund-overview__metric-row strong {
+  color: #111827;
+  font-size: 0.9rem;
+  font-weight: 700;
+  line-height: 1.2;
+  white-space: nowrap;
+}
+
+.fund-overview__metric-row small {
   grid-column: 1 / -1;
 }
 

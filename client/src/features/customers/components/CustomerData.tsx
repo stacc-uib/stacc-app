@@ -154,10 +154,6 @@ function getKlasseForCustomer(customerType: string, funds: Fund[]): string {
 
 function matchesHoldingFilter(customer: Customer, filter: HoldingFilter): boolean {
   if (!filter) return true;
-  if (filter === 'sterk') {
-    // Total holdings > 1M but no single fund reaches 1M (none qualify for Klasse B)
-    return customer.totalBeholdning > 1_000_000 && customer.funds.every((f) => f.amount < 1_000_000);
-  }
   if (filter === 'naer') {
     // Customer has at least one fund between 900k and 1M (currently Klasse C, close to Klasse B)
     return customer.funds.some((f) => f.amount >= 900_000 && f.amount < 1_000_000);
@@ -190,6 +186,7 @@ function CustomersList({
   const [selectedCustomerTypes, setSelectedCustomerTypes] = useState<CustomerType[]>([
     ...ALL_CUSTOMER_TYPES,
   ]);
+  const [sortByBeholdning, setSortByBeholdning] = useState<'desc' | 'asc' | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const { registeredTrades } = useTradesContext();
@@ -268,7 +265,18 @@ function CustomersList({
             />
           </th>
           <th>Compliance</th>
-          <th>Beholdning</th>
+          <th>
+            <button
+              style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', fontWeight: 'inherit', fontSize: 'inherit', color: 'inherit', display: 'flex', alignItems: 'center', gap: '0.25rem' }}
+              onClick={() => setSortByBeholdning((s) => s === null ? 'desc' : s === 'desc' ? 'asc' : null)}
+              aria-label="Sorter etter beholdning"
+            >
+              Beholdning
+              <span aria-hidden="true" style={{ fontSize: '0.75rem', opacity: sortByBeholdning ? 1 : 0.35 }}>
+                {sortByBeholdning === 'asc' ? '↑' : '↓'}
+              </span>
+            </button>
+          </th>
         </tr>
       </thead>
       <tbody>
@@ -284,6 +292,13 @@ function CustomersList({
             const activeFundTypes =
               selectedFundTypes.length === 0 ? ALL_FUND_TYPES : selectedFundTypes;
             return c.funds.some((f) => activeFundTypes.includes(f.type));
+          })
+          .slice()
+          .sort((a, b) => {
+            if (!sortByBeholdning) return 0;
+            return sortByBeholdning === 'desc'
+              ? b.totalBeholdning - a.totalBeholdning
+              : a.totalBeholdning - b.totalBeholdning;
           })
           .map((c) => {
             const activeFundTypes =
