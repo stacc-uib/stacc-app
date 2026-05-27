@@ -533,7 +533,7 @@ function CustomerDetailPage({ customerId }: { customerId: string }) {
                     (t) => {
                       const isFinancial =
                         t.transactionType !== 'Telefon' && t.transactionType !== 'Epost';
-                      const beløp = isFinancial ? t.units * t.price : null;
+                      const beløp = isFinancial ? t.amount : null;
                       return (
                         <tr key={t.id}>
                           <td style={{ color: '#9ca3af', fontSize: '0.75rem' }}>{t.id.replace('trade-', '').split('-')[0]}</td>
