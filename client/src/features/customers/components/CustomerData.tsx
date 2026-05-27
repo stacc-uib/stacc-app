@@ -143,13 +143,18 @@ function calculateCustomerHoldings(
 
 function getKlasseForCustomer(customerType: string, funds: Fund[]): string {
   if (customerType === 'Ansatt') return 'Klasse A';
-  if (funds.length === 0) return 'Klasse A';
+  const allFundTypes: FundType[] = ['Norden', 'Global', 'Kreditt'];
+  const isKlasseB = allFundTypes.every((type) => {
+    const holding = funds.find((f) => f.type === type);
+    return holding !== undefined && holding.amount >= 1_000_000;
+  });
+  return isKlasseB ? 'Klasse B' : 'Klasse C';
+}
 
-  const fundClasses = funds.map((f) => (f.amount >= 1_000_000 ? 'Klasse B' : 'Klasse C'));
-
-  if (fundClasses.some((c) => c === 'Klasse C')) return 'Klasse C';
-  if (fundClasses.every((c) => c === 'Klasse B')) return 'Klasse B';
-  return 'Klasse A';
+function getKlasseForSingleFund(customerType: string, funds: Fund[], fundType: FundType): string {
+  if (customerType === 'Ansatt') return 'Klasse A';
+  const holding = funds.find((f) => f.type === fundType);
+  return holding !== undefined && holding.amount >= 1_000_000 ? 'Klasse B' : 'Klasse C';
 }
 
 function matchesHoldingFilter(customer: Customer, filter: HoldingFilter): boolean {
@@ -280,82 +285,86 @@ function CustomersList({
         </tr>
       </thead>
       <tbody>
-        {data
-          .filter((c) => {
-            if (!matchesHoldingFilter(c, holdingFilter ?? null)) return false;
-            const activeClasses =
-              selectedClasses.length === 0 ? ALL_CLASSES : selectedClasses;
-            if (!activeClasses.includes(c.klasse as KlasseType)) return false;
-            const activeTypes =
-              selectedCustomerTypes.length === 0 ? ALL_CUSTOMER_TYPES : selectedCustomerTypes;
-            if (!activeTypes.includes(c.type as CustomerType)) return false;
-            const activeFundTypes =
-              selectedFundTypes.length === 0 ? ALL_FUND_TYPES : selectedFundTypes;
-            return c.funds.some((f) => activeFundTypes.includes(f.type));
-          })
-          .slice()
-          .sort((a, b) => {
-            if (!sortByBeholdning) return 0;
-            return sortByBeholdning === 'desc'
-              ? b.totalBeholdning - a.totalBeholdning
-              : a.totalBeholdning - b.totalBeholdning;
-          })
-          .map((c) => {
-            const activeFundTypes =
-              selectedFundTypes.length === 0 ? ALL_FUND_TYPES : selectedFundTypes;
-            const filteredHolding = c.funds
-              .filter((f) => activeFundTypes.includes(f.type))
-              .reduce((sum, f) => sum + f.amount, 0);
-            const complianceData = getCustomerComplianceData(c.id);
-            return (
-              <tr
-                key={c.id}
-                className="cd-clickable-row"
-                onClick={() => {
-                  window.location.hash = `#kundeoversikt/${c.id}`;
-                }}
-                style={{ cursor: 'pointer' }}
-              >
-                <td className="td-id">{c.id}</td>
-                <td className="td-name">{c.name}</td>
-                <td>{c.klasse}</td>
-                <td>{c.type}</td>
-                <td className="td-right">{formatCurrency(filteredHolding)}</td>
-                <td>
-                  {complianceData ? (
-                    complianceData.classificationStatus === 'ok' ? (
-                      <span className={getComplianceBadgeClass(complianceData.classificationStatus)}>
-                        {complianceData.classificationLabel}
-                      </span>
-                    ) : (
-                      <span
-                        className={getComplianceBadgeClass(complianceData.classificationStatus)}
-                        role="button"
-                        tabIndex={0}
-                        style={{ cursor: 'pointer' }}
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          window.location.hash = '#rapporter/investorer';
-                        }}
-                        onKeyDown={(e) => {
-                          if (e.key === 'Enter' || e.key === ' ') {
+        {(() => {
+          const activeFundTypes = selectedFundTypes.length === 0 ? [...ALL_FUND_TYPES] : selectedFundTypes;
+          const isSingleFundFilter = selectedFundTypes.length === 1;
+          return data
+            .map((c) => ({
+              ...c,
+              displayKlasse: isSingleFundFilter
+                ? getKlasseForSingleFund(c.type, c.funds, activeFundTypes[0])
+                : c.klasse,
+            }))
+            .filter((c) => {
+              if (!matchesHoldingFilter(c, holdingFilter ?? null)) return false;
+              const activeClasses = selectedClasses.length === 0 ? ALL_CLASSES : selectedClasses;
+              if (!activeClasses.includes(c.displayKlasse as KlasseType)) return false;
+              const activeTypes = selectedCustomerTypes.length === 0 ? ALL_CUSTOMER_TYPES : selectedCustomerTypes;
+              if (!activeTypes.includes(c.type as CustomerType)) return false;
+              return c.funds.some((f) => activeFundTypes.includes(f.type));
+            })
+            .slice()
+            .sort((a, b) => {
+              if (!sortByBeholdning) return 0;
+              return sortByBeholdning === 'desc'
+                ? b.totalBeholdning - a.totalBeholdning
+                : a.totalBeholdning - b.totalBeholdning;
+            })
+            .map((c) => {
+              const filteredHolding = c.funds
+                .filter((f) => activeFundTypes.includes(f.type))
+                .reduce((sum, f) => sum + f.amount, 0);
+              const complianceData = getCustomerComplianceData(c.id);
+              return (
+                <tr
+                  key={c.id}
+                  className="cd-clickable-row"
+                  onClick={() => {
+                    window.location.hash = `#kundeoversikt/${c.id}`;
+                  }}
+                  style={{ cursor: 'pointer' }}
+                >
+                  <td className="td-id">{c.id}</td>
+                  <td className="td-name">{c.name}</td>
+                  <td>{c.displayKlasse}</td>
+                  <td>{c.type}</td>
+                  <td className="td-right">{formatCurrency(filteredHolding)}</td>
+                  <td>
+                    {complianceData ? (
+                      complianceData.classificationStatus === 'ok' ? (
+                        <span className={getComplianceBadgeClass(complianceData.classificationStatus)}>
+                          {complianceData.classificationLabel}
+                        </span>
+                      ) : (
+                        <span
+                          className={getComplianceBadgeClass(complianceData.classificationStatus)}
+                          role="button"
+                          tabIndex={0}
+                          style={{ cursor: 'pointer' }}
+                          onClick={(e) => {
                             e.stopPropagation();
-                            e.preventDefault();
                             window.location.hash = '#rapporter/investorer';
-                          }
-                        }}
-                      >
-                        {complianceData.classificationLabel}
-                      </span>
-                    )
-                  ) : (
-                    <span className="status-badge status-badge--neutral">Ukjent</span>
-                  )}
-                </td>
-                <td className="td-right">{formatCurrency(c.totalBeholdning)}</td>
-              </tr>
-            );
-          })}
+                          }}
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter' || e.key === ' ') {
+                              e.stopPropagation();
+                              e.preventDefault();
+                              window.location.hash = '#rapporter/investorer';
+                            }
+                          }}
+                        >
+                          {complianceData.classificationLabel}
+                        </span>
+                      )
+                    ) : (
+                      <span className="status-badge status-badge--neutral">Ukjent</span>
+                    )}
+                  </td>
+                  <td className="td-right">{formatCurrency(c.totalBeholdning)}</td>
+                </tr>
+              );
+            });
+        })()}
       </tbody>
       <tfoot>
         <tr>
