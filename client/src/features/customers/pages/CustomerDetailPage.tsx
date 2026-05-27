@@ -314,13 +314,14 @@ function CustomerDetailPage({ customerId }: { customerId: string }) {
   );
 
   const klasse = useMemo(() => {
-    if (!investor) return 'Klasse A';
+    if (!investor) return 'Klasse C';
     if (investor.customerType === 'Ansatt') return 'Klasse A';
-    if (fundHoldings.length === 0) return 'Klasse A';
-    const fundClasses = fundHoldings.map((f) => (f.value >= 1_000_000 ? 'Klasse B' : 'Klasse C'));
-    if (fundClasses.some((c) => c === 'Klasse C')) return 'Klasse C';
-    if (fundClasses.every((c) => c === 'Klasse B')) return 'Klasse B';
-    return 'Klasse A';
+    const allFundTypes: FundType[] = ['Norden', 'Global', 'Kreditt'];
+    const isKlasseB = allFundTypes.every((type) => {
+      const holding = fundHoldings.find((f) => f.type === type);
+      return holding !== undefined && holding.value >= 1_000_000;
+    });
+    return isKlasseB ? 'Klasse B' : 'Klasse C';
   }, [investor, fundHoldings]);
 
   function goBack() {
