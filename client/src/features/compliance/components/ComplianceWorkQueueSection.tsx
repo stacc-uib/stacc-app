@@ -63,6 +63,7 @@ function getDialogContent(item: ComplianceWorkQueueItem) {
 const filterOptions: { id: ComplianceWorkQueueFilter; label: string }[] = [
   { id: 'alle', label: 'Alle' },
   { id: 'kritiske', label: 'Kritiske' },
+  { id: 'rapportering', label: 'Rapportering' },
   { id: 'denne-uken', label: 'Denne uken' },
   { id: 'mine-saker', label: 'Mine saker' },
 ];
@@ -139,11 +140,10 @@ function ComplianceWorkQueueSection({
       <div className="feature-section__surface">
         <div className="feature-section__header">
           <div>
-            <p className="feature-section__eyebrow">Arbeidsflate</p>
-            <h2 className="feature-section__title">Prioriterte oppgaver</h2>
+            <p className="feature-section__eyebrow">Compliance</p>
+            <h2 className="feature-section__title">Oppgaver</h2>
             <p className="feature-section__description">
-              Samler de viktigste sakene på tvers av AML, rapportering og investorstatus.
-              Løs det som haster først, gå direkte til detaljfanen for å følge opp.
+              Alt som trenger handling på tvers av AML, rapportering og investorstatus — sortert etter hastegrad.
             </p>
           </div>
         </div>
@@ -176,6 +176,14 @@ function ComplianceWorkQueueSection({
                 </div>
 
                 <p className="queue-card__summary">{item.summary}</p>
+
+                {item.blockingNotes && item.blockingNotes.length > 0 && (
+                  <ul className="queue-card__blocking-list">
+                    {item.blockingNotes.map((note) => (
+                      <li key={note}>{note}</li>
+                    ))}
+                  </ul>
+                )}
 
                 <div className="queue-card__meta-row">
                   <span>Frist: {item.dueLabel}</span>

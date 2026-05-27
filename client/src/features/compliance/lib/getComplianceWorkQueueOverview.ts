@@ -1,5 +1,6 @@
 import type {
   CompliancePageData,
+  ComplianceWorkQueueFilter,
   ComplianceWorkQueueItem,
   ComplianceWorkQueueOverview,
 } from '../types/compliance';
@@ -64,23 +65,43 @@ export function getComplianceWorkQueueOverview(
     });
   }
 
-  const blockedReport = source.reportingWorkspace.runs.find(
-    (run) => run.statusTone === 'warning' || run.statusTone === 'critical',
+  const checksById = new Map(
+    source.reportingWorkspace.validationChecks.map((c) => [c.id, c]),
   );
 
-  if (blockedReport) {
+  for (const run of source.reportingWorkspace.runs) {
+    if (run.statusTone === 'ok' || run.statusTone === 'neutral') continue;
+
+    const blockingChecks = run.checkIds
+      .map((id) => checksById.get(id))
+      .filter((c): c is NonNullable<typeof c> => c !== undefined)
+      .filter((c) => c.status === 'critical' || c.status === 'warning');
+
+    const priority =
+      run.statusTone === 'critical'
+        ? ('Kritisk' as const)
+        : ('Høy' as const);
+
+    const filterTags: ComplianceWorkQueueFilter[] = ['alle', 'rapportering'];
+    if (run.statusTone === 'critical') filterTags.push('kritiske');
+    filterTags.push('mine-saker');
+
     items.push({
-      id: `queue-report-${blockedReport.id}`,
-      title: blockedReport.name,
+      id: `queue-report-${run.id}`,
+      title: run.name,
       category: 'Rapportering',
-      priority: 'Høy',
-      dueLabel: blockedReport.periodLabel,
-      owner: blockedReport.owner,
+      priority,
+      dueLabel: run.periodLabel,
+      owner: run.owner,
       actionLabel: 'Fullfør',
       actionType: 'fullfor',
-      targetSubpageId: 'rapportering',
-      summary: blockedReport.nextAction,
-      filterTags: ['alle', 'denne-uken', 'mine-saker'],
+      targetSubpageId: 'oversikt',
+      summary: run.nextAction,
+      blockingNotes:
+        blockingChecks.length > 0
+          ? blockingChecks.map((c) => `${c.label} — ${c.detail}`)
+          : undefined,
+      filterTags,
     });
   }
 

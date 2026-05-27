@@ -5,8 +5,6 @@ import type {
   ComplianceCalendarEvent,
   CompliancePageData,
   ComplianceSubpageId,
-  ReportingValidationCheck,
-  ReportingWorkspaceRun,
 } from '../types/compliance';
 
 type ComplianceOverviewViewProps = {
@@ -41,21 +39,6 @@ function toMonthValue(dateString: string): CalendarMonth {
 
 function getMonthLabel(month: CalendarMonth) {
   return `${monthLabels[month.monthIndex]} ${month.year}`;
-}
-
-// ─── Rapporteringshjelpere ────────────────────────────────────────────────────
-
-function getStatusClassName(tone: ReportingWorkspaceRun['statusTone'] | ReportingValidationCheck['status']) {
-  if (tone === 'critical') return 'status-badge status-badge--critical';
-  if (tone === 'warning') return 'status-badge status-badge--warning';
-  if (tone === 'ok') return 'status-badge status-badge--ok';
-  return 'status-badge status-badge--neutral';
-}
-
-function getCheckLabel(status: ReportingValidationCheck['status']) {
-  if (status === 'critical') return 'Blokkerer';
-  if (status === 'warning') return 'Avventer';
-  return 'Klar';
 }
 
 // ─── Komponent ────────────────────────────────────────────────────────────────
@@ -104,12 +87,6 @@ function ComplianceOverviewView({ pageData, onOpenSubpage }: ComplianceOverviewV
         .sort((a, b) => a.date.localeCompare(b.date))
         .slice(0, 5),
     [pageData.calendar.events],
-  );
-
-  // Rapportering
-  const checksById = useMemo(
-    () => new Map(pageData.reportingWorkspace.validationChecks.map((c) => [c.id, c])),
-    [pageData.reportingWorkspace.validationChecks],
   );
 
   return (
@@ -217,85 +194,7 @@ function ComplianceOverviewView({ pageData, onOpenSubpage }: ComplianceOverviewV
         </div>
       </section>
 
-      {/* ── 2. Rapporteringsstatus ────────────────────────────────────── */}
-      <section className="feature-section">
-        <div className="feature-section__surface">
-          <div className="feature-section__header">
-            <div>
-              <p className="feature-section__eyebrow">Rapportering</p>
-              <h2 className="feature-section__title">Rapporteringsstatus</h2>
-            </div>
-          </div>
-
-          <div className="stack-list">
-            {pageData.reportingWorkspace.runs.map((run: ReportingWorkspaceRun) => {
-              const linkedChecks = run.checkIds
-                .map((id) => checksById.get(id))
-                .filter((c): c is ReportingValidationCheck => c !== undefined);
-
-              const blockingChecks = linkedChecks.filter(
-                (c) => c.status === 'critical' || c.status === 'warning',
-              );
-
-              return (
-                <article key={run.id} className="stack-card">
-                  <div className="stack-card__row">
-                    <div>
-                      <h3 className="stack-card__title">{run.name}</h3>
-                      <p className="stack-card__meta">
-                        {run.periodLabel} · Ansvarlig: {run.owner}
-                      </p>
-                    </div>
-                    <span className={getStatusClassName(run.statusTone)}>
-                      {run.statusLabel}
-                    </span>
-                  </div>
-
-                  <p className="stack-card__body" style={{ marginTop: '0.4rem' }}>
-                    {run.nextAction}
-                  </p>
-
-                  {blockingChecks.length > 0 && (
-                    <div
-                      style={{
-                        marginTop: '0.6rem',
-                        paddingTop: '0.6rem',
-                        borderTop: '1px solid rgba(17, 24, 39, 0.08)',
-                        display: 'flex',
-                        flexDirection: 'column',
-                        gap: '0.35rem',
-                      }}
-                    >
-                      {blockingChecks.map((check) => (
-                        <div
-                          key={check.id}
-                          style={{
-                            display: 'flex',
-                            alignItems: 'flex-start',
-                            gap: '0.5rem',
-                          }}
-                        >
-                          <span
-                            className={getStatusClassName(check.status)}
-                            style={{ flexShrink: 0, marginTop: '0.05rem' }}
-                          >
-                            {getCheckLabel(check.status)}
-                          </span>
-                          <span style={{ fontSize: '0.85rem', color: '#4b5563' }}>
-                            {check.label} — {check.detail}
-                          </span>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </article>
-              );
-            })}
-          </div>
-        </div>
-      </section>
-
-      {/* ── 3. Arbeidskø ─────────────────────────────────────────────── */}
+      {/* ── 2. Oppgaver ──────────────────────────────────────────────── */}
       <ComplianceWorkQueueSection
         overview={pageData.workQueue}
         onOpenSubpage={onOpenSubpage}

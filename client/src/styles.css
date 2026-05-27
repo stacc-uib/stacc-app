@@ -1178,6 +1178,30 @@ textarea {
   overflow-wrap: anywhere;
 }
 
+.queue-card__blocking-list {
+  margin: 0.5rem 0 0;
+  padding: 0.5rem 0 0;
+  border-top: 1px solid rgba(17, 24, 39, 0.08);
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.queue-card__blocking-list li {
+  font-size: 0.82rem;
+  color: #92400e;
+  padding-left: 1rem;
+  position: relative;
+}
+
+.queue-card__blocking-list li::before {
+  content: '·';
+  position: absolute;
+  left: 0.25rem;
+  color: #d97706;
+}
+
 .queue-card__meta-row {
   display: flex;
   flex-wrap: wrap;
