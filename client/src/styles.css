@@ -2328,11 +2328,57 @@ textarea {
 }
 
 .fund-overview__metric-card {
+  position: relative;
   min-width: 0;
   padding: 1.15rem 1rem;
   border: 1px solid rgba(17, 24, 39, 0.08);
   border-radius: 0.45rem;
   background: #fff;
+}
+
+.fund-overview__metric-card--has-details {
+  outline: none;
+}
+
+.fund-overview__metric-card--has-details:focus-visible {
+  border-color: rgba(255, 116, 21, 0.55);
+  box-shadow: 0 0 0 3px rgba(255, 116, 21, 0.16);
+}
+
+.fund-overview__metric-popover {
+  position: absolute;
+  top: calc(100% + 0.5rem);
+  left: 0;
+  z-index: 30;
+  width: min(20rem, calc(100vw - 2rem));
+  min-width: 100%;
+  padding: 0.8rem;
+  border: 1px solid rgba(17, 24, 39, 0.1);
+  border-radius: 0.45rem;
+  background: #fff;
+  box-shadow: 0 1rem 2rem rgba(17, 24, 39, 0.14);
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(-0.25rem);
+  transition: opacity 160ms ease, transform 160ms ease, visibility 160ms ease;
+  visibility: hidden;
+}
+
+.fund-overview__metric-card:nth-child(n + 4) .fund-overview__metric-popover {
+  right: 0;
+  left: auto;
+}
+
+.fund-overview__metric-card--has-details:hover .fund-overview__metric-popover,
+.fund-overview__metric-card--has-details:focus-within .fund-overview__metric-popover {
+  opacity: 1;
+  pointer-events: auto;
+  transform: translateY(0);
+  visibility: visible;
+}
+
+.fund-overview__metric-popover .fund-overview__metric-row-list {
+  margin-top: 0;
 }
 
 .fund-overview__metric-label {
