@@ -37,6 +37,7 @@ function makeComplianceData(
     documentationStatus: 'Komplett',
     nextPepReviewDate: '2026-11-30',
     nextPepReviewLabel: '30.11.2026',
+    lastPepReviewLabel: '30.11.2025',
     ...overrides,
   };
 }

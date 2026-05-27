@@ -75,5 +75,6 @@ export function getCustomerComplianceData(customerId: string): CustomerComplianc
     documentationStatus: detail.documentationStatus,
     nextPepReviewDate: detail.pepNextReviewDate,
     nextPepReviewLabel: formatDateLabel(detail.pepNextReviewDate),
+    lastPepReviewLabel: formatDateLabel(detail.pepLastReviewDate),
   };
 }

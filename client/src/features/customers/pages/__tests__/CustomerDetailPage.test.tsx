@@ -25,7 +25,6 @@ const mockedUseTradesContext = vi.mocked(useTradesContext);
 
 // Use a customer ID that exists in investors.json so the page renders
 const VALID_CUSTOMER_ID = '1001'; // Sirius Kapital AS
-const INVALID_CUSTOMER_ID = '9999'; // Does not exist in investors.json
 
 const sampleComplianceData: CustomerComplianceData = {
   customerId: VALID_CUSTOMER_ID,
@@ -36,6 +35,7 @@ const sampleComplianceData: CustomerComplianceData = {
   documentationStatus: 'Komplett',
   nextPepReviewDate: '2026-11-30',
   nextPepReviewLabel: '30.11.2026',
+  lastPepReviewLabel: '30.11.2025',
 };
 
 describe('CustomerDetailPage — Compliance Summary card', () => {
@@ -59,21 +59,20 @@ describe('CustomerDetailPage — Compliance Summary card', () => {
       expect(screen.getByText('Compliance')).toBeInTheDocument();
     });
 
-    it('displays PEP status value', () => {
+    it('displays PEP status as "Ikke PEP" when pepStatus is Nei', () => {
       render(<CustomerDetailPage customerId={VALID_CUSTOMER_ID} />);
-      // The compliance card has a PEP-status row with value 'Nei'
-      const compliancePepDds = screen.getAllByText('Nei');
-      expect(compliancePepDds.length).toBeGreaterThanOrEqual(1);
+      expect(screen.getByText('Ikke PEP')).toBeInTheDocument();
     });
 
-    it('displays AML risk level', () => {
+    it('displays AML risk level with "risiko" suffix', () => {
       render(<CustomerDetailPage customerId={VALID_CUSTOMER_ID} />);
-      expect(screen.getByText('Lav')).toBeInTheDocument();
+      expect(screen.getByText(/Lav risiko/)).toBeInTheDocument();
     });
 
-    it('displays classification label with badge', () => {
+    it('displays AML value with ok CSS class for low risk', () => {
       render(<CustomerDetailPage customerId={VALID_CUSTOMER_ID} />);
-      expect(screen.getByText('Klar')).toBeInTheDocument();
+      const amlValue = screen.getByText(/Lav risiko/);
+      expect(amlValue).toHaveClass('cd-compliance-section__value--ok');
     });
 
     it('displays documentation status', () => {
@@ -83,35 +82,37 @@ describe('CustomerDetailPage — Compliance Summary card', () => {
 
     it('displays next PEP review date formatted as DD.MM.YYYY', () => {
       render(<CustomerDetailPage customerId={VALID_CUSTOMER_ID} />);
-      expect(screen.getByText('30.11.2026')).toBeInTheDocument();
+      expect(screen.getByText(/30\.11\.2026/)).toBeInTheDocument();
     });
 
-    it('renders correct badge CSS class for ok status', () => {
+    it('renders AML value with critical CSS class for high risk', () => {
+      mockedGetCustomerComplianceData.mockReturnValue({
+        ...sampleComplianceData,
+        amlRiskLevel: 'Høy',
+      });
       render(<CustomerDetailPage customerId={VALID_CUSTOMER_ID} />);
-      const badge = screen.getByText('Klar');
-      expect(badge).toHaveClass('status-badge', 'status-badge--ok');
+      const amlValue = screen.getByText(/Høy risiko/);
+      expect(amlValue).toHaveClass('cd-compliance-section__value--critical');
     });
 
-    it('renders correct badge CSS class for critical status', () => {
+    it('renders PEP review expiry flag when classificationStatus is pep-forfalt', () => {
       mockedGetCustomerComplianceData.mockReturnValue({
         ...sampleComplianceData,
         classificationStatus: 'pep-forfalt',
         classificationLabel: 'PEP forfalt',
       });
       render(<CustomerDetailPage customerId={VALID_CUSTOMER_ID} />);
-      const badge = screen.getByText('PEP forfalt');
-      expect(badge).toHaveClass('status-badge', 'status-badge--critical');
+      expect(screen.getByText(/forfalt/)).toBeInTheDocument();
     });
 
-    it('renders correct badge CSS class for warning status', () => {
+    it('renders PEP "forfaller snart" flag when classificationStatus is pep-forfaller-snart', () => {
       mockedGetCustomerComplianceData.mockReturnValue({
         ...sampleComplianceData,
         classificationStatus: 'pep-forfaller-snart',
         classificationLabel: 'PEP forfaller snart',
       });
       render(<CustomerDetailPage customerId={VALID_CUSTOMER_ID} />);
-      const badge = screen.getByText('PEP forfaller snart');
-      expect(badge).toHaveClass('status-badge', 'status-badge--warning');
+      expect(screen.getByText(/forfaller snart/)).toBeInTheDocument();
     });
   });
 
@@ -130,29 +131,29 @@ describe('CustomerDetailPage — Compliance Summary card', () => {
       expect(screen.getByText('Ingen compliancedata tilgjengelig')).toBeInTheDocument();
     });
 
-    it('does not display the "Se compliance-detaljer" link', () => {
+    it('does not display the "Se detaljer" link', () => {
       render(<CustomerDetailPage customerId={VALID_CUSTOMER_ID} />);
-      expect(screen.queryByText(/Se compliance-detaljer/)).not.toBeInTheDocument();
+      expect(screen.queryByText(/Se detaljer/)).not.toBeInTheDocument();
     });
   });
 
   /**
    * Validates: Requirements 2.1, 2.2
-   * Tests that the "Se compliance-detaljer" link is present and navigates correctly.
+   * Tests that the "Se detaljer" link is present and navigates correctly.
    */
   describe('compliance link navigation', () => {
     beforeEach(() => {
       mockedGetCustomerComplianceData.mockReturnValue(sampleComplianceData);
     });
 
-    it('displays the "Se compliance-detaljer" link when data exists', () => {
+    it('displays the "Se detaljer" link when data exists', () => {
       render(<CustomerDetailPage customerId={VALID_CUSTOMER_ID} />);
-      expect(screen.getByText(/Se compliance-detaljer/)).toBeInTheDocument();
+      expect(screen.getByText(/Se detaljer/)).toBeInTheDocument();
     });
 
     it('navigates to #rapporter/investorer when clicking the link', () => {
       render(<CustomerDetailPage customerId={VALID_CUSTOMER_ID} />);
-      const link = screen.getByText(/Se compliance-detaljer/);
+      const link = screen.getByText(/Se detaljer/);
       fireEvent.click(link);
       expect(window.location.hash).toBe('#rapporter/investorer');
     });
