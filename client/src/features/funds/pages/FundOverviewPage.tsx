@@ -65,6 +65,17 @@ type ShareholderSortKey =
 
 const TABLE_PAGE_SIZE = 10;
 const TOP_METRIC_IDS_TO_HIDE = new Set(['net-flow-ratio', 'dividend-yield']);
+const PERIOD_RESULT_METRIC_IDS_WITHOUT_DELTA = new Set([
+  'net-subscriptions',
+  'net-flow-ratio',
+  'return',
+  'dividends',
+  'return-total',
+  'return-annualized',
+  'return-best-fund',
+  'return-weakest-fund',
+  'return-drawdown',
+]);
 const FUND_CHART_PRIMARY = '#ff7415';
 const FUND_CHART_MUTED = '#6b7280';
 const FUND_CHART_NET = '#1f2937';
@@ -406,13 +417,29 @@ function MetricDelta({ delta }: { delta?: FundOverviewMetric['delta'] }) {
   );
 }
 
+function getVisibleMetricDelta(metric: FundOverviewMetric) {
+  return PERIOD_RESULT_METRIC_IDS_WITHOUT_DELTA.has(metric.id) ? undefined : metric.delta;
+}
+
 function MetricCard({ metric }: { metric: FundOverviewMetric }) {
+  const hasRows = Boolean(metric.rows?.length);
+  const detailId = `fund-overview-${metric.id}-details`;
+
   return (
-    <article className="fund-overview__metric-card">
+    <article
+      className={`fund-overview__metric-card${hasRows ? ' fund-overview__metric-card--has-details' : ''}`}
+      tabIndex={hasRows ? 0 : undefined}
+      aria-describedby={hasRows ? detailId : undefined}
+    >
       <p className="fund-overview__metric-label">{metric.label}</p>
       <p className="fund-overview__metric-value">{formatMetricValue(metric.value, metric.format)}</p>
-      <MetricDelta delta={metric.delta} />
+      <MetricDelta delta={getVisibleMetricDelta(metric)} />
       <p className="fund-overview__metric-meta">{metric.meta}</p>
+      {hasRows ? (
+        <div id={detailId} className="fund-overview__metric-popover" role="tooltip">
+          <MetricRowList metric={metric} />
+        </div>
+      ) : null}
     </article>
   );
 }
@@ -450,7 +477,7 @@ function SectionKpiGrid({
           ) : (
             <>
               <p className="fund-overview__section-kpi-value">{formatMetricValue(metric.value, metric.format)}</p>
-              <MetricDelta delta={metric.delta} />
+              <MetricDelta delta={getVisibleMetricDelta(metric)} />
               <p className="fund-overview__section-kpi-meta">{metric.meta}</p>
             </>
           )}

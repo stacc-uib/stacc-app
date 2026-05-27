@@ -123,6 +123,8 @@ type GroupDefinition = {
   instruments: InstrumentDefinition[];
 };
 
+type TopMetricRowsById = Partial<Record<string, NonNullable<FundOverviewMetric['rows']>>>;
+
 const shareClassOptions: FundOverviewSelectOption[] = [
   { id: 'A', label: 'Andelsklasse A' },
   { id: 'B', label: 'Andelsklasse B' },
@@ -960,6 +962,127 @@ function createFlowContributorRows(
     }));
 }
 
+function getShareholderCountForInstruments(holdingsSnapshot: HoldingsSnapshot, instrumentIds: Set<string>) {
+  const unitsByInvestor = new Map<string, number>();
+
+  for (const [compositeKey, units] of holdingsSnapshot.unitsByInvestorInstrument.entries()) {
+    const [customerId, instrumentId] = compositeKey.split(investorInstrumentSeparator);
+
+    if (!instrumentIds.has(instrumentId)) {
+      continue;
+    }
+
+    unitsByInvestor.set(customerId, (unitsByInvestor.get(customerId) ?? 0) + units);
+  }
+
+  return Array.from(unitsByInvestor.values()).filter((units) => units > 0).length;
+}
+
+function createTopMetricFundRows(
+  selectedInstruments: InstrumentDefinition[],
+  startHoldings: HoldingsSnapshot,
+  endHoldings: HoldingsSnapshot,
+  periodTrades: NormalizedTrade[],
+  periodStartDate: string,
+  asOfDate: string,
+): TopMetricRowsById {
+  const dateLabel = formatDateLabel(asOfDate);
+  const fundRows = getBreakdownGroupDefinitions('fund', selectedInstruments).map((group) => {
+    const instrumentIds = new Set(group.instruments.map((instrument) => instrument.instrumentId));
+    const startAggregate = getAggregatedNavAtDate(periodStartDate, group.instruments, startHoldings);
+    const endAggregate = getAggregatedNavAtDate(asOfDate, group.instruments, endHoldings);
+    const fundTrades = periodTrades.filter((trade) => instrumentIds.has(trade.instrumentId));
+    const grossBuy = sum(
+      fundTrades
+        .filter((trade) => trade.transactionType === 'Kjop')
+        .map((trade) => Math.max(trade.amount, 0)),
+    );
+    const grossSell = sum(
+      fundTrades
+        .filter((trade) => trade.transactionType === 'Salg')
+        .map((trade) => Math.max(trade.amount, 0)),
+    );
+    const dividends = sum(
+      fundTrades
+        .filter((trade) => trade.transactionType === 'Utbytte')
+        .map((trade) => trade.amount),
+    );
+    const netSubscriptions = grossBuy - grossSell;
+
+    return {
+      id: group.id,
+      label: group.label,
+      aum: endAggregate.totalAum,
+      shareholders: getShareholderCountForInstruments(endHoldings, instrumentIds),
+      netSubscriptions,
+      netFlowRatio: endAggregate.totalAum > 0 ? netSubscriptions / endAggregate.totalAum : 0,
+      periodReturn: startAggregate.nav > 0 ? endAggregate.nav / startAggregate.nav - 1 : 0,
+      closingNav: endAggregate.nav,
+      dividends,
+      dividendYield: startAggregate.totalAum > 0 ? dividends / startAggregate.totalAum : 0,
+    };
+  });
+
+  return {
+    aum: fundRows.map((row) => ({
+      id: row.id,
+      label: row.label,
+      value: row.aum,
+      format: 'currency',
+      meta: `Per ${dateLabel}`,
+    })),
+    shareholders: fundRows.map((row) => ({
+      id: row.id,
+      label: row.label,
+      value: row.shareholders,
+      format: 'number',
+      meta: `Per ${dateLabel}`,
+    })),
+    'net-subscriptions': fundRows.map((row) => ({
+      id: row.id,
+      label: row.label,
+      value: row.netSubscriptions,
+      format: 'currency',
+      meta: 'Netto kapitalflyt',
+    })),
+    'net-flow-ratio': fundRows.map((row) => ({
+      id: row.id,
+      label: row.label,
+      value: row.netFlowRatio,
+      format: 'percent',
+      meta: 'Nettoflyt av kapital',
+    })),
+    'return': fundRows.map((row) => ({
+      id: row.id,
+      label: row.label,
+      value: row.periodReturn,
+      format: 'percent',
+      meta: 'Fra periodestart',
+    })),
+    'closing-nav': fundRows.map((row) => ({
+      id: row.id,
+      label: row.label,
+      value: row.closingNav,
+      format: 'nav',
+      meta: `Per ${dateLabel}`,
+    })),
+    dividends: fundRows.map((row) => ({
+      id: row.id,
+      label: row.label,
+      value: row.dividends,
+      format: 'currency',
+      meta: 'Utbetalt i perioden',
+    })),
+    'dividend-yield': fundRows.map((row) => ({
+      id: row.id,
+      label: row.label,
+      value: row.dividendYield,
+      format: 'percent',
+      meta: 'Utbytteyield',
+    })),
+  };
+}
+
 function createMetrics(
   startAum: number,
   aum: number,
@@ -972,6 +1095,7 @@ function createMetrics(
   dividends: number,
   asOfDate: string,
   periodStartDate: string,
+  topMetricRows: TopMetricRowsById = {},
 ): FundOverviewMetric[] {
   const dateLabel = formatDateLabel(asOfDate);
   const rangeLabel = getRangeLabel(periodStartDate, asOfDate);
@@ -991,6 +1115,7 @@ function createMetrics(
         direction: getDeltaDirection(aum - startAum),
         label: 'Fra periodestart',
       },
+      topMetricRows.aum,
     ),
     createMetric(
       'shareholders',
@@ -1004,6 +1129,7 @@ function createMetrics(
         direction: getDeltaDirection(shareholders - startShareholders),
         label: 'Fra periodestart',
       },
+      topMetricRows.shareholders,
     ),
     createMetric(
       'net-subscriptions',
@@ -1017,6 +1143,7 @@ function createMetrics(
         direction: getDeltaDirection(netSubscriptions),
         label: 'Tegninger minus innløsninger',
       },
+      topMetricRows['net-subscriptions'],
     ),
     createMetric(
       'net-flow-ratio',
@@ -1030,6 +1157,7 @@ function createMetrics(
         direction: getDeltaDirection(netFlowRatio),
         label: 'I perioden',
       },
+      topMetricRows['net-flow-ratio'],
     ),
     createMetric(
       'return',
@@ -1043,19 +1171,21 @@ function createMetrics(
         direction: getDeltaDirection(periodReturn),
         label: 'Fra periodestart',
       },
+      topMetricRows['return'],
     ),
     createMetric(
       'closing-nav',
-      'Siste NAV',
+      'Siste Total NAV',
       closingNav,
       'nav',
-      `Siste tilgjengelige NAV per ${dateLabel}`,
+      `Siste totale NAV per ${dateLabel}`,
       {
         value: closingNav - startNav,
         format: 'nav',
         direction: getDeltaDirection(closingNav - startNav),
         label: 'Fra periodestart',
       },
+      topMetricRows['closing-nav'],
     ),
     createMetric(
       'dividends',
@@ -1069,6 +1199,7 @@ function createMetrics(
         direction: getDeltaDirection(dividends),
         label: 'I perioden',
       },
+      topMetricRows.dividends,
     ),
     createMetric(
       'dividend-yield',
@@ -1078,6 +1209,8 @@ function createMetrics(
       startAum > 0
         ? 'Utbytte delt på forvaltet kapital ved periodestart'
         : `Utbytte i perioden ${rangeLabel}`,
+      undefined,
+      topMetricRows['dividend-yield'],
     ),
   ];
 }
@@ -1943,6 +2076,14 @@ export function getFundOverviewData(filters: FundOverviewFilters): FundOverviewS
   );
   const netSubscriptions = grossBuyTotal - grossSellTotal;
   const periodReturn = startAggregate.nav > 0 ? endAggregate.nav / startAggregate.nav - 1 : 0;
+  const topMetricRows = createTopMetricFundRows(
+    selectedInstruments,
+    startHoldings,
+    endHoldings,
+    periodTrades,
+    normalizedPeriodStartDate,
+    asOfDate,
+  );
   const navSection = createNavSection(
     buckets,
     normalizedPeriodStartDate,
@@ -2017,6 +2158,7 @@ export function getFundOverviewData(filters: FundOverviewFilters): FundOverviewS
       dividends,
       asOfDate,
       normalizedPeriodStartDate,
+      topMetricRows,
     ),
     navSection,
     flowSection,
