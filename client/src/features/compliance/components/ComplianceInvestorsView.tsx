@@ -197,9 +197,10 @@ function ComplianceInvestorsView({ pageData }: ComplianceInvestorsViewProps) {
   }
 
   /**
-   * Bekreftet av bruker: registrerer AML/PEP-kontrollen som gjennomført.
-   * Oppdaterer reviewStatus og kontrolldatoer.
-   * Påvirker IKKE dokumentasjonsstatus — det er en separat oppgave.
+   * Bekreftet av bruker: registrerer KYC/AML-gjennomgangen som fullført.
+   * Oppdaterer reviewStatus, kontrolldatoer, AML-risikonivå og dokumentasjonsstatus.
+   * En fullført gjennomgang bekrefter at alle KYC-krav er oppfylt og at
+   * AML-risikovurderingen er vurdert og tilbakestilt.
    */
   function handleConfirmReview(customerId: string) {
     setRows((prev) =>
@@ -211,6 +212,8 @@ function ComplianceInvestorsView({ pageData }: ComplianceInvestorsViewProps) {
               lastReviewLabel: '30.03.2026',
               nextReviewLabel: '30.03.2027',
               reviewStatus: 'Planlagt',
+              amlRiskLevel: 'Lav',
+              documentationStatus: 'Komplett',
             },
       ),
     );
@@ -390,25 +393,19 @@ function ComplianceInvestorsView({ pageData }: ComplianceInvestorsViewProps) {
                               <div className="aml-review-popover__header">
                                 <div>
                                   <p className="aml-review-popover__eyebrow">
-                                    Bekreft kontrollregistrering
+                                    Bekreft KYC/AML-gjennomgang
                                   </p>
                                   <p style={{ margin: '0 0 0.3rem', fontWeight: 600, color: '#111827' }}>
                                     {row.investorName}
                                   </p>
                                   <p style={{ margin: 0, fontSize: '0.85rem', color: '#4b5563', lineHeight: 1.5 }}>
-                                    AML/PEP-kontrollen registreres som gjennomført.
-                                    Siste kontroll settes til <strong>30.03.2026</strong> og
-                                    neste frist til <strong>30.03.2027</strong>.
+                                    Registrerer fullført gjennomgang. Følgende oppdateres:
                                   </p>
-                                  {row.documentationStatus !== 'Komplett' && (
-                                    <p style={{ margin: '0.5rem 0 0', fontSize: '0.82rem', color: '#92400e' }}>
-                                      Merk: dokumentasjonen er{' '}
-                                      {row.documentationStatus === 'Mangler dokumentasjon'
-                                        ? 'ikke registrert (KYC mangler)'
-                                        : 'utdatert (KYC må fornyes)'}{' '}
-                                      og må følges opp separat.
-                                    </p>
-                                  )}
+                                  <ul style={{ margin: '0.4rem 0 0', paddingLeft: '1.1rem', fontSize: '0.85rem', color: '#4b5563', lineHeight: 1.7 }}>
+                                    <li>Kontrolldato settes til <strong>30.03.2026</strong>, neste frist <strong>30.03.2027</strong></li>
+                                    <li>AML-risikonivå bekreftes som <strong>Lav</strong></li>
+                                    <li>KYC-dokumentasjon bekreftes som <strong>Komplett</strong></li>
+                                  </ul>
                                 </div>
 
                                 <div style={{ display: 'flex', gap: '0.5rem', flexShrink: 0, alignItems: 'flex-start' }}>
