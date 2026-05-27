@@ -3,38 +3,38 @@ import type { ComplianceCalendarEvent } from '../types/compliance';
 export const complianceCalendarStaticEvents: ComplianceCalendarEvent[] = [
   {
     id: 'calendar-1',
-    title: 'Kvartalsrapport Q1 2026 til Finanstilsynet',
+    title: 'Kvartalsrapport Q2 2026 til Finanstilsynet',
     category: 'finanstilsynet',
-    date: '2026-04-15',
-    dateLabel: '15. apr 2026',
+    date: '2026-07-15',
+    dateLabel: '15. jul 2026',
     summary:
       'Frist for ferdigstillelse og innsending av kvartalsrapport til Finanstilsynet.',
   },
   {
     id: 'calendar-2',
-    title: 'Kontroll av skatteeksport',
-    category: 'skatt',
-    date: '2026-04-28',
-    dateLabel: '28. apr 2026',
+    title: 'Halvårsrapport 2026 — intern gjennomgang',
+    category: 'finanstilsynet',
+    date: '2026-08-12',
+    dateLabel: '12. aug 2026',
     summary:
-      'Siste kvalitetssjekk av årsdata og eksport mot Skattemyndighetene.',
+      'Intern gjennomgang og kvalitetskontroll av halvårsrapporten før innsending.',
   },
   {
     id: 'calendar-3',
-    title: 'Årsrapportering til Skattemyndighetene',
+    title: 'Skatteeksport halvår 2026',
     category: 'skatt',
-    date: '2026-05-05',
-    dateLabel: '05. mai 2026',
+    date: '2026-08-28',
+    dateLabel: '28. aug 2026',
     summary:
-      'Planlagt innsending av skatterapportering for foregående rapporteringsår.',
+      'Eksport og innsending av halvårsdata til Skattemyndighetene.',
   },
   {
     id: 'calendar-4',
     title: 'Oppfølgingsmøte med Finanstilsynet',
     category: 'finanstilsynet',
-    date: '2026-05-12',
-    dateLabel: '12. mai 2026',
+    date: '2026-09-10',
+    dateLabel: '10. sep 2026',
     summary:
-      'Internt møtested for gjennomgang av åpne funn og dokumentasjon.',
+      'Gjennomgang av åpne funn fra forrige tilsynsrunde og status på dokumentasjon.',
   },
 ];

@@ -209,8 +209,8 @@ function ComplianceInvestorsView({ pageData }: ComplianceInvestorsViewProps) {
           ? r
           : {
               ...r,
-              lastReviewLabel: '30.03.2026',
-              nextReviewLabel: '30.03.2027',
+              lastReviewLabel: '27.05.2026',
+              nextReviewLabel: '27.05.2027',
               reviewStatus: 'Planlagt',
               amlRiskLevel: 'Lav',
               documentationStatus: 'Komplett',
@@ -402,7 +402,7 @@ function ComplianceInvestorsView({ pageData }: ComplianceInvestorsViewProps) {
                                     Registrerer fullført gjennomgang. Følgende oppdateres:
                                   </p>
                                   <ul style={{ margin: '0.4rem 0 0', paddingLeft: '1.1rem', fontSize: '0.85rem', color: '#4b5563', lineHeight: 1.7 }}>
-                                    <li>Kontrolldato settes til <strong>30.03.2026</strong>, neste frist <strong>30.03.2027</strong></li>
+                                    <li>Kontrolldato settes til <strong>27.05.2026</strong>, neste frist <strong>27.05.2027</strong></li>
                                     <li>AML-risikonivå bekreftes som <strong>Lav</strong></li>
                                     <li>KYC-dokumentasjon bekreftes som <strong>Komplett</strong></li>
                                   </ul>

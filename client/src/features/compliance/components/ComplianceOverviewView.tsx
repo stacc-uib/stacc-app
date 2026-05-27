@@ -54,7 +54,7 @@ function ComplianceOverviewView({ pageData, onOpenSubpage }: ComplianceOverviewV
   );
 
   const [activeMonthIndex, setActiveMonthIndex] = useState(0);
-  const activeMonth = availableMonths[activeMonthIndex] ?? toMonthValue('2026-04-01');
+  const activeMonth = availableMonths[activeMonthIndex] ?? toMonthValue('2026-06-01');
 
   const monthEvents = pageData.calendar.events.filter((e) => {
     const m = toMonthValue(e.date);

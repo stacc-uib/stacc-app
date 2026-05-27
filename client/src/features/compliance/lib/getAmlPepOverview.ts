@@ -8,7 +8,7 @@ type InvestorRecord = {
   name: string;
 };
 function getReviewStatus(nextReviewDate: string): AmlPepFollowUpRow['reviewStatus'] {
-  const today = new Date('2026-03-30');
+  const today = new Date('2026-05-27');
   const reviewDate = new Date(nextReviewDate);
   const diffInDays = Math.ceil((reviewDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
 

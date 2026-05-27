@@ -63,7 +63,7 @@ function TradesPage() {
   const [direction, setDirection] = useState<TradeDirection>('kjop');
   const [selectedFundId, setSelectedFundId] = useState('escali-global');
   const [selectedClassId, setSelectedClassId] = useState<'A' | 'B' | 'C'>('C');
-  const [tradeDate, setTradeDate] = useState('2026-04-01');
+  const [tradeDate, setTradeDate] = useState('2026-05-27');
   const [priceInput, setPriceInput] = useState('');
   const [unitsInput, setUnitsInput] = useState('');
   const [amountInput, setAmountInput] = useState('');

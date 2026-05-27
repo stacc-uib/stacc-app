@@ -21,7 +21,7 @@ function getClassificationStatus(
   industryGroup: string | null,
   pepNextReviewDate: string,
 ): InvestorClassificationStatus {
-  const today = new Date('2026-03-30');
+  const today = new Date('2026-05-27');
   const reviewDate = new Date(pepNextReviewDate);
   const diffInDays = Math.ceil(
     (reviewDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24),
