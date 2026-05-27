@@ -10,4 +10,5 @@ export type CustomerComplianceData = {
   documentationStatus: 'Komplett' | 'Mangler oppdatering' | 'Mangler dokumentasjon';
   nextPepReviewDate: string;       // ISO format YYYY-MM-DD
   nextPepReviewLabel: string;      // Formatted DD.MM.YYYY
+  lastPepReviewLabel: string;      // Formatted DD.MM.YYYY
 };

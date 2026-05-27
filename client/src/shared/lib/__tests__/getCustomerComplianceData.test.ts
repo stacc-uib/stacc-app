@@ -93,16 +93,13 @@ describe('getCustomerComplianceData', () => {
 describe('Property 2: Classification consistency with existing logic', () => {
   // Re-implement the reference classification logic from getInvestorClassificationOverview.ts
   // since getClassificationStatus is not exported
-  type InvestorCategory = 'Professional' | 'Retail';
   type ClassificationStatus =
     | 'ok'
     | 'mangler-naering'
     | 'pep-forfaller-snart'
-    | 'pep-forfalt'
-    | 'ikke-profesjonell';
+    | 'pep-forfalt';
 
   function referenceGetClassificationStatus(
-    investorCategory: InvestorCategory,
     industryGroup: string | null,
     pepNextReviewDate: string,
   ): ClassificationStatus {
@@ -114,10 +111,6 @@ describe('Property 2: Classification consistency with existing logic', () => {
 
     if (!industryGroup) {
       return 'mangler-naering';
-    }
-
-    if (investorCategory !== 'Professional') {
-      return 'ikke-profesjonell';
     }
 
     if (diffInDays < 0) {
@@ -134,7 +127,6 @@ describe('Property 2: Classification consistency with existing logic', () => {
   // Build a set of customerIds that exist in BOTH investorComplianceDetails and investors.json
   const investors = require('../../../mocks/investors.json') as Array<{
     customerId: string;
-    category: InvestorCategory;
   }>;
 
   const investorByCustomerId = new Map(
@@ -158,10 +150,8 @@ describe('Property 2: Classification consistency with existing logic', () => {
         const detail = investorComplianceDetails.find(
           (d) => d.customerId === customerId,
         )!;
-        const investor = investorByCustomerId.get(customerId)!;
 
         const expectedStatus = referenceGetClassificationStatus(
-          investor.category,
           detail.industryGroup,
           detail.pepNextReviewDate,
         );
@@ -180,8 +170,7 @@ describe('Property 2: Classification consistency with existing logic', () => {
  * For any InvestorClassificationStatus value, the classificationLabel returned by
  * getCustomerComplianceData SHALL equal the corresponding Norwegian label:
  * 'ok' → 'Klar', 'mangler-naering' → 'Mangler næringsgruppe',
- * 'pep-forfaller-snart' → 'PEP forfaller snart', 'pep-forfalt' → 'PEP forfalt',
- * 'ikke-profesjonell' → 'Ikke-profesjonell'.
+ * 'pep-forfaller-snart' → 'PEP forfaller snart', 'pep-forfalt' → 'PEP forfalt'.
  *
  * **Validates: Requirements 5.2**
  */
@@ -191,7 +180,6 @@ describe('Property 3: Classification label mapping', () => {
     'mangler-naering': 'Mangler næringsgruppe',
     'pep-forfaller-snart': 'PEP forfaller snart',
     'pep-forfalt': 'PEP forfalt',
-    'ikke-profesjonell': 'Ikke-profesjonell',
   };
 
   // Build a lookup: for each classification status, collect customerIds that produce it

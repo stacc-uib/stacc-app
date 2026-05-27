@@ -1,5 +1,6 @@
 import type {
   CompliancePageData,
+  ComplianceWorkQueueFilter,
   ComplianceWorkQueueItem,
   ComplianceWorkQueueOverview,
 } from '../types/compliance';
@@ -15,125 +16,124 @@ function toPriorityRank(priority: ComplianceWorkQueueItem['priority']) {
   }
 }
 
-function formatClassificationStatus(status: string) {
-  return status.split('-').join(' ');
-}
-
-function getTaskTargetSubpageId(title: string) {
-  const normalizedTitle = title.toLowerCase();
-
-  if (normalizedTitle.includes('pep')) {
-    return 'investorer' as const;
-  }
-
-  if (normalizedTitle.includes('næring')) {
-    return 'investorer' as const;
-  }
-
-  if (normalizedTitle.includes('skatteeksport')) {
-    return 'rapportering' as const;
-  }
-
-  return 'oversikt' as const;
-}
-
 export function getComplianceWorkQueueOverview(
   source: Pick<
     CompliancePageData,
-    'overview' | 'amlPep' | 'reportingWorkspace' | 'investorClassification'
+    'amlPep' | 'reportingWorkspace' | 'investorClassification'
   >,
 ): ComplianceWorkQueueOverview {
   const items: ComplianceWorkQueueItem[] = [];
 
-  if (source.amlPep.rows[0]) {
-    const row = source.amlPep.rows[0];
+  // ── AML/PEP: ett aggregert element for alle investorer som trenger kontroll ──
+  // Viser totalt antall framfor én tilfeldig investor, og navigerer til
+  // investortabellen der brukeren kan håndtere alle i riktig rekkefølge.
+  const forfaltRows = source.amlPep.rows.filter((r) => r.reviewStatus === 'Forfalt');
+  const snartRows = source.amlPep.rows.filter((r) => r.reviewStatus === 'Forfaller snart');
+  const totalActionable = forfaltRows.length + snartRows.length;
+
+  if (totalActionable > 0) {
+    const priority = forfaltRows.length > 0 ? ('Kritisk' as const) : ('Høy' as const);
+    const earliestRow = forfaltRows[0] ?? snartRows[0];
+
+    const parts: string[] = [];
+    if (forfaltRows.length > 0)
+      parts.push(`${forfaltRows.length} forfalt`);
+    if (snartRows.length > 0)
+      parts.push(`${snartRows.length} forfaller snart`);
+
+    const highRiskCount = source.amlPep.rows.filter(
+      (r) => r.amlRiskLevel === 'Høy' && r.reviewStatus !== 'Planlagt',
+    ).length;
+
+    const filterTags: ComplianceWorkQueueFilter[] = ['alle', 'mine-saker'];
+    if (forfaltRows.length > 0) filterTags.push('kritiske');
+    else filterTags.push('denne-uken');
 
     items.push({
-      id: `queue-pep-${row.customerId}`,
-      title: `PEP-kontroll må vurderes for ${row.investorName}`,
+      id: 'queue-aml-pep',
+      title: `${totalActionable} investor${totalActionable > 1 ? 'er' : ''} krever AML/PEP-gjennomgang`,
       category: 'AML og PEP',
-      priority: row.reviewStatus === 'Forfalt' ? 'Kritisk' : 'Høy',
-      dueLabel: row.nextReviewLabel,
+      priority,
+      dueLabel: earliestRow.nextReviewLabel,
       owner: 'CCO',
-      actionLabel: 'Gjennomgå',
+      actionLabel: 'Gå til investorer',
       actionType: 'gjennomga',
       targetSubpageId: 'investorer',
-      customerId: row.customerId,
-      summary: `Status ${row.reviewStatus.toLowerCase()} med ${row.amlRiskLevel.toLowerCase()} risiko og dokumentasjon: ${row.documentationStatus.toLowerCase()}.`,
-      filterTags: [
-        'alle',
-        row.reviewStatus === 'Forfalt' ? 'kritiske' : 'denne-uken',
-        'mine-saker',
-      ],
+      summary: `${parts.join(', ')} — kontrollfrister krever oppfølging.${highRiskCount > 0 ? ` ${highRiskCount} av disse har høy AML-risiko.` : ''}`,
+      filterTags,
     });
   }
 
-  const blockedReport = source.reportingWorkspace.runs.find(
-    (run) => run.statusTone === 'warning' || run.statusTone === 'critical',
+  // ── Rapportering: blokkerte rapporter ────────────────────────────────────────
+  const checksById = new Map(
+    source.reportingWorkspace.validationChecks.map((c) => [c.id, c]),
   );
 
-  if (blockedReport) {
+  for (const run of source.reportingWorkspace.runs) {
+    if (run.statusTone === 'ok' || run.statusTone === 'neutral') continue;
+
+    const blockingChecks = run.checkIds
+      .map((id) => checksById.get(id))
+      .filter((c): c is NonNullable<typeof c> => c !== undefined)
+      .filter((c) => c.status === 'critical' || c.status === 'warning');
+
+    const priority = run.statusTone === 'critical' ? ('Kritisk' as const) : ('Høy' as const);
+
+    const filterTags: ComplianceWorkQueueFilter[] = ['alle', 'rapportering', 'mine-saker'];
+    if (run.statusTone === 'critical') filterTags.push('kritiske');
+
     items.push({
-      id: `queue-report-${blockedReport.id}`,
-      title: blockedReport.name,
+      id: `queue-report-${run.id}`,
+      title: run.name,
       category: 'Rapportering',
-      priority: 'Høy',
-      dueLabel: blockedReport.periodLabel,
-      owner: blockedReport.owner,
-      actionLabel: 'Fullfør',
+      priority,
+      dueLabel: run.periodLabel,
+      owner: run.owner,
+      actionLabel: 'Fullfør rapport',
       actionType: 'fullfor',
-      targetSubpageId: 'rapportering',
-      summary: blockedReport.nextAction,
-      filterTags: ['alle', 'denne-uken', 'mine-saker'],
+      targetSubpageId: 'oversikt',
+      summary: run.nextAction,
+      blockingNotes:
+        blockingChecks.length > 0
+          ? blockingChecks.map((c) => `${c.label} — ${c.detail}`)
+          : undefined,
+      filterTags,
     });
   }
 
-  if (source.investorClassification.rows[0]) {
-    const row = source.investorClassification.rows.find(
-      (entry) => entry.classificationStatus !== 'ok',
-    );
+  // ── Klassifisering: investorer med avvik i investorstatus ────────────────────
+  const classificationRow = source.investorClassification.rows.find(
+    (entry) => entry.classificationStatus !== 'ok',
+  );
 
-    if (row) {
-      items.push({
-        id: `queue-classification-${row.customerId}`,
-        title: `Oppdater investorstatus for ${row.investorName}`,
-        category: 'Klassifisering',
-        priority:
-          row.classificationStatus === 'ikke-profesjonell' ? 'Kritisk' : 'Medium',
-        dueLabel: row.pepNextReviewLabel,
-        owner: 'Drift',
-        actionLabel: 'Åpne sak',
-        actionType: 'apne-sak',
-        targetSubpageId: 'investorer',
-        customerId: row.customerId,
-        summary: `Investor er markert som ${row.investorCategory.toLowerCase()} med status ${formatClassificationStatus(row.classificationStatus)}.`,
-        filterTags: [
-          'alle',
-          row.classificationStatus === 'ikke-profesjonell'
-            ? 'kritiske'
-            : 'denne-uken',
-        ],
-      });
-    }
-  }
+  if (classificationRow) {
+    const isCritical = classificationRow.classificationStatus === 'pep-forfalt';
 
-  const openTask = source.overview.tasks.find((task) => task.status !== 'done');
+    const summaryText =
+      classificationRow.classificationStatus === 'mangler-naering'
+        ? 'Næringsgruppe mangler — påkrevd for rapportering til Finanstilsynet.'
+        : classificationRow.classificationStatus === 'pep-forfalt'
+          ? `PEP-kontrollen er forfalt. Neste planlagte gjennomgang: ${classificationRow.pepNextReviewLabel}.`
+          : classificationRow.classificationStatus === 'pep-forfaller-snart'
+            ? `PEP-kontrollen forfaller snart. Planlegg gjennomgang innen ${classificationRow.pepNextReviewLabel}.`
+            : 'Investorklassifiseringen må gjennomgås.';
 
-  if (openTask) {
     items.push({
-      id: `queue-task-${openTask.id}`,
-      title: openTask.title,
-      category: 'Oppgaver',
-      priority: 'Medium',
-      dueLabel: openTask.dueLabel,
-      owner: openTask.owner,
-      actionLabel: 'Gjennomgå',
-      actionType: 'gjennomga',
-      targetSubpageId: getTaskTargetSubpageId(openTask.title),
-      summary: `Oppgaven er ${
-        openTask.status === 'in-progress' ? 'pågående' : 'ikke startet'
-      } og ligger i den operative oppfølgingslisten.`,
-      filterTags: ['alle', 'mine-saker'],
+      id: `queue-classification-${classificationRow.customerId}`,
+      title: `Oppdater investorstatus for ${classificationRow.investorName}`,
+      category: 'Investorer',
+      priority: isCritical ? 'Kritisk' : 'Medium',
+      dueLabel: classificationRow.pepNextReviewLabel,
+      owner: 'Drift',
+      actionLabel: 'Gå til investor',
+      actionType: 'apne-sak',
+      targetSubpageId: 'investorer',
+      customerId: classificationRow.customerId,
+      summary: summaryText,
+      filterTags: [
+        'alle',
+        isCritical ? 'kritiske' : 'denne-uken',
+      ],
     });
   }
 

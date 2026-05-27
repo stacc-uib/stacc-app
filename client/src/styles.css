@@ -1178,6 +1178,30 @@ textarea {
   overflow-wrap: anywhere;
 }
 
+.queue-card__blocking-list {
+  margin: 0.5rem 0 0;
+  padding: 0.5rem 0 0;
+  border-top: 1px solid rgba(17, 24, 39, 0.08);
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.queue-card__blocking-list li {
+  font-size: 0.82rem;
+  color: #92400e;
+  padding-left: 1rem;
+  position: relative;
+}
+
+.queue-card__blocking-list li::before {
+  content: '·';
+  position: absolute;
+  left: 0.25rem;
+  color: #d97706;
+}
+
 .queue-card__meta-row {
   display: flex;
   flex-wrap: wrap;
@@ -1330,14 +1354,15 @@ textarea {
 
 .compliance-customer-link {
   all: unset;
-  color: #2563eb;
-  text-decoration: underline;
+  color: #111827;
+  text-decoration: none;
   cursor: pointer;
   font: inherit;
 }
 
 .compliance-customer-link:hover {
-  color: #1d4ed8;
+  color: #2563eb;
+  text-decoration: underline;
 }
 
 .compliance-customer-link:focus-visible {
@@ -1416,6 +1441,7 @@ textarea {
 
 .trade-card {
   margin-top: 0;
+  padding: 1rem;
 }
 
 .trade-card--compact {
@@ -1427,23 +1453,23 @@ textarea {
   align-items: flex-start;
   justify-content: space-between;
   gap: 1rem;
-  margin-bottom: 1rem;
+  margin-bottom: 0.65rem;
 }
 
 .trade-field {
   display: flex;
   flex-direction: column;
-  gap: 0.45rem;
+  gap: 0.3rem;
   color: #374151;
-  font-size: 0.9rem;
+  font-size: 0.875rem;
   font-weight: 600;
 }
 
 .trade-field input,
 .trade-field select,
 .trade-field textarea {
-  min-height: 44px;
-  padding: 0.75rem 0.85rem;
+  min-height: 36px;
+  padding: 0.5rem 0.75rem;
   border: 1px solid rgba(17, 24, 39, 0.12);
   border-radius: 0.3rem;
   background: #fff;
@@ -1452,7 +1478,7 @@ textarea {
 }
 
 .trade-field textarea {
-  min-height: 112px;
+  min-height: 80px;
   resize: vertical;
 }
 
@@ -1514,7 +1540,7 @@ textarea {
   justify-content: space-between;
   gap: 1rem;
   width: 100%;
-  padding: 0.75rem 0.85rem;
+  padding: 0.55rem 0.75rem;
   border: 0;
   background: transparent;
   color: #111827;
@@ -1543,22 +1569,23 @@ textarea {
 
 .trade-toggle-group {
   display: inline-flex;
-  gap: 0.65rem;
-  padding: 0.35rem;
+  gap: 0.4rem;
+  padding: 0.25rem;
   border: 1px solid rgba(17, 24, 39, 0.08);
   border-radius: 0.3rem;
   background: #f8fafc;
 }
 
 .trade-toggle {
-  min-width: 112px;
-  min-height: 42px;
-  padding: 0.65rem 1rem;
+  min-width: 96px;
+  min-height: 32px;
+  padding: 0.35rem 0.9rem;
   border: 0;
-  border-radius: 0.25rem;
+  border-radius: 0.22rem;
   background: transparent;
   color: #374151;
   font-weight: 700;
+  font-size: 0.875rem;
   cursor: pointer;
 }
 
@@ -1570,22 +1597,22 @@ textarea {
 .trade-form-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 0.95rem;
-  margin-top: 1rem;
+  gap: 0.65rem;
+  margin-top: 0.65rem;
 }
 
 .trade-metric-row {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 0.75rem;
-  margin-top: 1rem;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0.5rem;
+  margin-top: 0.65rem;
 }
 
 .trade-metric {
   display: flex;
   flex-direction: column;
-  gap: 0.35rem;
-  padding: 0.9rem 1rem;
+  gap: 0.25rem;
+  padding: 0.55rem 0.75rem;
   border: 1px solid rgba(17, 24, 39, 0.08);
   border-radius: 0.3rem;
   background: #f8fafc;
@@ -1593,20 +1620,20 @@ textarea {
 
 .trade-metric__label {
   color: #6b7280;
-  font-size: 0.82rem;
+  font-size: 0.75rem;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.04em;
 }
 
 .trade-metric strong {
-  font-size: 1rem;
+  font-size: 0.92rem;
   color: #111827;
 }
 
 .trade-callout {
-  margin-top: 1rem;
-  padding: 1rem;
+  margin-top: 0.65rem;
+  padding: 0.65rem 0.85rem;
   border: 1px solid rgba(15, 118, 110, 0.14);
   border-radius: 0.3rem;
   background: #f0fdfa;
@@ -1619,35 +1646,36 @@ textarea {
 
 .trade-callout__title {
   margin: 0;
-  font-size: 0.98rem;
+  font-size: 0.875rem;
   color: #111827;
 }
 
 .trade-callout__body {
-  margin: 0.55rem 0 0;
+  margin: 0.3rem 0 0;
   color: #4b5563;
-  line-height: 1.55;
+  line-height: 1.45;
+  font-size: 0.875rem;
 }
 
 .trade-settlement {
-  margin-top: 1rem;
-  padding: 1rem;
+  margin-top: 0.65rem;
+  padding: 0.6rem 0.85rem;
   border: 1px solid rgba(17, 24, 39, 0.08);
   border-radius: 0.3rem;
   background: #f9fafb;
 }
 
 .trade-settlement__label {
-  margin: 0 0 0.8rem;
+  margin: 0 0 0.45rem;
   color: #111827;
-  font-size: 0.9rem;
+  font-size: 0.875rem;
   font-weight: 700;
 }
 
 .trade-settlement__options {
   display: flex;
   flex-wrap: wrap;
-  gap: 1rem;
+  gap: 0.75rem;
 }
 
 .trade-radio {
@@ -1658,14 +1686,14 @@ textarea {
 }
 
 .trade-field--textarea {
-  margin-top: 1rem;
+  margin-top: 0.65rem;
 }
 
 .trade-actions {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.75rem;
-  margin-top: 1rem;
+  gap: 0.65rem;
+  margin-top: 0.75rem;
 }
 
 .trade-actions .queue-action:disabled {
@@ -1676,7 +1704,7 @@ textarea {
 .trade-sidebar-card__content {
   display: flex;
   flex-direction: column;
-  gap: 0.9rem;
+  gap: 0.65rem;
 }
 
 .trade-sidebar-card--separated {
@@ -1691,8 +1719,8 @@ textarea {
 
 .trade-definition-list {
   display: grid;
-  grid-template-columns: 1fr;
-  gap: 0.9rem;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.55rem 1rem;
   margin: 0;
 }
 
@@ -1723,7 +1751,7 @@ textarea {
 }
 
 .trade-mini-card {
-  padding: 0.95rem 1rem;
+  padding: 0.6rem 0.85rem;
   border: 1px solid rgba(17, 24, 39, 0.08);
   border-radius: 0.3rem;
   background: #fff;

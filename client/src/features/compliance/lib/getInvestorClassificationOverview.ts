@@ -15,7 +15,6 @@ type InvestorRecord = {
 };
 
 function getClassificationStatus(
-  investorCategory: InvestorRecord['category'],
   industryGroup: InvestorClassificationRow['industryGroup'],
   pepNextReviewDate: string,
 ): InvestorClassificationStatus {
@@ -25,14 +24,8 @@ function getClassificationStatus(
     (reviewDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24),
   );
 
-  // Priority order must match frontend: mangler-naering before ikke-profesjonell
-  // so that missing industry is always surfaced regardless of category
   if (!industryGroup) {
     return 'mangler-naering';
-  }
-
-  if (investorCategory !== 'Professional') {
-    return 'ikke-profesjonell';
   }
 
   if (diffInDays < 0) {
@@ -47,7 +40,7 @@ function getClassificationStatus(
 }
 
 function toInvestorCategoryLabel(category: InvestorRecord['category']) {
-  return category === 'Professional' ? 'Profesjonell' : 'Ikke-profesjonell';
+  return category === 'Professional' ? 'Profesjonell' : 'Retail';
 }
 
 export function getInvestorClassificationOverview(): InvestorClassificationOverview {
@@ -69,7 +62,6 @@ export function getInvestorClassificationOverview(): InvestorClassificationOverv
       pepStatus: detail?.pepStatus ? 'Ja' : 'Nei',
       pepNextReviewLabel: formatDateLabel(pepNextReviewDate),
       classificationStatus: getClassificationStatus(
-        investor.category,
         industryGroup,
         pepNextReviewDate,
       ),
@@ -82,7 +74,7 @@ export function getInvestorClassificationOverview(): InvestorClassificationOverv
       (row) => row.investorCategory === 'Profesjonell',
     ).length,
     nonProfessionalInvestors: rows.filter(
-      (row) => row.investorCategory === 'Ikke-profesjonell',
+      (row) => row.investorCategory === 'Retail',
     ).length,
     missingIndustryGroup: rows.filter((row) => row.industryGroup === null).length,
     pepReviewOverdue: rows.filter(

@@ -1,4 +1,4 @@
-﻿import { useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import InvestorPicker from '../../../shared/components/InvestorPicker';
 import type { InvestorPickerItem } from '../../../shared/components/InvestorPicker';
 import type {
@@ -10,7 +10,7 @@ type InvestorClassificationSectionProps = {
   pageData: CompliancePageData;
 };
 
-type RegistryFilter = 'alle' | 'mangler-data' | 'pep-oppfolging' | 'ikke-profesjonelle';
+type RegistryFilter = 'alle' | 'mangler-data' | 'pep-oppfolging';
 
 type InvestorRegistryRow = {
   customerId: string;
@@ -31,20 +31,17 @@ const statusLabelByType: Record<InvestorClassificationStatus, string> = {
   'mangler-naering': 'Mangler næringsgruppe',
   'pep-forfaller-snart': 'PEP forfaller snart',
   'pep-forfalt': 'PEP forfalt',
-  'ikke-profesjonell': 'Ikke-profesjonell',
 };
 
 const filterOptions: { id: RegistryFilter; label: string }[] = [
   { id: 'alle', label: 'Alle investorer' },
   { id: 'mangler-data', label: 'Mangler data' },
   { id: 'pep-oppfolging', label: 'PEP-oppfølging' },
-  { id: 'ikke-profesjonelle', label: 'Ikke-profesjonelle' },
 ];
 
 function getStatusClassName(status: InvestorClassificationStatus) {
   switch (status) {
     case 'pep-forfalt':
-    case 'ikke-profesjonell':
       return 'status-badge status-badge--critical';
     case 'mangler-naering':
     case 'pep-forfaller-snart':
@@ -54,28 +51,15 @@ function getStatusClassName(status: InvestorClassificationStatus) {
   }
 }
 
-function getReportingReadinessClassName(
-  readiness: InvestorRegistryRow['reportingReadiness'],
-) {
-  return readiness === 'Klar'
-    ? 'status-badge status-badge--ok'
-    : 'status-badge status-badge--warning';
-}
-
 function toDateFromLabel(dateLabel: string) {
   const [day, month, year] = dateLabel.split('.').map(Number);
   return new Date(year, month - 1, day);
 }
 
 function deriveClassificationStatus(
-  investorClass: string,
   industryGroup: InvestorRegistryRow['industryGroup'],
   nextPepCheckLabel: string,
 ): InvestorClassificationStatus {
-  if (investorClass === 'Ikke-profesjonell') {
-    return 'ikke-profesjonell';
-  }
-
   if (!industryGroup) {
     return 'mangler-naering';
   }
@@ -86,20 +70,12 @@ function deriveClassificationStatus(
     (nextReviewDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24),
   );
 
-  if (diffInDays < 0) {
-    return 'pep-forfalt';
-  }
-
-  if (diffInDays <= 14) {
-    return 'pep-forfaller-snart';
-  }
-
+  if (diffInDays < 0) return 'pep-forfalt';
+  if (diffInDays <= 14) return 'pep-forfaller-snart';
   return 'ok';
 }
 
-function getRegistryRows(
-  pageData: CompliancePageData,
-): InvestorRegistryRow[] {
+function getRegistryRows(pageData: CompliancePageData): InvestorRegistryRow[] {
   const amlByCustomerId = new Map(
     pageData.amlPep.rows.map((row) => [row.customerId, row]),
   );
@@ -107,19 +83,13 @@ function getRegistryRows(
   return pageData.investorClassification.rows.map((row) => {
     const amlRow = amlByCustomerId.get(row.customerId);
     const complianceStatus = deriveClassificationStatus(
-      row.investorCategory,
       row.industryGroup,
       row.pepNextReviewLabel,
     );
     const missingFields: string[] = [];
 
-    if (!row.industryGroup) {
-      missingFields.push('Næring');
-    }
-
-    if (amlRow && amlRow.documentationStatus !== 'Komplett') {
-      missingFields.push('Dokumentasjon');
-    }
+    if (!row.industryGroup) missingFields.push('Næring');
+    if (amlRow && amlRow.documentationStatus !== 'Komplett') missingFields.push('Dokumentasjon');
 
     return {
       customerId: row.customerId,
@@ -139,93 +109,47 @@ function getRegistryRows(
 
 function toSeverityRank(status: InvestorClassificationStatus) {
   switch (status) {
-    case 'pep-forfalt':
-      return 0;
+    case 'pep-forfalt': return 0;
     case 'mangler-naering':
-    case 'pep-forfaller-snart':
-      return 1;
-    case 'ikke-profesjonell':
-      return 2;
-    default:
-      return 3;
+    case 'pep-forfaller-snart': return 1;
+    default: return 2;
   }
 }
 
-function InvestorClassificationSection({
-  pageData,
-}: InvestorClassificationSectionProps) {
+function InvestorClassificationSection({ pageData }: InvestorClassificationSectionProps) {
   const [activeFilter, setActiveFilter] = useState<RegistryFilter>('alle');
-  const [searchQuery, setSearchQuery] = useState('');
   const [selectedInvestorId, setSelectedInvestorId] = useState('');
   const rows = useMemo(() => getRegistryRows(pageData), [pageData]);
 
   const investorPickerItems: InvestorPickerItem[] = useMemo(
-    () =>
-      rows.map((row) => ({
-        id: row.customerId,
-        label: row.investorName,
-        secondaryLabel: row.customerId,
-      })),
+    () => rows.map((row) => ({ id: row.customerId, label: row.investorName, secondaryLabel: row.customerId })),
     [rows],
   );
 
   const visibleRows = useMemo(() => {
-    // When an investor is selected from the picker, show only that investor
     if (selectedInvestorId) {
       return rows.filter((row) => row.customerId === selectedInvestorId);
     }
 
-    const normalizedSearch = searchQuery.trim().toLowerCase();
-
     return rows
       .filter((row) => {
-        if (activeFilter === 'mangler-data' && row.missingFields.length === 0) {
-          return false;
+        if (activeFilter === 'mangler-data') return row.missingFields.length > 0;
+        if (activeFilter === 'pep-oppfolging') {
+          return row.complianceStatus === 'pep-forfalt' || row.complianceStatus === 'pep-forfaller-snart';
         }
-
-        if (
-          activeFilter === 'pep-oppfolging' &&
-          row.complianceStatus !== 'pep-forfalt' &&
-          row.complianceStatus !== 'pep-forfaller-snart'
-        ) {
-          return false;
-        }
-
-        if (
-          activeFilter === 'ikke-profesjonelle' &&
-          row.complianceStatus !== 'ikke-profesjonell'
-        ) {
-          return false;
-        }
-
-        if (!normalizedSearch) {
-          return true;
-        }
-
-        return [
-          row.investorName,
-          row.investorType,
-          row.investorClass,
-          row.industryGroup ?? '',
-        ].some((value) => value.toLowerCase().includes(normalizedSearch));
+        return true;
       })
-      .sort((left, right) => {
-        return (
-          toSeverityRank(left.complianceStatus) - toSeverityRank(right.complianceStatus) ||
-          left.investorName.localeCompare(right.investorName, 'nb')
-        );
-      });
-  }, [activeFilter, rows, searchQuery, selectedInvestorId]);
+      .sort((left, right) =>
+        toSeverityRank(left.complianceStatus) - toSeverityRank(right.complianceStatus) ||
+        left.investorName.localeCompare(right.investorName, 'nb'),
+      );
+  }, [activeFilter, rows, selectedInvestorId]);
 
   const missingDataCount = rows.filter((row) => row.missingFields.length > 0).length;
   const pepFollowUpCount = rows.filter(
-    (row) =>
-      row.complianceStatus === 'pep-forfalt' ||
-      row.complianceStatus === 'pep-forfaller-snart',
+    (row) => row.complianceStatus === 'pep-forfalt' || row.complianceStatus === 'pep-forfaller-snart',
   ).length;
-  const reportingReadyCount = rows.filter(
-    (row) => row.reportingReadiness === 'Klar',
-  ).length;
+  const reportingReadyCount = rows.filter((row) => row.reportingReadiness === 'Klar').length;
 
   return (
     <section className="feature-section feature-section--classification">
@@ -233,34 +157,33 @@ function InvestorClassificationSection({
         <div className="feature-section__header">
           <div>
             <p className="feature-section__eyebrow">Investorregister</p>
-            <h2 className="feature-section__title">Investorregister</h2>
+            <h2 className="feature-section__title">Klassifisering og etterlevelse</h2>
             <p className="feature-section__description">
-              Få oversikt over klassifisering, manglende data og PEP-oppfølging i én
-              arbeidsflate.
+              Oversikt over investorer, klassifisering, manglende data og PEP-oppfølging.
             </p>
           </div>
         </div>
 
         <div className="row g-3 compliance-registry__summary-grid">
-          <div className="col-12 col-md-6 col-xl-3">
+          <div className="col-6 col-xl-3">
             <article className="summary-card compliance-registry__summary-card h-100">
-              <p className="summary-card__label">Investorer i registeret</p>
+              <p className="summary-card__label">Investorer totalt</p>
               <p className="summary-card__value">{rows.length}</p>
             </article>
           </div>
-          <div className="col-12 col-md-6 col-xl-3">
+          <div className="col-6 col-xl-3">
             <article className="summary-card summary-card--warning compliance-registry__summary-card h-100">
               <p className="summary-card__label">Mangler opplysninger</p>
               <p className="summary-card__value">{missingDataCount}</p>
             </article>
           </div>
-          <div className="col-12 col-md-6 col-xl-3">
+          <div className="col-6 col-xl-3">
             <article className="summary-card summary-card--warning compliance-registry__summary-card h-100">
               <p className="summary-card__label">PEP-oppfølging</p>
               <p className="summary-card__value">{pepFollowUpCount}</p>
             </article>
           </div>
-          <div className="col-12 col-md-6 col-xl-3">
+          <div className="col-6 col-xl-3">
             <article className="summary-card summary-card--ok compliance-registry__summary-card h-100">
               <p className="summary-card__label">Klar for rapportering</p>
               <p className="summary-card__value">{reportingReadyCount}</p>
@@ -270,43 +193,38 @@ function InvestorClassificationSection({
 
         <div className="data-table-card compliance-registry__table-card">
           <div className="data-table-card__header compliance-registry__header">
-            <div>
-              <h3 className="data-table-card__title">Investorregister</h3>
-              <p className="data-table-card__description">
-                Oversikt over investorer, klassifisering og etterlevelsesstatus.
-              </p>
-            </div>
+            <div className="compliance-registry__toolbar">
+              <div className="queue-filter-row compliance-registry__filters">
+                {filterOptions.map((option) => (
+                  <button
+                    key={option.id}
+                    type="button"
+                    className={`queue-filter compliance-registry__filter${
+                      option.id === activeFilter ? ' queue-filter--active' : ''
+                    }`}
+                    onClick={() => {
+                      setActiveFilter(option.id);
+                      setSelectedInvestorId('');
+                    }}
+                  >
+                    {option.label}
+                  </button>
+                ))}
+              </div>
 
-            <label className="compliance-registry__search">
-              <span>Søk i registeret</span>
-              <InvestorPicker
-                items={investorPickerItems}
-                selectedId={selectedInvestorId}
-                onSelect={(id) => {
-                  setSelectedInvestorId(id);
-                  if (!id) setSearchQuery('');
-                }}
-                placeholder="Navn, type, kategori eller næring"
-                ariaLabel="Søk i investorregisteret"
-                emptyText="Ingen investorer matcher søket."
-              />
-            </label>
-          </div>
-
-          <div className="compliance-registry__toolbar">
-            <div className="queue-filter-row compliance-registry__filters">
-              {filterOptions.map((option) => (
-                <button
-                  key={option.id}
-                  type="button"
-                  className={`queue-filter compliance-registry__filter${
-                    option.id === activeFilter ? ' queue-filter--active' : ''
-                  }`}
-                  onClick={() => setActiveFilter(option.id)}
-                >
-                  {option.label}
-                </button>
-              ))}
+              <label className="compliance-registry__search">
+                <InvestorPicker
+                  items={investorPickerItems}
+                  selectedId={selectedInvestorId}
+                  onSelect={(id) => {
+                    setSelectedInvestorId(id);
+                    if (!id) setActiveFilter('alle');
+                  }}
+                  placeholder="Søk på investor..."
+                  ariaLabel="Søk i investorregisteret"
+                  emptyText="Ingen investorer matcher søket."
+                />
+              </label>
             </div>
 
             <p className="compliance-registry__results">
@@ -320,14 +238,10 @@ function InvestorClassificationSection({
                 <tr>
                   <th>Investor</th>
                   <th>Kundetype</th>
-                  <th>Kategori</th>
-                  <th>PEP</th>
-                  <th>Siste PEP-kontroll</th>
-                  <th>Neste PEP-kontroll</th>
                   <th>Næring</th>
-                  <th>Compliance status</th>
-                  <th>Manglende felt</th>
-                  <th>Rapporteringsklar</th>
+                  <th>PEP-kontroll</th>
+                  <th>Status</th>
+                  <th>Mangler</th>
                 </tr>
               </thead>
               <tbody>
@@ -344,15 +258,31 @@ function InvestorClassificationSection({
                         >
                           <strong>{row.investorName}</strong>
                         </button>
-                        <span>Kunde-ID {row.customerId}</span>
+                        <span>ID {row.customerId}</span>
                       </div>
                     </td>
                     <td>{row.investorType}</td>
-                    <td>{row.investorClass}</td>
-                    <td>{row.pepStatus}</td>
-                    <td>{row.lastPepCheckLabel}</td>
-                    <td>{row.nextPepCheckLabel}</td>
-                    <td>{row.industryGroup ?? 'Mangler'}</td>
+                    <td>
+                      {row.industryGroup ?? (
+                        <span className="status-badge status-badge--warning">Mangler</span>
+                      )}
+                    </td>
+                    <td>
+                      {row.pepStatus === 'Ja' ? (
+                        <div style={{ fontSize: '0.82rem', lineHeight: 1.5 }}>
+                          <div>
+                            <span style={{ color: '#9ca3af', fontSize: '0.7rem' }}>PEP · Forrige </span>
+                            {row.lastPepCheckLabel}
+                          </div>
+                          <div>
+                            <span style={{ color: '#9ca3af', fontSize: '0.7rem' }}>Neste </span>
+                            {row.nextPepCheckLabel}
+                          </div>
+                        </div>
+                      ) : (
+                        <span style={{ color: '#9ca3af', fontSize: '0.82rem' }}>—</span>
+                      )}
+                    </td>
                     <td>
                       <span className={getStatusClassName(row.complianceStatus)}>
                         {statusLabelByType[row.complianceStatus]}
@@ -371,19 +301,12 @@ function InvestorClassificationSection({
                         <span className="status-badge status-badge--ok">Komplett</span>
                       )}
                     </td>
-                    <td>
-                      <span
-                        className={getReportingReadinessClassName(row.reportingReadiness)}
-                      >
-                        {row.reportingReadiness}
-                      </span>
-                    </td>
                   </tr>
                 ))}
 
                 {visibleRows.length === 0 ? (
                   <tr>
-                    <td colSpan={10} className="compliance-registry__empty">
+                    <td colSpan={6} className="compliance-registry__empty">
                       Ingen investorer matcher søket eller det valgte filteret.
                     </td>
                   </tr>

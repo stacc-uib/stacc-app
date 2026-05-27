@@ -2,14 +2,9 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import '@testing-library/jest-dom/vitest';
-import InvestorClassificationSection from '../InvestorClassificationSection';
+import ComplianceInvestorsView from '../ComplianceInvestorsView';
 import type { CompliancePageData } from '../../types/compliance';
 
-/**
- * Builds a minimal CompliancePageData object suitable for rendering
- * InvestorClassificationSection. Only the `investorClassification` and
- * `amlPep` sections are consumed by the component; the rest are stubs.
- */
 function makePageData(
   overrides: {
     investorClassification?: Partial<CompliancePageData['investorClassification']>;
@@ -98,25 +93,21 @@ function makePageData(
   };
 }
 
-describe('InvestorClassificationSection — clickable investor names', () => {
+describe('ComplianceInvestorsView — clickable investor names', () => {
   beforeEach(() => {
     window.location.hash = '';
   });
 
   /**
    * Validates: Requirement 3.1
-   * Each investor name in the Investor_Registry SHALL be displayed as a
+   * Each investor name in the unified table SHALL be displayed as a
    * Customer_Link (interactive element).
    */
   it('renders investor names as <button> elements', () => {
-    const pageData = makePageData();
-    render(<InvestorClassificationSection pageData={pageData} />);
+    render(<ComplianceInvestorsView pageData={makePageData()} />);
 
-    const siriusButton = screen.getByRole('button', { name: /Sirius Kapital AS/i });
-    const nordlysButton = screen.getByRole('button', { name: /Nordlys Invest AS/i });
-
-    expect(siriusButton).toBeInTheDocument();
-    expect(nordlysButton).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /Sirius Kapital AS/i })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /Nordlys Invest AS/i })).toBeInTheDocument();
   });
 
   /**
@@ -124,42 +115,31 @@ describe('InvestorClassificationSection — clickable investor names', () => {
    * Clicking a Customer_Link SHALL navigate to #kundeoversikt/{customerId}.
    */
   it('navigates to #kundeoversikt/{customerId} when clicking an investor name', () => {
-    const pageData = makePageData();
-    render(<InvestorClassificationSection pageData={pageData} />);
+    render(<ComplianceInvestorsView pageData={makePageData()} />);
 
-    const siriusButton = screen.getByRole('button', { name: /Sirius Kapital AS/i });
-    fireEvent.click(siriusButton);
-
+    fireEvent.click(screen.getByRole('button', { name: /Sirius Kapital AS/i }));
     expect(window.location.hash).toBe('#kundeoversikt/1001');
   });
 
-  /**
-   * Validates: Requirement 3.2
-   * Verify navigation works for a different investor (second row).
-   */
   it('navigates to the correct hash for a different investor', () => {
-    const pageData = makePageData();
-    render(<InvestorClassificationSection pageData={pageData} />);
+    render(<ComplianceInvestorsView pageData={makePageData()} />);
 
-    const nordlysButton = screen.getByRole('button', { name: /Nordlys Invest AS/i });
-    fireEvent.click(nordlysButton);
-
+    fireEvent.click(screen.getByRole('button', { name: /Nordlys Invest AS/i }));
     expect(window.location.hash).toBe('#kundeoversikt/1002');
   });
 
   /**
    * Validates: Requirement 3.3
-   * The Customer_Link SHALL be visually distinguishable from plain text
-   * through the `compliance-customer-link` CSS class.
+   * The Customer_Link SHALL have the compliance-customer-link CSS class.
    */
   it('investor name buttons have the compliance-customer-link CSS class', () => {
-    const pageData = makePageData();
-    render(<InvestorClassificationSection pageData={pageData} />);
+    render(<ComplianceInvestorsView pageData={makePageData()} />);
 
-    const siriusButton = screen.getByRole('button', { name: /Sirius Kapital AS/i });
-    const nordlysButton = screen.getByRole('button', { name: /Nordlys Invest AS/i });
-
-    expect(siriusButton).toHaveClass('compliance-customer-link');
-    expect(nordlysButton).toHaveClass('compliance-customer-link');
+    expect(screen.getByRole('button', { name: /Sirius Kapital AS/i })).toHaveClass(
+      'compliance-customer-link',
+    );
+    expect(screen.getByRole('button', { name: /Nordlys Invest AS/i })).toHaveClass(
+      'compliance-customer-link',
+    );
   });
 });

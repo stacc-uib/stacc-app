@@ -162,18 +162,17 @@ function mockPhone(customerId: string): string {
   return `+47 ${digits.slice(0, 3)} ${digits.slice(3, 5)} ${digits.slice(5, 7)}`;
 }
 
-// ---- Compliance badge helper ----
-function getComplianceBadgeClass(status: string): string {
-  switch (status) {
-    case 'pep-forfalt':
-    case 'ikke-profesjonell':
-      return 'status-badge status-badge--critical';
-    case 'mangler-naering':
-    case 'pep-forfaller-snart':
-      return 'status-badge status-badge--warning';
-    default:
-      return 'status-badge status-badge--ok';
-  }
+// ---- Compliance helpers ----
+function amlValueClass(level: 'Lav' | 'Medium' | 'Høy'): string {
+  if (level === 'Høy') return 'cd-compliance-section__value--critical';
+  if (level === 'Medium') return 'cd-compliance-section__value--warning';
+  return 'cd-compliance-section__value--ok';
+}
+
+function docsValueClass(status: string): string {
+  if (status === 'Komplett') return 'cd-compliance-section__value--ok';
+  if (status === 'Mangler oppdatering') return 'cd-compliance-section__value--warning';
+  return 'cd-compliance-section__value--critical';
 }
 
 // ---- Main component ----
@@ -384,43 +383,81 @@ function CustomerDetailPage({ customerId }: { customerId: string }) {
           </div>
 
           <div className="cd-card">
-            <h3 className="cd-card-title">Compliance</h3>
-            {complianceData ? (
-              <>
-                <dl className="cd-info-list">
-                  <div className="cd-info-row">
-                    <dt>PEP-status</dt>
-                    <dd>{complianceData.pepStatus}</dd>
-                  </div>
-                  <div className="cd-info-row">
-                    <dt>AML-risikonivå</dt>
-                    <dd>{complianceData.amlRiskLevel}</dd>
-                  </div>
-                  <div className="cd-info-row">
-                    <dt>Klassifisering</dt>
-                    <dd>
-                      <span className={getComplianceBadgeClass(complianceData.classificationStatus)}>
-                        {complianceData.classificationLabel}
-                      </span>
-                    </dd>
-                  </div>
-                  <div className="cd-info-row">
-                    <dt>Dokumentasjon</dt>
-                    <dd>{complianceData.documentationStatus}</dd>
-                  </div>
-                  <div className="cd-info-row">
-                    <dt>Neste PEP-gjennomgang</dt>
-                    <dd>{complianceData.nextPepReviewLabel}</dd>
-                  </div>
-                </dl>
+            <div className="cd-section-header" style={{ marginBottom: complianceData ? '0.75rem' : '0' }}>
+              <h3 className="cd-card-title" style={{ margin: 0 }}>Compliance</h3>
+              {complianceData && (
                 <button
                   className="cd-back-btn"
-                  style={{ marginTop: '1rem', marginBottom: 0 }}
+                  style={{ marginBottom: 0, fontSize: '0.82rem' }}
                   onClick={() => { window.location.hash = '#rapporter/investorer'; }}
                 >
-                  Se compliance-detaljer →
+                  Se detaljer →
                 </button>
-              </>
+              )}
+            </div>
+
+            {complianceData ? (
+              <div className="cd-compliance-sections">
+
+                {/* Investorkategori (MiFID II) */}
+                <div className="cd-compliance-section">
+                  <p className="cd-compliance-section__label">Investorkategori</p>
+                  <p className="cd-compliance-section__value cd-compliance-section__value--neutral">
+                    {investor.category === 'Professional' ? 'Profesjonell' : 'Retail'}
+                  </p>
+                  <p className="cd-compliance-section__hint">MiFID II-klassifisering</p>
+                </div>
+
+                {/* Hvitvasking / AML */}
+                <div className="cd-compliance-section">
+                  <p className="cd-compliance-section__label">Hvitvasking (AML)</p>
+                  <p className={`cd-compliance-section__value ${amlValueClass(complianceData.amlRiskLevel)}`}>
+                    {complianceData.amlRiskLevel} risiko
+                    {complianceData.classificationStatus === 'mangler-naering' && (
+                      <span className="cd-compliance-section__flag cd-compliance-section__flag--warning">
+                        {' '}· næringsgruppe mangler
+                      </span>
+                    )}
+                  </p>
+                  <p className="cd-compliance-section__hint">
+                    Risikovurdering basert på kundeprofil og næring
+                  </p>
+                </div>
+
+                {/* PEP-kontroll */}
+                <div className="cd-compliance-section">
+                  <p className="cd-compliance-section__label">PEP-kontroll</p>
+                  <p className={`cd-compliance-section__value ${complianceData.pepStatus === 'Ja' ? 'cd-compliance-section__value--pep' : ''}`}>
+                    {complianceData.pepStatus === 'Ja' ? 'Politisk eksponert person' : 'Ikke PEP'}
+                  </p>
+                  <div className="cd-compliance-section__hint">
+                    {complianceData.pepStatus === 'Ja' && (
+                      <span>Siste kontroll: {complianceData.lastPepReviewLabel}<br /></span>
+                    )}
+                    <span>
+                      Neste kontroll: {complianceData.nextPepReviewLabel}
+                      {complianceData.classificationStatus === 'pep-forfalt' && (
+                        <span className="cd-compliance-section__flag cd-compliance-section__flag--critical"> — forfalt</span>
+                      )}
+                      {complianceData.classificationStatus === 'pep-forfaller-snart' && (
+                        <span className="cd-compliance-section__flag cd-compliance-section__flag--warning"> — forfaller snart</span>
+                      )}
+                    </span>
+                  </div>
+                </div>
+
+                {/* KYC-dokumentasjon */}
+                <div className="cd-compliance-section">
+                  <p className="cd-compliance-section__label">KYC-dokumentasjon</p>
+                  <p className={`cd-compliance-section__value ${docsValueClass(complianceData.documentationStatus)}`}>
+                    {complianceData.documentationStatus}
+                  </p>
+                  <p className="cd-compliance-section__hint">
+                    Legitimasjon, kildeformue og PEP-erklæring
+                  </p>
+                </div>
+
+              </div>
             ) : (
               <p className="cd-empty">Ingen compliancedata tilgjengelig</p>
             )}

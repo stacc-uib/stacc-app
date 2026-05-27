@@ -275,7 +275,7 @@ export function getTradeRegistrationData(): TradeRegistrationData {
         investorName: investor.name,
         investorType: investor.customerType,
         investorCategory:
-          investor.category === 'Professional' ? 'Profesjonell' : 'Ikke-profesjonell',
+          investor.category === 'Professional' ? 'Profesjonell' : 'Retail',
         pepStatus: complianceDetail?.pepStatus ? 'Ja' : 'Nei',
         amlRiskLevel: complianceDetail?.amlRiskLevel ?? 'Lav',
         documentationStatus: complianceDetail?.documentationStatus ?? 'Komplett',

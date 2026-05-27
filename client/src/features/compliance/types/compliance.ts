@@ -57,8 +57,7 @@ export type InvestorClassificationStatus =
   | 'ok'
   | 'mangler-naering'
   | 'pep-forfaller-snart'
-  | 'pep-forfalt'
-  | 'ikke-profesjonell';
+  | 'pep-forfalt';
 
 export type InvestorClassificationRow = {
   customerId: string;
@@ -114,6 +113,8 @@ export type ReportingWorkspaceRun = {
   statusLabel: string;
   statusTone: 'ok' | 'warning' | 'critical' | 'neutral';
   nextAction: string;
+  /** IDs til valideringskontroller som er forutsetninger for denne rapporten */
+  checkIds: string[];
 };
 
 export type ReportingWorkspaceOverview = {
@@ -143,6 +144,7 @@ export type ComplianceCalendarOverview = {
 export type ComplianceWorkQueueFilter =
   | 'alle'
   | 'kritiske'
+  | 'rapportering'
   | 'denne-uken'
   | 'mine-saker';
 
@@ -158,6 +160,7 @@ export type ComplianceWorkQueueItem = {
   targetSubpageId: ComplianceSubpageId;
   customerId?: string;
   summary: string;
+  blockingNotes?: string[];
   filterTags: ComplianceWorkQueueFilter[];
 };
 

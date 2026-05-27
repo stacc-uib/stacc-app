@@ -3,7 +3,6 @@ import { getTradeRegistrationData } from '../lib/getTradeRegistrationData';
 import { useTradesContext } from '../TradesContext';
 import type { TradeDirection, TradeSettlementStatus } from '../types/trades';
 
-// Maps fund id to the full fund name used in fundPrices.json / trades.json
 const FUND_ID_TO_FULL_NAME: Record<string, string> = {
   'escali-global': 'Escali Global AS',
   'escali-norden': 'Escali Norden AS',
@@ -30,29 +29,20 @@ function formatPercent(value: number) {
 }
 
 function formatDateLabel(dateString: string | null) {
-  if (!dateString) {
-    return 'Ikke registrert';
-  }
-
+  if (!dateString) return 'Ikke registrert';
   const [year, month, day] = dateString.split('-');
   return `${day}.${month}.${year}`;
 }
 
 function parseLocalizedNumber(value: string) {
-  if (!value.trim()) {
-    return 0;
-  }
-
+  if (!value.trim()) return 0;
   const normalizedValue = value.replace(/\s/g, '').replace(',', '.');
   const parsedValue = Number(normalizedValue);
   return Number.isFinite(parsedValue) ? parsedValue : 0;
 }
 
 function formatEditableNumber(value: number, maximumFractionDigits = 2) {
-  if (!Number.isFinite(value)) {
-    return '';
-  }
-
+  if (!Number.isFinite(value)) return '';
   return value.toFixed(maximumFractionDigits).replace(/\.?0+$/, '').replace('.', ',');
 }
 
@@ -64,10 +54,12 @@ function isQuarterStart(dateString: string) {
 function TradesPage() {
   const tradeData = useMemo(() => getTradeRegistrationData(), []);
   const { addTrade, registeredTrades } = useTradesContext();
+
   const investorPickerRef = useRef<HTMLDivElement | null>(null);
   const [investorQuery, setInvestorQuery] = useState('');
   const [selectedInvestorId, setSelectedInvestorId] = useState('');
   const [isInvestorPickerOpen, setIsInvestorPickerOpen] = useState(false);
+
   const [direction, setDirection] = useState<TradeDirection>('kjop');
   const [selectedFundId, setSelectedFundId] = useState('escali-global');
   const [selectedClassId, setSelectedClassId] = useState<'A' | 'B' | 'C'>('C');
@@ -75,64 +67,46 @@ function TradesPage() {
   const [priceInput, setPriceInput] = useState('');
   const [unitsInput, setUnitsInput] = useState('');
   const [amountInput, setAmountInput] = useState('');
-  const [settlementStatus, setSettlementStatus] =
-    useState<TradeSettlementStatus>('ikke-oppgjort');
+  const [settlementStatus, setSettlementStatus] = useState<TradeSettlementStatus>('ikke-oppgjort');
   const [referenceText, setReferenceText] = useState('');
-  const [lastActionMessage, setLastActionMessage] = useState('');
   const [tradeDone, setTradeDone] = useState<{ summary: string; direction: TradeDirection } | null>(null);
 
   const filteredInvestors = useMemo(() => {
     const normalizedQuery = investorQuery.trim().toLowerCase();
-
     return tradeData.investors.filter((investor) => {
-      if (!normalizedQuery) {
-        return true;
-      }
-
-      return [
-        investor.investorName,
-        investor.customerId,
-        investor.investorType,
-        investor.investorCategory,
-      ].some((value) => value.toLowerCase().includes(normalizedQuery));
+      if (!normalizedQuery) return true;
+      return [investor.investorName, investor.customerId, investor.investorType, investor.investorCategory]
+        .some((value) => value.toLowerCase().includes(normalizedQuery));
     });
   }, [investorQuery, tradeData.investors]);
 
   const selectedInvestor = useMemo(
-    () => tradeData.investors.find((investor) => investor.customerId === selectedInvestorId) ?? null,
+    () => tradeData.investors.find((i) => i.customerId === selectedInvestorId) ?? null,
     [selectedInvestorId, tradeData.investors],
   );
 
   const selectedFund = useMemo(
-    () => tradeData.funds.find((fund) => fund.id === selectedFundId) ?? tradeData.funds[0],
+    () => tradeData.funds.find((f) => f.id === selectedFundId) ?? tradeData.funds[0],
     [selectedFundId, tradeData.funds],
   );
 
   const selectedClass = useMemo(
-    () =>
-      selectedFund.classes.find((shareClass) => shareClass.id === selectedClassId) ??
-      selectedFund.classes[0],
+    () => selectedFund.classes.find((c) => c.id === selectedClassId) ?? selectedFund.classes[0],
     [selectedClassId, selectedFund],
   );
 
   const selectedHolding = useMemo(() => {
-    if (!selectedInvestor) {
-      return null;
-    }
-
-    return (
-      selectedInvestor.holdings.find(
-        (holding) =>
-          holding.fundId === selectedFund.id && holding.classId === selectedClass.id,
-      ) ?? null
-    );
+    if (!selectedInvestor) return null;
+    return selectedInvestor.holdings.find(
+      (h) => h.fundId === selectedFund.id && h.classId === selectedClass.id,
+    ) ?? null;
   }, [selectedClass.id, selectedFund.id, selectedInvestor]);
 
   const unitsValue = parseLocalizedNumber(unitsInput);
   const priceValue = parseLocalizedNumber(priceInput);
   const amountValue = parseLocalizedNumber(amountInput);
   const holdingsValue = selectedInvestor
-    ? selectedInvestor.holdings.reduce((total, holding) => total + holding.estimatedValue, 0)
+    ? selectedInvestor.holdings.reduce((total, h) => total + h.estimatedValue, 0)
     : 0;
 
   const projectedValue = amountValue > 0
@@ -147,10 +121,6 @@ function TradesPage() {
     if (!selectedInvestor) {
       messages.push('Velg investor for å registrere handel.');
       return messages;
-    }
-
-    if (selectedInvestor.investorCategory === 'Ikke-profesjonell') {
-      messages.push('Kun profesjonelle investorer kan registreres for ny handel i denne arbeidsflaten.');
     }
 
     if (
@@ -173,15 +143,7 @@ function TradesPage() {
     }
 
     return messages;
-  }, [
-    amountValue,
-    direction,
-    selectedClass.minimumSubscriptionAmount,
-    selectedHolding?.units,
-    selectedInvestor,
-    tradeDate,
-    unitsValue,
-  ]);
+  }, [amountValue, direction, selectedClass.minimumSubscriptionAmount, selectedHolding?.units, selectedInvestor, tradeDate, unitsValue]);
 
   const canSubmit =
     Boolean(selectedInvestor) &&
@@ -204,9 +166,7 @@ function TradesPage() {
         selectedClass.minimumSubscriptionAmount > 0
           ? selectedClass.minimumSubscriptionAmount
           : selectedClass.latestPrice;
-      const nextUnits =
-        selectedClass.latestPrice > 0 ? minimumAmount / selectedClass.latestPrice : 0;
-
+      const nextUnits = selectedClass.latestPrice > 0 ? minimumAmount / selectedClass.latestPrice : 0;
       setAmountInput(formatEditableNumber(minimumAmount, 0));
       setUnitsInput(formatEditableNumber(nextUnits, 2));
       return;
@@ -227,91 +187,64 @@ function TradesPage() {
     function handlePointerDown(event: MouseEvent) {
       if (!investorPickerRef.current?.contains(event.target as Node)) {
         setIsInvestorPickerOpen(false);
-
-        if (selectedInvestor) {
-          setInvestorQuery(selectedInvestor.investorName);
-        }
+        if (selectedInvestor) setInvestorQuery(selectedInvestor.investorName);
       }
     }
 
     window.addEventListener('mousedown', handlePointerDown);
-
-    return () => {
-      window.removeEventListener('mousedown', handlePointerDown);
-    };
+    return () => window.removeEventListener('mousedown', handlePointerDown);
   }, [selectedInvestor]);
 
   function handleUnitsChange(nextValue: string) {
     setUnitsInput(nextValue);
     const nextUnits = parseLocalizedNumber(nextValue);
-
-    if (priceValue > 0) {
-      setAmountInput(formatEditableNumber(nextUnits * priceValue, 0));
-    }
+    if (priceValue > 0) setAmountInput(formatEditableNumber(nextUnits * priceValue, 0));
   }
 
   function handleAmountChange(nextValue: string) {
     setAmountInput(nextValue);
     const nextAmount = parseLocalizedNumber(nextValue);
-
-    if (priceValue > 0) {
-      setUnitsInput(formatEditableNumber(nextAmount / priceValue, 2));
-    }
+    if (priceValue > 0) setUnitsInput(formatEditableNumber(nextAmount / priceValue, 2));
   }
 
   function handlePriceChange(nextValue: string) {
     setPriceInput(nextValue);
     const nextPrice = parseLocalizedNumber(nextValue);
-
     if (unitsValue > 0 && nextPrice > 0) {
       setAmountInput(formatEditableNumber(unitsValue * nextPrice, 0));
       return;
     }
-
     if (amountValue > 0 && nextPrice > 0) {
       setUnitsInput(formatEditableNumber(amountValue / nextPrice, 2));
     }
   }
 
-  function handleAction(action: 'bekreftet' | 'utkast') {
-    if (!selectedInvestor) {
-      return;
-    }
+  function handleConfirm() {
+    if (!selectedInvestor) return;
 
-    const prefix =
-      action === 'bekreftet'
-        ? 'Handel klargjort for registrering'
-        : 'Utkast lagret lokalt';
+    const fullFundName = FUND_ID_TO_FULL_NAME[selectedFund.id] ?? selectedFund.shortName;
+    const shareClassLabel = `${fullFundName} - ${selectedClass.label}`;
 
-    setLastActionMessage(
-      `${prefix}: ${selectedInvestor.investorName}, ${
-        direction === 'kjop' ? 'kjøp' : 'salg'
-      } ${formatNumber(unitsValue)} andeler i ${selectedFund.shortName} ${selectedClass.label.toLowerCase()}.`,
-    );
+    setTradeDone({
+      summary: `${selectedInvestor.investorName} — ${direction === 'kjop' ? 'Kjøp' : 'Salg'} ${formatNumber(unitsValue)} andeler i ${selectedFund.shortName} ${selectedClass.label.toLowerCase()} til ${formatCurrency(amountValue)}`,
+      direction,
+    });
 
-    if (action === 'bekreftet') {
-      const fullFundName = FUND_ID_TO_FULL_NAME[selectedFund.id] ?? selectedFund.shortName;
-      const shareClassLabel = `${fullFundName} - ${selectedClass.label}`;
-      setTradeDone({
-        summary: `${selectedInvestor.investorName} — ${direction === 'kjop' ? 'Kjøp' : 'Salg'} ${formatNumber(unitsValue)} andeler i ${selectedFund.shortName} ${selectedClass.label.toLowerCase()} til ${formatCurrency(amountValue)}`,
-        direction,
-      });
-      addTrade({
-        id: `trade-${1502 + registeredTrades.length}`,
-        customerId: selectedInvestor.customerId,
-        customerName: selectedInvestor.investorName,
-        fundName: fullFundName,
-        shareClass: shareClassLabel,
-        tradeDate: tradeDate,
-        settlementDate: tradeDate,
-        transactionType: direction === 'kjop' ? 'Kjøp' : 'Salg',
-        units: unitsValue,
-        price: priceValue,
-        amount: amountValue,
-        unitEffect: direction === 'kjop' ? unitsValue : -unitsValue,
-        settlementStatus: settlementStatus,
-      });
-    }
+    addTrade({
+      id: `trade-${1502 + registeredTrades.length}`,
+      customerId: selectedInvestor.customerId,
+      customerName: selectedInvestor.investorName,
+      fundName: fullFundName,
+      shareClass: shareClassLabel,
+      tradeDate,
+      settlementDate: tradeDate,
+      transactionType: direction === 'kjop' ? 'Kjøp' : 'Salg',
+      units: unitsValue,
+      price: priceValue,
+      amount: amountValue,
+      unitEffect: direction === 'kjop' ? unitsValue : -unitsValue,
+      settlementStatus,
+    });
   }
 
   function handleReset() {
@@ -324,7 +257,6 @@ function TradesPage() {
     setAmountInput('');
     setSettlementStatus('ikke-oppgjort');
     setReferenceText('');
-    setLastActionMessage('');
     setSelectedInvestorId('');
     setInvestorQuery('');
     setTradeDone(null);
@@ -332,12 +264,12 @@ function TradesPage() {
 
   function handleInvestorSelect(customerId: string) {
     const investor = tradeData.investors.find((item) => item.customerId === customerId);
-
     setSelectedInvestorId(customerId);
     setInvestorQuery(investor?.investorName ?? '');
     setIsInvestorPickerOpen(false);
   }
 
+  // ─── Bekreftelse-skjerm ───────────────────────────────────────────────────
   if (tradeDone) {
     return (
       <div className="content-card">
@@ -352,14 +284,10 @@ function TradesPage() {
                   <path d="M14 25l7 7 13-14" stroke="#15803d" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />
                 </svg>
               </div>
-              <h2 className="trade-done-screen__title">Handel registrert!</h2>
+              <h2 className="trade-done-screen__title">Handel registrert</h2>
               <p className="trade-done-screen__summary">{tradeDone.summary}</p>
               <div className="trade-done-screen__actions">
-                <button
-                  type="button"
-                  className="queue-action queue-action--primary"
-                  onClick={handleReset}
-                >
+                <button type="button" className="queue-action queue-action--primary" onClick={handleReset}>
                   Registrer ny handel
                 </button>
               </div>
@@ -370,87 +298,72 @@ function TradesPage() {
     );
   }
 
+  // ─── Registreringsskjema ──────────────────────────────────────────────────
   return (
     <div className="content-card">
       <p className="content-card__eyebrow">Handler og andelseierregister</p>
       <h1>Registrer ny handel</h1>
-      
 
       <section className="feature-section feature-section--trade-registration">
         <div className="feature-section__surface trade-registration">
-          {lastActionMessage ? (
-            <div className="trade-banner" role="status">
-              {lastActionMessage}
-            </div>
-          ) : null}
-
-          <section className="data-table-card trade-card trade-card--compact">
-            <div className="trade-card__header">
-              <div>
-                <h2 className="data-table-card__title">Velg investor</h2>
-      
-              </div>
-            </div>
-
-            <div className="trade-selector-grid">
-              <label className="trade-field">
-                <span></span>
-                <div className="trade-picker" ref={investorPickerRef}>
-                  <input
-                    type="search"
-                    value={isInvestorPickerOpen ? investorQuery : selectedInvestor?.investorName ?? investorQuery}
-                    onFocus={() => {
-                      setIsInvestorPickerOpen(true);
-                      setInvestorQuery(selectedInvestor?.investorName ?? '');
-                    }}
-                    onChange={(event) => {
-                      setInvestorQuery(event.target.value);
-                      setSelectedInvestorId('');
-                      setIsInvestorPickerOpen(true);
-                    }}
-                    placeholder="Søk etter investor"
-                  />
-                  <span className="trade-picker__arrow" aria-hidden="true">
-                    ▾
-                  </span>
-
-                  {isInvestorPickerOpen ? (
-                    <div className="trade-picker__menu" role="listbox" aria-label="Investorliste">
-                      {filteredInvestors.map((investor) => (
-                        <button
-                          key={investor.customerId}
-                          type="button"
-                          className="trade-picker__option"
-                          onClick={() => handleInvestorSelect(investor.customerId)}
-                        >
-                          <span>{investor.investorName}</span>
-                          <span>{investor.customerId}</span>
-                        </button>
-                      ))}
-
-                      {filteredInvestors.length === 0 ? (
-                        <div className="trade-picker__empty">Ingen investorer matcher søket.</div>
-                      ) : null}
-                    </div>
-                  ) : null}
-                </div>
-              </label>
-            </div>
-          </section>
-
           <div className="trade-registration__layout">
+
+            {/* ── Skjema (venstre) ─────────────────────────────────────── */}
             <div className="trade-registration__main">
               <section className="data-table-card trade-card">
                 <div className="trade-card__header">
                   <div>
                     <p className="feature-section__eyebrow">Handelsregistrering</p>
                     <h2 className="data-table-card__title">Registrer handel</h2>
-                    <p className="data-table-card__description">
-                      Fyll inn handelsdetaljene. Investorinformasjonen vises separat til høyre.
-                    </p>
                   </div>
                 </div>
 
+                {/* Investor — første felt, full bredde */}
+                <div className="trade-field" style={{ marginBottom: '0.65rem' }}>
+                  <span>Investor</span>
+                  <div className="trade-picker" ref={investorPickerRef}>
+                    <input
+                      type="search"
+                      value={
+                        isInvestorPickerOpen
+                          ? investorQuery
+                          : selectedInvestor?.investorName ?? investorQuery
+                      }
+                      onFocus={() => {
+                        setIsInvestorPickerOpen(true);
+                        setInvestorQuery(selectedInvestor?.investorName ?? '');
+                      }}
+                      onChange={(event) => {
+                        setInvestorQuery(event.target.value);
+                        setSelectedInvestorId('');
+                        setIsInvestorPickerOpen(true);
+                      }}
+                      placeholder="Søk etter investor"
+                    />
+                    <span className="trade-picker__arrow" aria-hidden="true">▾</span>
+
+                    {isInvestorPickerOpen && (
+                      <div className="trade-picker__menu" role="listbox" aria-label="Investorliste">
+                        {filteredInvestors.map((investor) => (
+                          <button
+                            key={investor.customerId}
+                            type="button"
+                            className="trade-picker__option"
+                            onClick={() => handleInvestorSelect(investor.customerId)}
+                          >
+                            <span>{investor.investorName}</span>
+                            <span>{investor.customerId}</span>
+                          </button>
+                        ))}
+                        {filteredInvestors.length === 0 && (
+                          <div className="trade-picker__empty">Ingen investorer matcher søket.</div>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* Kjøp / Salg */}
                 <div className="trade-toggle-group" role="radiogroup" aria-label="Velg handelstype">
                   <button
                     type="button"
@@ -470,17 +383,16 @@ function TradesPage() {
                   </button>
                 </div>
 
+                {/* Handelsfelter */}
                 <div className="trade-form-grid">
                   <label className="trade-field">
                     <span>Fond</span>
                     <select
                       value={selectedFund.id}
-                      onChange={(event) => setSelectedFundId(event.target.value)}
+                      onChange={(e) => setSelectedFundId(e.target.value)}
                     >
                       {tradeData.funds.map((fund) => (
-                        <option key={fund.id} value={fund.id}>
-                          {fund.shortName}
-                        </option>
+                        <option key={fund.id} value={fund.id}>{fund.shortName}</option>
                       ))}
                     </select>
                   </label>
@@ -489,14 +401,10 @@ function TradesPage() {
                     <span>Klasse</span>
                     <select
                       value={selectedClass.id}
-                      onChange={(event) =>
-                        setSelectedClassId(event.target.value as 'A' | 'B' | 'C')
-                      }
+                      onChange={(e) => setSelectedClassId(e.target.value as 'A' | 'B' | 'C')}
                     >
                       {selectedFund.classes.map((shareClass) => (
-                        <option key={shareClass.id} value={shareClass.id}>
-                          {shareClass.label}
-                        </option>
+                        <option key={shareClass.id} value={shareClass.id}>{shareClass.label}</option>
                       ))}
                     </select>
                   </label>
@@ -506,7 +414,7 @@ function TradesPage() {
                     <input
                       type="date"
                       value={tradeDate}
-                      onChange={(event) => setTradeDate(event.target.value)}
+                      onChange={(e) => setTradeDate(e.target.value)}
                     />
                   </label>
 
@@ -516,7 +424,7 @@ function TradesPage() {
                       type="text"
                       inputMode="decimal"
                       value={priceInput}
-                      onChange={(event) => handlePriceChange(event.target.value)}
+                      onChange={(e) => handlePriceChange(e.target.value)}
                       placeholder="0"
                     />
                   </label>
@@ -527,23 +435,24 @@ function TradesPage() {
                       type="text"
                       inputMode="decimal"
                       value={unitsInput}
-                      onChange={(event) => handleUnitsChange(event.target.value)}
+                      onChange={(e) => handleUnitsChange(e.target.value)}
                       placeholder="0"
                     />
                   </label>
 
                   <label className="trade-field">
-                    <span>Beløp</span>
+                    <span>Beløp (NOK)</span>
                     <input
                       type="text"
                       inputMode="decimal"
                       value={amountInput}
-                      onChange={(event) => handleAmountChange(event.target.value)}
+                      onChange={(e) => handleAmountChange(e.target.value)}
                       placeholder="0"
                     />
                   </label>
                 </div>
 
+                {/* Fondsinformasjon */}
                 <div className="trade-metric-row">
                   <article className="trade-metric">
                     <span className="trade-metric__label">Minstetegning</span>
@@ -563,14 +472,13 @@ function TradesPage() {
                   </article>
                 </div>
 
+                {/* Validering */}
                 {validationMessages.length > 0 ? (
                   <div className="trade-callout trade-callout--warning">
                     <h3 className="trade-callout__title">Avklar før bekreftelse</h3>
                     <div className="stack-list">
                       {validationMessages.map((message) => (
-                        <p key={message} className="trade-callout__body">
-                          {message}
-                        </p>
+                        <p key={message} className="trade-callout__body">{message}</p>
                       ))}
                     </div>
                   </div>
@@ -583,23 +491,22 @@ function TradesPage() {
                   </div>
                 )}
 
+                {/* Oppgjør */}
                 <div className="trade-settlement">
                   <p className="trade-settlement__label">Oppgjørsstatus</p>
                   <div className="trade-settlement__options">
-                    {[
+                    {([
                       { id: 'ikke-oppgjort', label: 'Ikke oppgjort' },
                       { id: 'delvis-oppgjort', label: 'Delvis oppgjort' },
                       { id: 'oppgjort', label: 'Oppgjort' },
-                    ].map((option) => (
+                    ] as const).map((option) => (
                       <label key={option.id} className="trade-radio">
                         <input
                           type="radio"
                           name="settlementStatus"
                           value={option.id}
                           checked={settlementStatus === option.id}
-                          onChange={() =>
-                            setSettlementStatus(option.id as TradeSettlementStatus)
-                          }
+                          onChange={() => setSettlementStatus(option.id)}
                         />
                         <span>{option.label}</span>
                       </label>
@@ -607,31 +514,26 @@ function TradesPage() {
                   </div>
                 </div>
 
+                {/* Referanse */}
                 <label className="trade-field trade-field--textarea">
                   <span>Referanse / kommentar</span>
                   <textarea
                     value={referenceText}
-                    onChange={(event) => setReferenceText(event.target.value)}
+                    onChange={(e) => setReferenceText(e.target.value)}
                     placeholder="Legg til oppgjørsreferanse eller kommentar"
-                    rows={4}
+                    rows={3}
                   />
                 </label>
 
+                {/* Handlinger */}
                 <div className="trade-actions">
                   <button
                     type="button"
                     className="queue-action queue-action--primary"
-                    onClick={() => handleAction('bekreftet')}
+                    onClick={handleConfirm}
                     disabled={!canSubmit}
                   >
                     Bekreft handel
-                  </button>
-                  <button
-                    type="button"
-                    className="queue-action"
-                    onClick={() => handleAction('utkast')}
-                  >
-                    Lagre utkast
                   </button>
                   <button type="button" className="queue-action" onClick={handleReset}>
                     Nullstill
@@ -640,13 +542,14 @@ function TradesPage() {
               </section>
             </div>
 
+            {/* ── Investorinformasjon (høyre) ───────────────────────────── */}
             <aside className="trade-registration__aside">
               {selectedInvestor ? (
                 <>
                   <section className="data-table-card trade-card trade-sidebar-card trade-sidebar-card--separated">
                     <div className="trade-card__header">
                       <div>
-                        <p className="feature-section__eyebrow">Investorinformasjon</p>
+                        <p className="feature-section__eyebrow">Investor</p>
                         <h2 className="data-table-card__title">{selectedInvestor.investorName}</h2>
                       </div>
                     </div>
@@ -666,12 +569,12 @@ function TradesPage() {
                           <dd>{selectedInvestor.investorCategory}</dd>
                         </div>
                         <div>
-                          <dt>Total verdi nå</dt>
+                          <dt>Total verdi</dt>
                           <dd>{formatCurrency(holdingsValue)}</dd>
                         </div>
-                        {projectedValue !== null ? (
+                        {projectedValue !== null && (
                           <div>
-                            <dt>Verdi etter handel</dt>
+                            <dt>Etter handel</dt>
                             <dd style={{ color: projectedValue >= holdingsValue ? '#15803d' : '#b91c1c' }}>
                               {formatCurrency(projectedValue)}
                               <span style={{ fontSize: '0.82rem', fontWeight: 400, marginLeft: '0.4rem', color: 'inherit' }}>
@@ -679,30 +582,25 @@ function TradesPage() {
                               </span>
                             </dd>
                           </div>
-                        ) : null}
+                        )}
                       </dl>
 
+                      {/* Vis kun badge for avvikende/kritiske tilstander */}
                       <div className="trade-sidebar-card__status-row">
-                        <span
-                          className={`status-badge ${
-                            selectedInvestor.pepStatus === 'Ja'
-                              ? 'status-badge--critical'
-                              : 'status-badge--ok'
-                          }`}
-                        >
-                          PEP {selectedInvestor.pepStatus}
-                        </span>
-                        <span
-                          className={`status-badge ${
-                            selectedInvestor.amlRiskLevel === 'Høy'
-                              ? 'status-badge--critical'
-                              : selectedInvestor.amlRiskLevel === 'Medium'
-                                ? 'status-badge--warning'
-                                : 'status-badge--ok'
-                          }`}
-                        >
-                          AML {selectedInvestor.amlRiskLevel}
-                        </span>
+                        {selectedInvestor.pepStatus === 'Ja' && (
+                          <span className="status-badge status-badge--critical" title="Politisk eksponert person">
+                            PEP
+                          </span>
+                        )}
+                        {selectedInvestor.amlRiskLevel === 'Høy' && (
+                          <span className="status-badge status-badge--critical">AML Høy</span>
+                        )}
+                        {selectedInvestor.amlRiskLevel === 'Medium' && (
+                          <span className="status-badge status-badge--warning">AML Medium</span>
+                        )}
+                        {selectedInvestor.pepStatus === 'Nei' && selectedInvestor.amlRiskLevel === 'Lav' && (
+                          <span style={{ fontSize: '0.82rem', color: '#6b7280' }}>Ingen risikoavvik</span>
+                        )}
                       </div>
                     </div>
                   </section>
@@ -716,7 +614,7 @@ function TradesPage() {
                     </div>
 
                     <div className="stack-list">
-                      {selectedInvestor.holdings.length ? (
+                      {selectedInvestor.holdings.length > 0 ? (
                         selectedInvestor.holdings.slice(0, 4).map((holding) => (
                           <article key={holding.holdingId} className="trade-mini-card">
                             <div className="stack-card__row stack-card__row--dense">
@@ -743,8 +641,8 @@ function TradesPage() {
                 <section className="data-table-card trade-card trade-sidebar-card trade-sidebar-card--empty-state">
                   <div className="trade-card__header">
                     <div>
-                      <p className="feature-section__eyebrow">Investorinformasjon</p>
-                      <h2 className="data-table-card__title">Velg investor</h2>
+                      <p className="feature-section__eyebrow">Investor</p>
+                      <h2 className="data-table-card__title">Ingen investor valgt</h2>
                     </div>
                   </div>
                   <p className="trade-sidebar-card__empty">
@@ -753,6 +651,7 @@ function TradesPage() {
                 </section>
               )}
             </aside>
+
           </div>
         </div>
       </section>
