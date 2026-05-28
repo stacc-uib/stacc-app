@@ -467,122 +467,81 @@ Alle elementer på siden er basert på data fra `mocks/trades.json`.
 **Hash:** `#rapporter/oversikt`
 **Status:** Ferdig
 
-Compliance-modulen har tre faner som nås via en intern navigasjonslinje øverst på siden.
+Compliance-modulen har to faner som nås via en intern navigasjonslinje øverst på siden: **Oversikt** og **Investorer**.
 
-### 7.1 Arbeidsflate (standardfane)
+### 7.1 Oversikt (standardfane)
 
 **Hash:** `#rapporter/oversikt`
 
-Startsiden for CCO. Viser to hovedelementer:
-
-**Statuslinje:**
-- Rad med nøkkeltall: compliant investorer, manglende opplysninger, forfalte PEP-kontroller, PEP-kontroller som forfaller snart, rapporter klare for innsending
-- Hvert tall har en statusindikator (OK / Avvik / Kritisk)
-- Siste felt viser neste rapporteringsfrist med dato og tittel
-
-**Prioritert oppgaveliste:**
-- Samler de viktigste sakene på tvers av AML, rapportering og investorstatus
-- Hver oppgave viser: kategori, tittel, prioritet (Kritisk/Høy/Medium), beskrivelse, frist og ansvarlig
-- Filtrering: Alle, Kritiske, Denne uken, Mine saker
-- Handlinger per oppgave: primærknapp (Gjennomgå/Fullfør/Åpne sak) og "Marker som gjennomgått"
-- Primærknappen navigerer til relevant detaljfane
-
-### 7.2 Rapportering
-
-**Hash:** `#rapporter/rapportering`
-
-Oversikt over rapporteringsløp, valideringskontroller og compliance-kalender.
-
-**Sammendragskort (4 stk):**
-- Klare for innsending
-- Blokkerte rapporter
-- Åpne valideringsfunn
-- Innsendt dette kvartalet
-
-**To-kolonne layout:**
-
-*Venstre: Rapporteringsløp*
-- Liste over aktive rapporter med status (Pågår / Klar til godkjenning / Ikke startet)
-- Viser periode, ansvarlig og neste steg
-
-*Høyre: Valideringskontroller*
-- Liste over kontroller som må lukkes før innsending
-- Status per kontroll: Klar / Avventer / Blokkerer
+Startsiden for CCO. Viser compliance-kalender og prioritert oppgaveliste.
 
 **Compliance-kalender:**
-- Full månedsvisning med navigasjon mellom måneder
-- Markerte datoer viser kategori med farge og liten prikk:
+- Full månedsvisning med navigasjonsknapper for å bla mellom måneder
+- Markerte datoer viser kategori med farge og prikk under dagen:
   - Blå = Finanstilsynet
   - Grønn = Skatt
   - Gul/amber = PEP
 - Hover over markert dato viser popup med tittel, dato og beskrivelse
 - Forklaringsnøkkel under kalenderen
-- Liste over kommende frister under kalenderen med kategori, tittel og beskrivelse
+- Fristliste til høyre for kalenderen med de 5 nærmeste fristene (kategori, tittel, dato og beskrivelse)
+
+**Prioritert oppgaveliste:**
+- Samler de viktigste sakene på tvers av AML, rapportering og investorstatus — sortert etter hastegrad
+- Hver oppgave viser: kategori, tittel, prioritet (Kritisk/Høy/Medium), beskrivelse, frist og ansvarlig
+- Filtertabs: Alle, Kritiske, Rapportering, Denne uken, Mine saker
+- Handlinger per oppgave:
+  - Primærknapp (Gjennomgå / Fullfør / Åpne sak) — åpner en modal dialog med neste steg og handlingsknapper
+  - "Marker som gjennomgått" — fjerner oppgaven fra listen lokalt
+- Dialog-modal: viser kategori, tittel, prioritet, frist, ansvarlig og tre veiviser-steg. Primærknapp navigerer til relevant side (kundedetaljside eller subside). Sekundærknapp markerer oppgaven som fullført eller tildeler den til innlogget bruker.
 
 **Datakilder:**
-- Rapporteringsløp: `reportingWorkspace.ts` (mock)
 - Kalender: `calendarEvents.ts` (statiske frister) + dynamisk genererte PEP-frister fra `investorComplianceDetails.ts`
+- Oppgaveliste: `compliance/mocks/complianceOverview.ts`
 
-### 7.3 Investorer
+### 7.2 Investorer
 
 **Hash:** `#rapporter/investorer`
 
-Samler AML/PEP-oppfølging og investorregisteret i én fane med interne tabs.
-
-#### 7.3.1 AML og PEP (standard tab)
-
-Viser PEP-kontroller som krever oppfølging.
+Samlet AML/PEP- og KYC-oversikt for alle investorer med filtrering og handlingsmuligheter.
 
 **Sammendragskort (4 stk):**
+- Investorer totalt
 - Forfalte kontroller
-- Forfaller innen 14 dager
 - Høy risiko
-- Mangler dokumentasjon
+- Mangler data
 
-**Filtrering:** Alle saker, Forfalt, Forfaller snart, Høy risiko, Manglende dokumentasjon
+**Filtertabs:** Alle, Forfalt, Forfaller snart, Høy risiko, Mangler data
 
-**Oppfølgingsliste:**
-- Viser opptil 8 investorer med: navn, PEP-status, kontrollstatus, AML-risiko
-- Klikk "Vis detaljer" åpner en utvidbar seksjon med:
-  - Status nå (badges for kontrollstatus, dokumentasjon, risikonivå)
-  - Tidslinje med oppfølgingspunkter
-  - Knapp: "Marker kontroll som oppdatert" — oppdaterer kontrollstatus lokalt
+**Søk:** Investor-picker med autocomplete på navn og kunde-ID
 
-**Full tabell:**
-- Alle investorer med kolonner: Investor, PEP, AML-risiko, Dokumentasjon, Siste kontroll, Neste kontroll, Status
+**Tabell med kolonner:**
+- Investor (navn + kundetype, klikkbar lenke til kundedetaljside)
+- Næring (næringsgruppe eller "Ikke registrert"-badge)
+- AML-risiko (Høy = kritisk badge, Medium = advarsel badge, Lav = grå tekst)
+- KYC-status (Mangler dokumentasjon = kritisk badge, Mangler oppdatering = advarsel badge, Komplett = grå tekst)
+- Neste kontroll (dato + Forfalt/Forfaller snart-badge ved avvik, kun dato ved planlagt)
+- Handlingskolonne
+
+**"Marker gjennomført"-knapp:**
+- Vises for alle rader med utestående tiltak, dvs. rader der minst ett av følgende er sant:
+  - Kontrollstatus er Forfalt eller Forfaller snart
+  - AML-risikonivå er Høy
+  - KYC-dokumentasjon er ikke Komplett
+- Klikk åpner et inline bekreftelsespanel i neste tabellrad
+- Panelet viser investor, og lister kun de punktene som faktisk endres (kontrolldato, AML, KYC)
+- Klikk "Bekreft" oppdaterer raden lokalt: kontrolldato settes til i dag, AML tilbakestilles til Lav, KYC til Komplett, status til Planlagt
+- Raden viser deretter en "Gjennomført"-badge og forsvinner fra aktive filterfaner
 
 **Logikk:**
-- Kontrollstatus beregnes fra `pepNextReviewDate` vs. dagens dato (2026-03-30):
+- Kontrollstatus beregnes fra `pepNextReviewDate` vs. referansedato (2026-05-27):
   - Differanse < 0 dager → Forfalt
   - Differanse ≤ 14 dager → Forfaller snart
   - Ellers → Planlagt
-- "Marker som oppdatert" setter neste kontroll til 31.03.2027 og status til Planlagt
+- Tabellen sorteres etter alvorlighetsgrad: Forfalt → Høy AML → Forfaller snart → Mangler dokumentasjon → Mangler oppdatering → Mangler næring → Alt OK
 
-#### 7.3.2 Investorregister
-
-Fullstendig register over alle investorer med klassifisering og compliance-status.
-
-**Sammendragskort (4 stk):**
-- Investorer i registeret
-- Mangler opplysninger
-- PEP-oppfølging
-- Klar for rapportering
-
-**Søk:** Fritekst på navn, type, kategori eller næring
-
-**Filtrering:** Alle investorer, Mangler data, PEP-oppfølging, Ikke-profesjonelle
-
-**Tabell med kolonner:**
-Investor, Kundetype, Kategori, PEP, Siste PEP-kontroll, Neste PEP-kontroll, Næring, Compliance status, Manglende felt, Rapporteringsklar
-
-**Klassifiseringslogikk (prioritert rekkefølge):**
-1. Mangler næringsgruppe → `mangler-naering`
-2. Ikke-profesjonell → `ikke-profesjonell`
-3. PEP forfalt (< 0 dager) → `pep-forfalt`
-4. PEP forfaller snart (≤ 14 dager) → `pep-forfaller-snart`
-5. Ellers → `ok`
-
-**Rapporteringsklar:** Klar hvis ingen manglende felt (næring + dokumentasjon komplett)
+**Datakilder:**
+- `compliance/mocks/investorComplianceDetails.ts` (PEP, AML, dokumentasjon per investor)
+- `features/compliance/lib/getCompliancePageData.ts` (sammenstilling)
 
 ---
 
@@ -634,21 +593,25 @@ To-kolonne layout:
 - Tilgjengelige andeler (fra investorens beholdning)
 
 **Validering:**
-- Ingen investor valgt → melding
-- Ikke-profesjonell investor → blokkerer
+- Ingen investor valgt → melding om at investor må velges
 - Beløp under minstetegning (kjøp) → advarsel
 - Handelsdato ikke kvartalsstart (kjøp) → advarsel
 - Antall andeler overstiger beholdning (salg) → advarsel
-- Alle valideringer bestått → grønn "Klar til registrering"-boks
+- Alle valideringer bestått → grønn "Klar til registrering"-boks med estimert handelsverdi
+- "Bekreft handel"-knapp er deaktivert inntil investor er valgt, alle beløp er fylt inn og ingen valideringsfeil gjenstår
 
 **Oppgjørsstatus:** Radioknapper (Ikke oppgjort / Delvis oppgjort / Oppgjort)
 
 **Referanse/kommentar:** Fritekstfelt
 
 **Handlinger:**
-- Bekreft handel (disabled hvis validering feiler)
-- Lagre utkast
-- Nullstill
+- Bekreft handel (disabled hvis validering ikke er bestått)
+- Nullstill (tilbakestiller alle felter til standardverdier)
+
+**Bekreftelse-skjerm:**
+- Vises etter vellykket registrering i stedet for skjemaet
+- Viser grønt hakeikon, teksten "Handel registrert" og et sammendrag med investor, retning, antall andeler, fond og beløp
+- Knapp "Registrer ny handel" tilbakestiller og viser skjemaet på nytt
 
 ### 8.4 Investorinformasjon (høyre panel)
 
@@ -658,8 +621,7 @@ Vises kun når investor er valgt.
 - Kunde-ID, kundetype, kategori
 - Total verdi nå (sum av alle beholdninger)
 - Verdi etter handel (vises kun når beløp er fylt inn, grønn ved kjøp, rød ved salg, med endringsbeløp i parentes)
-- PEP-status (badge)
-- AML-risikonivå (badge)
+- Risikostatus: PEP-badge vises kun hvis PEP = Ja; AML-badge vises kun ved Høy eller Medium risiko; "Ingen risikoavvik" vises som grå tekst når alt er OK
 
 **Beholdning:**
 - Liste over eksisterende plasseringer (maks 4)
@@ -734,7 +696,8 @@ Bruk denne malen når nye sider skal dokumenteres:
 
 ### 11.3 Referansedato
 
-All datobasert logikk bruker `2026-03-30` som "i dag". Dette gjelder:
+All datobasert logikk bruker `2026-05-27` som "i dag". Dette gjelder:
 - PEP-kontrollstatus (forfalt / forfaller snart / planlagt)
 - Klassifiseringsstatus
 - Kalender-hendelser (PEP-frister innen 60 dager)
+- Standard handelsdato i registreringsskjemaet
