@@ -120,9 +120,86 @@ Elementene på siden er basert på:
 
 **Menyvalg:** Inntekt
 **Hash:** `#inntekt`
-**Status:** Placeholder
+**Status:** Ferdig
 
-Inntektsanalyse, honorarutvikling og relaterte oversikter. Ikke implementert.
+Inntektsanalyse, honorarutvikling og relaterte oversikter.
+
+### 3.1 Layout
+
+Inntektsoversikten består av tre faner via en navigasjonslinje øverst:
+- Oversikt
+- Tabell
+- Grafer
+
+### 3.2 Oversikt
+
+Oversiktsfanen gir nøkkeltall for et raskt overblikk over den finansielle 
+situasjonen, dette i form av en KPI-rad med 4 KPI-kort.
+
+**KPI-kort**
+- Navn på KPI
+- Verdi i kroner/prosent.
+- Endring fra gitt periode i prosent/prosentpoeng.
+- Beskrivelse av perioden endringen regnes fra.
+
+### 3.3 Tabell
+
+Tabellvisning av totale honorarinntekter i en gitt periode, fordelt på poster.
+
+Elementer på siden:
+- Periodefilter
+- Fordelingsfilter
+- Inntektstabell
+
+**Periodefilter**
+- Slider for valg av tidsintervall.
+- Knapper for forhåndsinnstilte intervaller: YTD, 1år, 5år og 10år.
+
+**Fordelingsfilter**
+- Knapperad for veksling mellom kategorier.
+- Knapper for kategorier:
+    - Fond
+    - Fondsklasse
+    - Fond og klasse
+    - Kundesegment
+    - Kundekategori
+
+**Inntektstabell**
+- Tittelrad med følgende kolonner:
+    - Fond
+    - Volum
+    - Volumendring
+    - AUM
+    - AUM-endring
+    - Inntekt 
+- Rader for hver enkelt post.
+- Oppsummeringsrad med total endring og inntekt.
+
+### 3.4 Grafer
+
+Grafvisning av månedlige honorarinntekter i en gitt periode, fordelt på poster.
+
+Elementer på siden:
+- Periodefilter
+- Fordelingsfilter
+- Graf
+
+**Periodefilter**: Samme som i tabellvisning.
+
+**Fordelingsfilter**: Samme som i tabellvisning.
+
+**Graf**:
+- Stablet arealdiagram over hver enkelt posts bidrag til inntekt over tid.
+- Tegnforklaring med navn på post og fargekode.
+
+### 3.5 Datakilder
+
+Elementene på siden baserer seg på:
+- Kundedata: `mocks/investors.json`.
+- Transaksjonsdata: `mocks/trades.json`.
+- Kursdata: `mocks/fundPrices.json`.
+- Inntektsdata: Akkumulering av `mocks/trades.json` for å gi beholdning over tid. 
+I kombinasjon med `mocks/funcPrices.json` gir dette honorarinntekter over tid.
 
 ---
 
